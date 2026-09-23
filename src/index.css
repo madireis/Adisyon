@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@theme {
+  --color-terracotta-50: #fdf4ef;
+  --color-terracotta-100: #fbe6d6;
+  --color-terracotta-200: #f6c9ac;
+  --color-terracotta-300: #f0a577;
+  --color-terracotta-400: #e97840;
+  --color-terracotta-500: #e45d20;
+  --color-terracotta-600: #d54716;
+  --color-terracotta-700: #b13414;
+  --color-terracotta-800: #8e2b18;
+  --color-terracotta-900: #732616;
+
+  --color-espresso-50: #faf8f6;
+  --color-espresso-100: #f0ece6;
+  --color-espresso-200: #e0d6ca;
+  --color-espresso-300: #ccbba7;
+  --color-espresso-400: #b69a82;
+  --color-espresso-500: #a6836a;
+  --color-espresso-600: #99725e;
+  --color-espresso-700: #805d4f;
+  --color-espresso-800: #694d44;
+  --color-espresso-900: #574139;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* iOS Touch-friendly & smooth momentum scrolling */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+button, a, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* iOS Glass & Spring Effects */
+.ios-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.ios-glass-dark {
+  background: rgba(28, 25, 23, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.ios-spring {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide,
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Print styles for adisyon */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+}
