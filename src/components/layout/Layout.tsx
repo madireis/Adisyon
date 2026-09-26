@@ -15,7 +15,6 @@ import {
   Globe, 
   History, 
   Settings, 
-  Bell,
   Menu,
   ChevronLeft,
   Smartphone,
@@ -41,6 +40,7 @@ export default function Layout() {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   
   const user = state.currentUser || defaultUser;
+  const isManager = user.role === 'owner' || user.role === 'manager';
 
   // Close mobile drawer on route change
   useEffect(() => {
@@ -75,7 +75,6 @@ export default function Layout() {
     if (user.role === 'waiter') {
       return [
         { path: '/tables', label: 'Masalar', icon: Grid2X2 },
-        { path: '/kitchen', label: 'Mutfak', icon: ChefHat },
         { path: '/reservations', label: 'Rezervasyon', icon: CalendarClock },
         { path: '/qr/t-2', label: 'QR Menü', icon: Smartphone },
       ];
@@ -240,51 +239,55 @@ export default function Layout() {
         <div className="p-3 border-t border-stone-200 shrink-0 bg-stone-50">
           {sidebarOpen ? (
             <div className="space-y-2">
-              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
-                Yetki / Mod Değiştir:
-              </span>
-              <div className="grid grid-cols-3 gap-1.5">
-                <button
-                  onClick={() => handleRoleChange('waiter')}
-                  className={cn(
-                    "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 min-h-[44px]",
-                    user.role === 'waiter'
-                      ? "bg-orange-600 text-white border-orange-600 shadow-xs"
-                      : "bg-white text-stone-700 border-stone-200 hover:bg-stone-100"
-                  )}
-                >
-                  <UtensilsCrossed size={14} />
-                  <span>Garson</span>
-                </button>
-                <button
-                  onClick={() => handleRoleChange('kitchen')}
-                  className={cn(
-                    "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 min-h-[44px]",
-                    user.role === 'kitchen'
-                      ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                      : "bg-white text-stone-700 border-stone-200 hover:bg-stone-100"
-                  )}
-                >
-                  <ChefHat size={14} />
-                  <span>Mutfak</span>
-                </button>
-                <button
-                  onClick={() => handleRoleChange('owner')}
-                  className={cn(
-                    "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 min-h-[44px]",
-                    user.role === 'owner'
-                      ? "bg-stone-900 text-white border-stone-900 shadow-xs"
-                      : "bg-white text-stone-700 border-stone-200 hover:bg-stone-100"
-                  )}
-                >
-                  <ShieldCheck size={14} />
-                  <span>Yetkili</span>
-                </button>
-              </div>
+              {isManager && (
+                <>
+                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                    Yetki / Mod Değiştir:
+                  </span>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <button
+                      onClick={() => handleRoleChange('waiter')}
+                      className={cn(
+                        "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 min-h-[44px]",
+                        user.role === 'waiter'
+                          ? "bg-orange-600 text-white border-orange-600 shadow-xs"
+                          : "bg-white text-stone-700 border-stone-200 hover:bg-stone-100"
+                      )}
+                    >
+                      <UtensilsCrossed size={14} />
+                      <span>Garson</span>
+                    </button>
+                    <button
+                      onClick={() => handleRoleChange('kitchen')}
+                      className={cn(
+                        "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 min-h-[44px]",
+                        user.role === 'kitchen'
+                          ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                          : "bg-white text-stone-700 border-stone-200 hover:bg-stone-100"
+                      )}
+                    >
+                      <ChefHat size={14} />
+                      <span>Mutfak</span>
+                    </button>
+                    <button
+                      onClick={() => handleRoleChange('owner')}
+                      className={cn(
+                        "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 min-h-[44px]",
+                        user.role === 'owner'
+                          ? "bg-stone-900 text-white border-stone-900 shadow-xs"
+                          : "bg-white text-stone-700 border-stone-200 hover:bg-stone-100"
+                      )}
+                    >
+                      <ShieldCheck size={14} />
+                      <span>Yetkili</span>
+                    </button>
+                  </div>
+                </>
+              )}
 
               <button
                 onClick={() => navigate('/')}
-                className="w-full mt-1 py-2 bg-stone-200 hover:bg-stone-300 text-stone-700 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 min-h-[40px]"
+                className="w-full mt-1 py-2.5 bg-stone-200 hover:bg-stone-300 text-stone-700 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 min-h-[40px]"
               >
                 <LogOut size={14} />
                 <span>Giriş Ekranına Dön</span>
@@ -295,7 +298,7 @@ export default function Layout() {
               <button 
                 onClick={() => navigate('/')}
                 className="p-2.5 text-stone-500 hover:text-stone-800 rounded-xl hover:bg-stone-200 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                title="Mod Değiştir"
+                title="Çıkış Yap / Giriş Ekranı"
               >
                 <LogOut size={18} />
               </button>
@@ -361,63 +364,67 @@ export default function Layout() {
 
             {/* Mode Switcher inside mobile drawer */}
             <div className="p-3 border-t border-stone-200 bg-stone-50 space-y-2">
-              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
-                Mod Değiştir:
-              </span>
-              <div className="grid grid-cols-3 gap-1.5">
-                <button
-                  onClick={() => {
-                    handleRoleChange('waiter');
-                    setIsMobileDrawerOpen(false);
-                  }}
-                  className={cn(
-                    "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[48px]",
-                    user.role === 'waiter'
-                      ? "bg-orange-600 text-white border-orange-600 shadow-xs"
-                      : "bg-white text-stone-700 border-stone-200"
-                  )}
-                >
-                  <UtensilsCrossed size={16} />
-                  <span>Garson</span>
-                </button>
-                <button
-                  onClick={() => {
-                    handleRoleChange('kitchen');
-                    setIsMobileDrawerOpen(false);
-                  }}
-                  className={cn(
-                    "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[48px]",
-                    user.role === 'kitchen'
-                      ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                      : "bg-white text-stone-700 border-stone-200"
-                  )}
-                >
-                  <ChefHat size={16} />
-                  <span>Mutfak</span>
-                </button>
-                <button
-                  onClick={() => {
-                    handleRoleChange('owner');
-                    setIsMobileDrawerOpen(false);
-                  }}
-                  className={cn(
-                    "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[48px]",
-                    user.role === 'owner'
-                      ? "bg-stone-900 text-white border-stone-900 shadow-xs"
-                      : "bg-white text-stone-700 border-stone-200"
-                  )}
-                >
-                  <ShieldCheck size={16} />
-                  <span>Yetkili</span>
-                </button>
-              </div>
+              {isManager && (
+                <>
+                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                    Mod Değiştir:
+                  </span>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <button
+                      onClick={() => {
+                        handleRoleChange('waiter');
+                        setIsMobileDrawerOpen(false);
+                      }}
+                      className={cn(
+                        "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[48px]",
+                        user.role === 'waiter'
+                          ? "bg-orange-600 text-white border-orange-600 shadow-xs"
+                          : "bg-white text-stone-700 border-stone-200"
+                      )}
+                    >
+                      <UtensilsCrossed size={16} />
+                      <span>Garson</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleRoleChange('kitchen');
+                        setIsMobileDrawerOpen(false);
+                      }}
+                      className={cn(
+                        "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[48px]",
+                        user.role === 'kitchen'
+                          ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                          : "bg-white text-stone-700 border-stone-200"
+                      )}
+                    >
+                      <ChefHat size={16} />
+                      <span>Mutfak</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleRoleChange('owner');
+                        setIsMobileDrawerOpen(false);
+                      }}
+                      className={cn(
+                        "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[48px]",
+                        user.role === 'owner'
+                          ? "bg-stone-900 text-white border-stone-900 shadow-xs"
+                          : "bg-white text-stone-700 border-stone-200"
+                      )}
+                    >
+                      <ShieldCheck size={16} />
+                      <span>Yetkili</span>
+                    </button>
+                  </div>
+                </>
+              )}
 
               <button
                 onClick={() => {
                   navigate('/');
                   setIsMobileDrawerOpen(false);
                 }}
-                className="w-full mt-2 py-2.5 bg-stone-200 hover:bg-stone-300 text-stone-700 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 min-h-[44px]"
+                className="w-full mt-1 py-2.5 bg-stone-200 hover:bg-stone-300 text-stone-700 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 min-h-[44px]"
               >
                 <LogOut size={16} />
                 <span>Giriş Ekranına Dön</span>
@@ -430,54 +437,45 @@ export default function Layout() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Header */}
-        <header className="h-14 sm:h-16 bg-white/80 backdrop-blur-xl border-b border-stone-200/80 flex items-center justify-between px-3 sm:px-6 shrink-0 z-20 sticky top-0">
-          <div className="flex items-center gap-2 sm:gap-3">
+        <header className="h-12 sm:h-13 bg-[#f8f7f5]/80 backdrop-blur-md border-b border-stone-200/40 flex items-center justify-between px-3 sm:px-6 shrink-0 z-20 sticky top-0 transition-colors">
+          <div className="flex items-center gap-2">
             {/* Mobile Hamburger Menu button */}
             <button
               onClick={() => setIsMobileDrawerOpen(true)}
-              className="md:hidden p-2 rounded-xl text-stone-600 hover:bg-stone-100 active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer transition-all"
+              className="md:hidden p-2 rounded-xl text-stone-600 hover:bg-stone-200/60 active:scale-95 min-h-[38px] min-w-[38px] flex items-center justify-center cursor-pointer transition-all"
               title="Menüyü Aç"
             >
-              <Menu size={22} />
+              <Menu size={20} />
             </button>
 
-            <span className="font-black text-stone-900 text-sm sm:text-base tracking-tight truncate">
-              WOT'S CAFE
+            <span className="font-black text-stone-900 text-sm tracking-tight md:hidden">
+              WOT'S
             </span>
-            <span className="h-4 w-px bg-stone-300 hidden sm:inline-block"></span>
-            <span className={cn("text-[11px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full border truncate max-w-[140px] sm:max-w-none shadow-2xs", roleInfo.badgeColor)}>
-              {roleInfo.title}
+
+            {/* Subtle role indicator */}
+            <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-2xs", roleInfo.badgeColor)}>
+              {user.role === 'waiter' ? 'Garson' : user.role === 'kitchen' ? 'Mutfak' : 'Yönetici'}
             </span>
           </div>
 
-          <div className="flex items-center space-x-2 sm:space-x-5">
-            {/* Sync & Online Status */}
-            <div className="flex items-center space-x-1.5 text-xs font-bold bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-200/60">
-              <span className="flex h-2 w-2 relative">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            {/* Online Indicator (minimalist dot, no text) */}
+            <div 
+              className="flex items-center justify-center w-7 h-7 rounded-full bg-emerald-500/10 cursor-default" 
+              title="Sistem Çevrimiçi & Aktif"
+            >
+              <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <span className="text-emerald-800 text-[11px] font-extrabold hidden sm:inline-block">Çevrimiçi</span>
             </div>
 
-            <button className="relative p-2 text-stone-500 hover:bg-stone-100 rounded-full transition-colors cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center active:scale-95">
-              <Bell size={18} />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-orange-600 rounded-full border border-white"></span>
-            </button>
-
-            {/* Current user badge */}
-            <div className="flex items-center space-x-2 sm:space-x-3 border-l border-stone-200 pl-2 sm:pl-4">
-              <div className="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-black text-xs shadow-xs">
-                {user.name.split(' ').map(n => n[0]).join('')}
-              </div>
-              <div className="hidden md:block text-left">
-                <p className="text-xs font-bold text-stone-800 leading-tight">
-                  {user.name}
-                </p>
-                <p className="text-[10px] text-orange-600 font-bold uppercase tracking-wider leading-tight">
-                  {user.role}
-                </p>
-              </div>
+            {/* Current user avatar (compact, tooltip instead of wordy text) */}
+            <div 
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-stone-900 text-white flex items-center justify-center font-bold text-xs shadow-2xs cursor-default select-none border border-stone-300/40"
+              title={`${user.name} (${user.role === 'waiter' ? 'Garson' : user.role === 'kitchen' ? 'Mutfak' : 'Yönetici'})`}
+            >
+              {user.name.split(' ').map(n => n[0]).join('')}
             </div>
           </div>
         </header>

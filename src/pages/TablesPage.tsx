@@ -23,6 +23,7 @@ export default function TablesPage() {
 
   const user = state.currentUser;
   const isManager = user?.role === 'owner' || user?.role === 'manager';
+  const activeEditMode = isManager && isEditMode;
 
   const floors = useLiveQuery(() => db.floors.orderBy('order').toArray(), []) || [];
   const currentFloorId = state.currentFloor || floors[0]?.id || 'floor-1';
@@ -82,15 +83,15 @@ export default function TablesPage() {
 
   const getShapeClasses = (shape: string) => {
     switch (shape) {
-      case 'round': return 'rounded-full aspect-square';
-      case 'square': return 'rounded-2xl aspect-square';
-      case 'rectangle': return 'rounded-2xl aspect-[4/3]';
-      default: return 'rounded-2xl aspect-square';
+      case 'round': return 'rounded-full aspect-square p-2.5 sm:p-3 items-center justify-center text-center';
+      case 'rectangle': return 'rounded-2xl aspect-[16/11] p-3.5 sm:p-4';
+      case 'square': return 'rounded-2xl aspect-square p-3.5 sm:p-4';
+      default: return 'rounded-2xl aspect-square p-3.5 sm:p-4';
     }
   };
 
   const handleTableClick = (table: Table) => {
-    if (isEditMode) {
+    if (activeEditMode) {
       setEditingTable(table);
       setIsTableModalOpen(true);
       return;
@@ -100,173 +101,116 @@ export default function TablesPage() {
 
   return (
     <div className="flex flex-col h-full bg-stone-50 select-none">
-      {/* Top Header */}
-      <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-3.5 sm:p-4 bg-white shadow-xs shrink-0 border-b border-stone-200 gap-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-black text-stone-900">Masa Planı</h1>
-              {isEditMode && (
-                <span className="bg-amber-100 text-amber-900 text-[10px] sm:text-xs font-black uppercase px-2 py-0.5 rounded-full border border-amber-300 animate-pulse">
-                  Düzenleme Modu
-                </span>
-              )}
-            </div>
-            <p className="text-[11px] sm:text-xs text-stone-500 mt-0.5">Wot's Cafe — Dokunmatik Salon & Bölüm Yönetimi</p>
-          </div>
-
-          {/* Mobile compact summary */}
-          <div className="flex sm:hidden items-center gap-2 bg-stone-100 px-2.5 py-1.5 rounded-xl border border-stone-200 text-[11px] font-bold">
-            <span className="text-stone-700">{totalOccupied}/{tables.length} Dolu</span>
-            <span className="text-stone-300">•</span>
-            <span className="text-emerald-700 font-extrabold">{formatCurrency(totalRevenue)}</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 sm:gap-3 justify-end">
-          {/* Quick Add Table Button (Always accessible) */}
-          <button
-            onClick={() => {
-              setEditingTable(null);
-              setIsTableModalOpen(true);
-            }}
-            className="px-3 sm:px-4 py-2 bg-orange-600 hover:bg-orange-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
-            title="Yeni Masa Ekle"
-          >
-            <Plus size={16} />
-            <span className="hidden xs:inline">Yeni Masa Ekle</span>
-            <span className="xs:hidden">Masa Ekle</span>
-          </button>
-
-          {/* Section Management Button (Only for Manager/Admin) */}
-          {isManager && (
-            <button
-              onClick={() => setIsEditMode(!isEditMode)}
-              className={cn(
-                "px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border active:scale-95",
-                isEditMode
-                  ? "bg-amber-500 text-white border-amber-600 shadow-sm"
-                  : "bg-stone-100 text-stone-700 hover:bg-stone-200 border-stone-300"
-              )}
-            >
-              <Settings2 size={16} />
-              <span className="hidden sm:inline">{isEditMode ? 'Düzenlemeyi Bitir' : 'Planı Düzenle'}</span>
-              <span className="sm:hidden">{isEditMode ? 'Bitir' : 'Düzenle'}</span>
-            </button>
-          )}
-
-          <div className="hidden sm:flex items-center gap-6 border-l border-stone-200 pl-5">
-            <div className="flex flex-col items-end">
-              <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider">Açık Masalar</span>
-              <span className="text-sm font-black text-stone-900">{totalOccupied} / {tables.length}</span>
-            </div>
-            <div className="flex flex-col items-end">
-              <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider">Misafirler</span>
-              <span className="text-sm font-black text-stone-900">{totalGuests} Kişi</span>
-            </div>
-            <div className="flex flex-col items-end">
-              <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider">Canlı Ciro</span>
-              <span className="text-sm font-black text-emerald-600">{formatCurrency(totalRevenue)}</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Live Operational Status Strip */}
-      <div className="bg-white border-b border-stone-200 px-3.5 sm:px-6 py-2 flex items-center justify-between overflow-x-auto no-scrollbar gap-3 text-xs shrink-0">
-        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-          <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200 font-bold">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>{totalAvailable} Boş</span>
-          </div>
-          <div className="flex items-center gap-1.5 bg-orange-50 text-orange-800 px-2.5 py-1 rounded-lg border border-orange-200 font-bold">
-            <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-            <span>{totalOccupied} Dolu</span>
-          </div>
-          {totalPaymentWaiting > 0 && (
-            <div className="flex items-center gap-1.5 bg-red-50 text-red-800 px-2.5 py-1 rounded-lg border border-red-200 font-bold animate-pulse">
-              <span className="w-2 h-2 rounded-full bg-red-500"></span>
-              <span>{totalPaymentWaiting} Hesap</span>
-            </div>
-          )}
-          <div className="flex items-center gap-1.5 bg-stone-100 text-stone-700 px-2.5 py-1 rounded-lg border border-stone-200 font-semibold">
-            <Users size={13} className="text-stone-500" />
-            <span>{totalGuests} Misafir</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0 font-bold">
-          <span className="text-stone-400 text-[11px] uppercase tracking-wider hidden sm:inline">Canlı Ciro:</span>
-          <span className="bg-emerald-600 text-white px-3 py-1 rounded-lg font-black text-xs shadow-2xs">
-            {formatCurrency(totalRevenue)}
-          </span>
-        </div>
-      </div>
-
-      {/* Sections / Floors Bar */}
-      <div className="flex items-center justify-between p-2.5 sm:p-3 bg-stone-100/60 border-b border-stone-200 shrink-0 overflow-x-auto no-scrollbar gap-2">
-        <div className="flex items-center gap-1.5">
+      {/* Blended Toolbar: Floors & Live Indicators */}
+      <div className="px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2.5 shrink-0 bg-[#f8f7f5]/80 backdrop-blur-md border-b border-stone-200/50">
+        {/* Floor Switcher */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
           {floors.map((floor: Floor) => (
             <button
               key={floor.id}
               onClick={() => dispatch({ type: 'SET_FLOOR', floorId: floor.id })}
               className={cn(
-                "px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shrink-0",
+                "px-3 py-1.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shrink-0",
                 currentFloorId === floor.id
-                  ? "bg-orange-600 text-white shadow-xs"
-                  : "bg-white text-stone-600 hover:bg-stone-50 border border-stone-200"
+                  ? "bg-stone-900 text-white shadow-xs"
+                  : "bg-white/90 text-stone-600 hover:bg-white hover:text-stone-900 border border-stone-200/60"
               )}
             >
-              <PosIcon name={floor.icon} className="w-4 h-4 shrink-0" />
+              <PosIcon name={floor.icon} className="w-3.5 h-3.5 shrink-0" />
               <span>{floor.name}</span>
             </button>
           ))}
 
-          {/* Add Section Button (for Manager) */}
+          {/* Manager: Add Floor */}
           {isManager && (
             <button
               onClick={() => {
                 setEditingFloor(null);
                 setIsSectionModalOpen(true);
               }}
-              className="px-3 py-2 rounded-xl font-bold text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap active:scale-95 shrink-0"
+              className="p-1.5 rounded-xl bg-white/80 hover:bg-white text-stone-500 hover:text-stone-900 border border-stone-200/60 transition-colors cursor-pointer shrink-0 active:scale-95"
+              title="Yeni Bölüm Ekle"
             >
               <Plus size={15} />
-              <span>Bölüm Ekle</span>
             </button>
           )}
         </div>
 
-        {/* Current Section Actions */}
-        {currentFloor && (
-          <div className="flex items-center gap-2 shrink-0">
-            {isEditMode && (
+        {/* Live Counters & Actions */}
+        <div className="flex items-center gap-2 sm:gap-3 ml-auto shrink-0">
+          {/* Status indicators (minimalist badges, no wordy headers) */}
+          <div className="flex items-center gap-1.5 text-xs font-semibold">
+            <span 
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/60 cursor-default" 
+              title="Boş Masalar"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span className="font-bold">{totalAvailable}</span>
+            </span>
+            <span 
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-50 text-orange-800 border border-orange-200/60 cursor-default" 
+              title="Dolu Masalar"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+              <span className="font-bold">{totalOccupied}</span>
+            </span>
+            {totalPaymentWaiting > 0 && (
+              <span 
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-50 text-red-800 border border-red-200/60 animate-pulse cursor-default" 
+                title="Hesap Bekleyenler"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                <span className="font-bold">{totalPaymentWaiting}</span>
+              </span>
+            )}
+            <span 
+              className="hidden xs:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-stone-200/70 text-stone-700 cursor-default" 
+              title="Toplam Misafir Sayısı"
+            >
+              <Users size={12} className="text-stone-500" />
+              <span className="font-bold">{totalGuests}</span>
+            </span>
+            {isManager && (
+              <span 
+                className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-black text-xs shadow-2xs cursor-default" 
+                title="Canlı Ciro"
+              >
+                {formatCurrency(totalRevenue)}
+              </span>
+            )}
+          </div>
+
+          {/* Manager Quick Actions */}
+          {isManager && (
+            <div className="flex items-center gap-1.5 border-l border-stone-200/80 pl-2 sm:pl-3">
+              <button
+                onClick={() => setIsEditMode(!isEditMode)}
+                className={cn(
+                  "px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer border active:scale-95",
+                  activeEditMode
+                    ? "bg-amber-500 text-white border-amber-600 shadow-xs"
+                    : "bg-white/80 text-stone-600 hover:bg-white border-stone-200/60"
+                )}
+                title={activeEditMode ? 'Düzenlemeyi Bitir' : 'Masa Planını Düzenle'}
+              >
+                <Settings2 size={14} />
+                <span className="hidden sm:inline">{activeEditMode ? 'Bitir' : 'Düzenle'}</span>
+              </button>
+
               <button
                 onClick={() => {
-                  setEditingFloor(currentFloor);
-                  setIsSectionModalOpen(true);
+                  setEditingTable(null);
+                  setIsTableModalOpen(true);
                 }}
-                className="px-2.5 sm:px-3 py-1.5 bg-white hover:bg-stone-50 text-stone-700 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1 border border-stone-200 active:scale-95"
+                className="px-2.5 py-1.5 bg-orange-600 hover:bg-orange-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
+                title="Yeni Masa Ekle"
               >
-                <Edit2 size={13} />
-                <span className="hidden sm:inline">"{currentFloor.name}" Düzenle</span>
-                <span className="sm:hidden">Düzenle</span>
+                <Plus size={14} />
+                <span className="hidden sm:inline">Masa Ekle</span>
               </button>
-            )}
-            <button
-              onClick={() => {
-                setEditingTable(null);
-                setIsTableModalOpen(true);
-              }}
-              className="px-3 sm:px-3.5 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 active:scale-95"
-              title={`${currentFloor.name} bölümüne yeni masa ekle`}
-            >
-              <Plus size={14} />
-              <span className="hidden sm:inline">Bu Bölüme Masa Ekle</span>
-              <span className="sm:hidden">Masa Ekle</span>
-            </button>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Table Grid */}
@@ -291,72 +235,233 @@ export default function TablesPage() {
                   }
                 }}
                 className={cn(
-                  "relative flex flex-col p-3.5 sm:p-4 border-2 transition-all hover:scale-[1.01] active:scale-[0.97] shadow-2xs overflow-hidden text-left cursor-pointer group min-h-[125px] sm:min-h-[145px] focus:outline-none focus:ring-2 focus:ring-orange-500",
+                  "relative flex flex-col border-2 transition-all hover:scale-[1.01] active:scale-[0.97] shadow-2xs overflow-hidden cursor-pointer group min-h-[125px] sm:min-h-[145px] focus:outline-none focus:ring-2 focus:ring-orange-500",
                   getStatusColor(table.status),
                   getShapeClasses(table.shape),
-                  isEditMode && "hover:border-amber-500 border-dashed"
+                  activeEditMode && "hover:border-amber-500 border-dashed"
                 )}
               >
-                {/* Header info */}
-                <div className="flex justify-between items-start w-full">
-                  <span className="text-2xl sm:text-3xl font-black tracking-tight">{table.label}</span>
-                  {isEditMode ? (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditingTable(table);
-                        setIsTableModalOpen(true);
-                      }}
-                      className="p-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors cursor-pointer shadow-xs"
-                      title="Masayı Düzenle"
-                    >
-                      <Edit2 size={13} />
-                    </button>
-                  ) : (
-                    <span className={cn(
-                      "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1",
-                      getStatusBadgeColor(table.status)
-                    )}>
-                      <span className={cn(
-                        "w-1.5 h-1.5 rounded-full",
-                        table.status === 'available' ? "bg-emerald-500" :
-                        table.status === 'occupied' ? "bg-orange-500" :
-                        table.status === 'payment_waiting' ? "bg-red-500" : "bg-stone-400"
-                      )}></span>
-                      {getStatusLabel(table.status)}
-                    </span>
-                  )}
-                </div>
-                
-                {/* Occupied State or Capacity */}
-                {isOccupied && order ? (
-                  <div className="mt-auto pt-2 space-y-0.5 w-full flex flex-col items-center justify-center pb-6">
-                    <span className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">{formatCurrency(order.total)}</span>
-                    <span className="text-[11px] font-medium text-stone-600 truncate max-w-[120px]">{order.waiterName}</span>
+                {table.shape === 'round' ? (
+                  // ─── ROUND (CIRCLE) TABLE: CONCENTRIC & CENTERED ───
+                  <div className="flex flex-col items-center justify-between h-full w-full py-1 sm:py-2 text-center relative">
+                    {/* Top: Status Badge / Edit Button */}
+                    <div className="z-10 flex items-center justify-center w-full">
+                      {activeEditMode ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingTable(table);
+                            setIsTableModalOpen(true);
+                          }}
+                          className="p-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full transition-colors cursor-pointer shadow-xs"
+                          title="Masayı Düzenle"
+                        >
+                          <Edit2 size={12} />
+                        </button>
+                      ) : (
+                        <span className={cn(
+                          "text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1 max-w-[90%] truncate",
+                          getStatusBadgeColor(table.status)
+                        )}>
+                          <span className={cn(
+                            "w-1.5 h-1.5 rounded-full shrink-0",
+                            table.status === 'available' ? "bg-emerald-500" :
+                            table.status === 'occupied' ? "bg-orange-500" :
+                            table.status === 'payment_waiting' ? "bg-red-500" : "bg-stone-400"
+                          )}></span>
+                          <span className="truncate">{getStatusLabel(table.status)}</span>
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Middle: Centered Label & Order Info */}
+                    <div className="my-auto flex flex-col items-center justify-center">
+                      <span className="text-2xl sm:text-3xl font-black tracking-tight leading-none mb-0.5">
+                        {table.label}
+                      </span>
+                      {isOccupied && order ? (
+                        <>
+                          <span className="text-sm sm:text-base font-black text-stone-900 tracking-tight leading-tight">
+                            {formatCurrency(order.total)}
+                          </span>
+                          {order.waiterName && (
+                            <span className="text-[10px] text-stone-500 font-medium truncate max-w-[85px]">
+                              {order.waiterName}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-[10px] text-stone-400 font-semibold group-hover:text-emerald-700 transition-colors">
+                          {table.seats}K • <span className="font-bold">Boş</span>
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Bottom: Floating Curved Pill (matches circle arc) */}
+                    {isOccupied && !activeEditMode ? (
+                      <div className="rounded-full bg-stone-900/10 backdrop-blur-xs px-2.5 py-0.5 flex items-center gap-1.5 text-[10px] font-semibold text-stone-700">
+                        <Users className="w-2.5 h-2.5 text-stone-500" />
+                        <span>{table.guestCount || 1}</span>
+                        <span className="text-stone-300">•</span>
+                        <Clock className="w-2.5 h-2.5 text-stone-500" />
+                        <span>{table.occupiedAt ? getElapsedMinutes(new Date(table.occupiedAt)) + 'm' : '-'}</span>
+                      </div>
+                    ) : activeEditMode ? (
+                      <span className="text-[9px] font-bold text-amber-900 bg-amber-500/20 px-2 py-0.5 rounded-full">
+                        Düzenle
+                      </span>
+                    ) : (
+                      <div className="h-2" />
+                    )}
+                  </div>
+                ) : table.shape === 'rectangle' ? (
+                  // ─── RECTANGLE (WIDE) TABLE: HORIZONTAL HARMONY ───
+                  <div className="flex flex-col justify-between h-full w-full text-left">
+                    {/* Top: Label + Seats Pill + Status */}
+                    <div className="flex justify-between items-center w-full">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xl sm:text-2xl font-black tracking-tight">{table.label}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-stone-100/90 text-stone-600 font-bold border border-stone-200">
+                          {table.seats} Kişilik
+                        </span>
+                      </div>
+
+                      {activeEditMode ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingTable(table);
+                            setIsTableModalOpen(true);
+                          }}
+                          className="p-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors cursor-pointer shadow-xs"
+                          title="Masayı Düzenle"
+                        >
+                          <Edit2 size={13} />
+                        </button>
+                      ) : (
+                        <span className={cn(
+                          "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1",
+                          getStatusBadgeColor(table.status)
+                        )}>
+                          <span className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            table.status === 'available' ? "bg-emerald-500" :
+                            table.status === 'occupied' ? "bg-orange-500" :
+                            table.status === 'payment_waiting' ? "bg-red-500" : "bg-stone-400"
+                          )}></span>
+                          {getStatusLabel(table.status)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Middle: Wide Layout */}
+                    {isOccupied && order ? (
+                      <div className="my-auto py-1 flex items-baseline justify-between w-full">
+                        <div>
+                          <span className="text-lg sm:text-xl font-black text-stone-900 tracking-tight block leading-tight">
+                            {formatCurrency(order.total)}
+                          </span>
+                          <span className="text-[10px] font-medium text-stone-500 truncate max-w-[120px] block">
+                            {order.waiterName}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] font-bold text-stone-600 bg-white/80 px-2 py-0.5 rounded-md border border-stone-200/60 shadow-2xs">
+                            {order.items?.length || 0} Kalem
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="my-auto py-1 text-stone-400 text-xs font-semibold group-hover:text-emerald-700 transition-colors">
+                        Geniş Aile Masası • <span className="font-bold">Boş</span>
+                      </div>
+                    )}
+
+                    {/* Bottom: Wide Footer */}
+                    {isOccupied && !activeEditMode && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-stone-900/10 backdrop-blur-xs px-3.5 py-1.5 flex justify-between items-center text-[11px] font-semibold text-stone-700 rounded-b-2xl">
+                        <div className="flex items-center gap-1">
+                          <Users className="w-3 h-3 text-stone-500" />
+                          <span>{table.guestCount || 1} / {table.seats} kişi</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-stone-500" />
+                          <span>{table.occupiedAt ? getElapsedMinutes(new Date(table.occupiedAt)) + ' dk' : '-'}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeEditMode && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-amber-500/15 text-amber-950 text-center py-1 text-[10px] font-bold rounded-b-2xl">
+                        Düzenlemek İçin Tıkla
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <div className="mt-auto pb-5 text-stone-400 text-xs font-semibold text-center group-hover:text-emerald-700 transition-colors">
-                    {table.seats} Kişilik • <span className="font-bold">Boş</span>
-                  </div>
-                )}
+                  // ─── SQUARE TABLE: BALANCED 4-CORNER GRID ───
+                  <div className="flex flex-col justify-between h-full w-full text-left">
+                    {/* Header info */}
+                    <div className="flex justify-between items-start w-full">
+                      <span className="text-2xl sm:text-3xl font-black tracking-tight">{table.label}</span>
+                      {activeEditMode ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingTable(table);
+                            setIsTableModalOpen(true);
+                          }}
+                          className="p-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors cursor-pointer shadow-xs"
+                          title="Masayı Düzenle"
+                        >
+                          <Edit2 size={13} />
+                        </button>
+                      ) : (
+                        <span className={cn(
+                          "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1",
+                          getStatusBadgeColor(table.status)
+                        )}>
+                          <span className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            table.status === 'available' ? "bg-emerald-500" :
+                            table.status === 'occupied' ? "bg-orange-500" :
+                            table.status === 'payment_waiting' ? "bg-red-500" : "bg-stone-400"
+                          )}></span>
+                          {getStatusLabel(table.status)}
+                        </span>
+                      )}
+                    </div>
+                    
+                    {/* Occupied State or Capacity */}
+                    {isOccupied && order ? (
+                      <div className="mt-auto pt-2 space-y-0.5 w-full flex flex-col items-center justify-center pb-6">
+                        <span className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">{formatCurrency(order.total)}</span>
+                        <span className="text-[11px] font-medium text-stone-600 truncate max-w-[120px]">{order.waiterName}</span>
+                      </div>
+                    ) : (
+                      <div className="mt-auto pb-5 text-stone-400 text-xs font-semibold text-center group-hover:text-emerald-700 transition-colors">
+                        {table.seats} Kişilik • <span className="font-bold">Boş</span>
+                      </div>
+                    )}
 
-                {/* Bottom Bar info */}
-                {isOccupied && !isEditMode && (
-                   <div className="absolute bottom-0 left-0 right-0 bg-stone-900/10 backdrop-blur-xs px-3 py-1.5 flex justify-between items-center text-[11px] font-semibold text-stone-700">
-                     <div className="flex items-center gap-1">
-                        <Users className="w-3 h-3 text-stone-500" />
-                        <span>{table.guestCount || 1} kişi</span>
-                     </div>
-                     <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-stone-500" />
-                        <span>{table.occupiedAt ? getElapsedMinutes(new Date(table.occupiedAt)) + ' dk' : '-'}</span>
-                     </div>
-                   </div>
-                )}
+                    {/* Bottom Bar info */}
+                    {isOccupied && !activeEditMode && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-stone-900/10 backdrop-blur-xs px-3 py-1.5 flex justify-between items-center text-[11px] font-semibold text-stone-700 rounded-b-2xl">
+                        <div className="flex items-center gap-1">
+                          <Users className="w-3 h-3 text-stone-500" />
+                          <span>{table.guestCount || 1} kişi</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-stone-500" />
+                          <span>{table.occupiedAt ? getElapsedMinutes(new Date(table.occupiedAt)) + ' dk' : '-'}</span>
+                        </div>
+                      </div>
+                    )}
 
-                {isEditMode && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-amber-500/15 text-amber-950 text-center py-1 text-[10px] font-bold">
-                    Düzenlemek İçin Tıkla
+                    {activeEditMode && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-amber-500/15 text-amber-950 text-center py-1 text-[10px] font-bold rounded-b-2xl">
+                        Düzenlemek İçin Tıkla
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -364,7 +469,7 @@ export default function TablesPage() {
           })}
 
           {/* Quick Add Table Card inside Grid in Edit Mode */}
-          {isEditMode && (
+          {activeEditMode && (
             <button
               onClick={() => {
                 setEditingTable(null);
@@ -385,33 +490,41 @@ export default function TablesPage() {
           <div className="py-20 text-center text-stone-400 flex flex-col items-center">
             <Utensils className="w-12 h-12 text-stone-300 mb-3" />
             <h3 className="text-lg font-bold text-stone-700">Bu bölümde henüz masa bulunmuyor</h3>
-            <p className="text-xs text-stone-400 mt-1 mb-4">Yeni masalar ekleyerek salon planınızı oluşturun.</p>
-            <button
-              onClick={() => {
-                setEditingTable(null);
-                setIsTableModalOpen(true);
-              }}
-              className="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
-            >
-              <Plus size={16} />
-              <span>Bu Bölüme İlk Masayı Ekle</span>
-            </button>
+            <p className="text-xs text-stone-400 mt-1 mb-4">
+              {isManager 
+                ? 'Yeni masalar ekleyerek salon planınızı oluşturun.' 
+                : 'Bu bölüme henüz masa tanımlanmamış. Lütfen yöneticinize danışın.'}
+            </p>
+            {isManager && (
+              <button
+                onClick={() => {
+                  setEditingTable(null);
+                  setIsTableModalOpen(true);
+                }}
+                className="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
+              >
+                <Plus size={16} />
+                <span>Bu Bölüme İlk Masayı Ekle</span>
+              </button>
+            )}
           </div>
         )}
       </main>
 
-      {/* Floating Action Button (Hızlı Masa Ekle) */}
-      <button
-        onClick={() => {
-          setEditingTable(null);
-          setIsTableModalOpen(true);
-        }}
-        className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-30 bg-orange-600 hover:bg-orange-700 active:scale-90 text-white rounded-2xl p-3.5 shadow-xl shadow-orange-600/30 flex items-center gap-2 font-black text-xs transition-all cursor-pointer group"
-        title="Hızlı Masa Ekle"
-      >
-        <Plus size={20} className="group-hover:rotate-90 transition-transform duration-200" />
-        <span className="pr-1">Masa Ekle</span>
-      </button>
+      {/* Floating Action Button (Hızlı Masa Ekle - Yalnızca Yönetici) */}
+      {isManager && (
+        <button
+          onClick={() => {
+            setEditingTable(null);
+            setIsTableModalOpen(true);
+          }}
+          className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-30 bg-orange-600 hover:bg-orange-700 active:scale-90 text-white rounded-2xl p-3.5 shadow-xl shadow-orange-600/30 flex items-center gap-2 font-black text-xs transition-all cursor-pointer group"
+          title="Hızlı Masa Ekle"
+        >
+          <Plus size={20} className="group-hover:rotate-90 transition-transform duration-200" />
+          <span className="pr-1">Masa Ekle</span>
+        </button>
+      )}
 
       {/* Section / Floor Modal */}
       {isSectionModalOpen && (
