@@ -278,7 +278,7 @@ export default function OrderPage() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-full w-full bg-stone-100 overflow-hidden select-none relative">
+    <div className="flex flex-col lg:flex-row h-full w-full bg-stone-100 dark:bg-stone-950 overflow-hidden select-none relative">
       {/* Mobile Top Header (lg:hidden) */}
       <div className="lg:hidden bg-stone-900/95 backdrop-blur-xl text-white px-3.5 py-2.5 flex items-center justify-between shrink-0 shadow-sm z-20 border-b border-white/10">
         <button
@@ -309,7 +309,7 @@ export default function OrderPage() {
       </div>
 
       {/* Mobile Horizontal Category Bar (lg:hidden) */}
-      <div className="lg:hidden flex items-center gap-1.5 px-3 py-2 bg-white/80 backdrop-blur-lg border-b border-stone-200/60 overflow-x-auto no-scrollbar shrink-0 shadow-2xs">
+      <div className="lg:hidden flex items-center gap-1.5 px-3 py-2 bg-white/80 dark:bg-stone-900/90 backdrop-blur-lg border-b border-stone-200/60 dark:border-stone-800 overflow-x-auto no-scrollbar shrink-0 shadow-2xs">
         {categories.map(cat => (
           <button
             key={cat.id}
@@ -318,7 +318,7 @@ export default function OrderPage() {
               "flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 active:scale-95 cursor-pointer ios-spring",
               activeCategoryId === cat.id
                 ? "bg-orange-600 text-white shadow-xs"
-                : "bg-stone-100 text-stone-600 hover:bg-stone-200 border border-stone-200/50"
+                : "bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700 border border-stone-200/50 dark:border-stone-700/60"
             )}
           >
             <PosIcon name={cat.icon} className="w-3.5 h-3.5 shrink-0" />
@@ -332,9 +332,9 @@ export default function OrderPage() {
         <div className="p-3.5 border-b border-stone-200 dark:border-stone-800 shrink-0">
            <button 
              onClick={() => navigate('/tables')} 
-             className="flex items-center gap-2 text-stone-700 hover:text-stone-900 font-semibold text-sm px-2 py-1.5 rounded-lg hover:bg-stone-100 transition-colors w-full cursor-pointer"
+             className="flex items-center gap-2 text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white font-semibold text-sm px-2 py-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors w-full cursor-pointer"
            >
-             <ChevronLeft className="w-5 h-5 text-orange-600" />
+             <ChevronLeft className="w-5 h-5 text-orange-600 dark:text-orange-400" />
              <span>Masalara Dön</span>
            </button>
         </div>
@@ -347,7 +347,7 @@ export default function OrderPage() {
                 "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left text-sm font-semibold cursor-pointer",
                 activeCategoryId === cat.id
                   ? "bg-orange-600 text-white shadow-sm"
-                  : "text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-850"
+                  : "text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
               )}
             >
               <PosIcon name={cat.icon} className="w-5 h-5 shrink-0" />
@@ -367,12 +367,12 @@ export default function OrderPage() {
             placeholder="Hızlı ürün ara... (örn: Çay, Burger, Köfte, Latte)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-9 py-2.5 bg-white border border-stone-200 rounded-xl text-xs font-semibold placeholder:text-stone-400 text-stone-800 focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-2xs transition-all"
+            className="w-full pl-10 pr-9 py-2.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl text-xs font-semibold placeholder:text-stone-400 dark:placeholder:text-stone-500 text-stone-800 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-2xs transition-all"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-700 rounded-full cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 rounded-full cursor-pointer"
             >
               <X size={14} />
             </button>
@@ -380,27 +380,27 @@ export default function OrderPage() {
         </div>
 
         <div className="mb-3 flex justify-between items-center">
-          <h2 className="text-base sm:text-lg font-bold text-stone-800">
+          <h2 className="text-base sm:text-lg font-bold text-stone-800 dark:text-stone-100">
             {searchQuery.trim() ? `Arama Sonuçları ("${searchQuery}")` : (categories.find(c => c.id === activeCategoryId)?.name || 'Menü')}
           </h2>
-          <span className="text-xs text-stone-500 font-medium">{menuItems.length} ürün</span>
+          <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">{menuItems.length} ürün</span>
         </div>
 
         {menuItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-2xl border border-stone-200 p-4 sm:p-6 shadow-xs">
-            <div className="w-14 h-14 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mb-3">
+          <div className="flex flex-col items-center justify-center py-16 text-center bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 sm:p-6 shadow-xs">
+            <div className="w-14 h-14 bg-orange-100 dark:bg-stone-800 text-orange-600 dark:text-orange-400 rounded-2xl flex items-center justify-center mb-3">
               <Utensils size={28} />
             </div>
-            <h3 className="text-base font-bold text-stone-800 mb-1">
+            <h3 className="text-base font-bold text-stone-800 dark:text-stone-100 mb-1">
               {searchQuery ? 'Aramanıza uygun ürün bulunamadı' : 'Bu kategoride ürün bulunamadı'}
             </h3>
-            <p className="text-xs text-stone-400 mb-4 max-w-sm">
+            <p className="text-xs text-stone-400 dark:text-stone-500 mb-4 max-w-sm">
               {searchQuery ? 'Farklı bir arama terimi deneyin veya aramayı temizleyin.' : 'Wot\'s Cafe standart restoran menüsünü tek tıkla yükleyebilirsiniz.'}
             </p>
             {searchQuery ? (
               <button
                 onClick={() => setSearchQuery('')}
-                className="bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-bold px-4 py-2 rounded-xl cursor-pointer"
+                className="bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-xs font-bold px-4 py-2 rounded-xl cursor-pointer"
               >
                 Aramayı Temizle
               </button>
@@ -431,7 +431,7 @@ export default function OrderPage() {
                 )}
               >
                 <div className="flex-1">
-                  <h3 className="font-bold text-stone-900 text-sm sm:text-base leading-snug group-hover:text-orange-600 transition-colors">
+                  <h3 className="font-bold text-stone-900 dark:text-stone-100 text-sm sm:text-base leading-snug group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
                     {item.name}
                   </h3>
                   {item.description && (
@@ -440,17 +440,17 @@ export default function OrderPage() {
                     </p>
                   )}
                 </div>
-                <div className="flex justify-between items-center mt-2.5 w-full pt-2 border-t border-stone-100">
-                  <span className="font-black text-orange-600 text-base sm:text-lg tracking-tight">
+                <div className="flex justify-between items-center mt-2.5 w-full pt-2 border-t border-stone-100 dark:border-stone-800">
+                  <span className="font-black text-orange-600 dark:text-orange-400 text-base sm:text-lg tracking-tight">
                     {formatCurrency(item.price)}
                   </span>
                   
                   {item.available ? (
-                    <div className="w-7 h-7 rounded-full bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white flex items-center justify-center transition-colors shadow-2xs">
+                    <div className="w-7 h-7 rounded-full bg-orange-50 dark:bg-stone-800 text-orange-600 dark:text-orange-400 group-hover:bg-orange-600 group-hover:text-white flex items-center justify-center transition-colors shadow-2xs">
                       <Plus size={14} />
                     </div>
                   ) : (
-                    <span className="text-[9px] sm:text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">
+                    <span className="text-[9px] sm:text-[10px] bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full font-bold">
                       Tükendi
                     </span>
                   )}
@@ -548,50 +548,52 @@ export default function OrderPage() {
                       key={item.id}
                       className={cn(
                         "flex flex-col p-3 rounded-2xl border transition-all",
-                        isSent ? "bg-stone-50 border-stone-200" : "bg-orange-50/40 border-orange-200"
+                        isSent 
+                          ? "bg-stone-50 dark:bg-stone-850/60 border-stone-200 dark:border-stone-800" 
+                          : "bg-orange-50/40 dark:bg-stone-850/80 border-orange-200 dark:border-stone-750"
                       )}
                     >
                       <div className="flex justify-between items-start">
                         <div className="flex-1 pr-2">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-stone-900 text-sm">{item.name}</span>
+                            <span className="font-bold text-stone-900 dark:text-stone-100 text-sm">{item.name}</span>
                             {isSent && (
-                              <span className="text-[10px] bg-stone-200 text-stone-700 px-1.5 py-0.5 rounded-full font-semibold">
+                              <span className="text-[10px] bg-stone-200 dark:bg-stone-750 text-stone-700 dark:text-stone-300 px-1.5 py-0.5 rounded-full font-semibold">
                                 İletildi
                               </span>
                             )}
                           </div>
                           {item.modifiers && item.modifiers.length > 0 && (
-                            <p className="text-xs text-stone-500 mt-0.5">
+                            <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
                               {item.modifiers.map(m => `+${m.name}`).join(', ')}
                             </p>
                           )}
                         </div>
-                        <span className="font-extrabold text-stone-900 text-sm whitespace-nowrap">
+                        <span className="font-extrabold text-stone-900 dark:text-stone-100 text-sm whitespace-nowrap">
                           {formatCurrency(lineTotal)}
                         </span>
                       </div>
 
                       {!isSent && (
-                        <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-orange-100">
-                          <div className="flex items-center bg-white rounded-xl border border-stone-200 shadow-2xs">
+                        <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-orange-100 dark:border-stone-800">
+                          <div className="flex items-center bg-white dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 shadow-2xs">
                             <button
                               onClick={() => updateItemQuantity(item.id, -1)}
-                              className="p-2 text-stone-600 hover:text-stone-900 active:bg-stone-100 rounded-l-xl cursor-pointer"
+                              className="p-2 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white active:bg-stone-100 dark:active:bg-stone-700 rounded-l-xl cursor-pointer"
                             >
                               <Minus className="w-4 h-4" />
                             </button>
-                            <span className="w-8 text-center font-bold text-sm text-stone-800">{item.quantity}</span>
+                            <span className="w-8 text-center font-bold text-sm text-stone-800 dark:text-stone-100">{item.quantity}</span>
                             <button
                               onClick={() => updateItemQuantity(item.id, 1)}
-                              className="p-2 text-stone-600 hover:text-stone-900 active:bg-stone-100 rounded-r-xl cursor-pointer"
+                              className="p-2 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white active:bg-stone-100 dark:active:bg-stone-700 rounded-r-xl cursor-pointer"
                             >
                               <Plus className="w-4 h-4" />
                             </button>
                           </div>
                           <button
                             onClick={() => removeItem(item.id)}
-                            className="p-2 text-red-500 hover:bg-red-50 active:bg-red-100 rounded-xl transition-colors cursor-pointer"
+                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 active:bg-red-100 rounded-xl transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -604,18 +606,18 @@ export default function OrderPage() {
             </div>
 
             {/* Sheet Footer */}
-            <div className="p-4 bg-stone-50 border-t border-stone-200 flex flex-col gap-3 shrink-0">
+            <div className="p-4 bg-stone-50 dark:bg-stone-950 border-t border-stone-200 dark:border-stone-800 flex flex-col gap-3 shrink-0">
               <input
                 type="text"
                 placeholder="Mutfak için sipariş notu..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full text-xs p-3 bg-white border border-stone-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full text-xs p-3 bg-white dark:bg-stone-850 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
 
               <div className="flex justify-between items-center py-1">
-                <span className="text-sm font-semibold text-stone-500">Toplam Tutar</span>
-                <span className="text-2xl font-black text-stone-900">{formatCurrency(total)}</span>
+                <span className="text-sm font-semibold text-stone-500 dark:text-stone-400">Toplam Tutar</span>
+                <span className="text-2xl font-black text-stone-900 dark:text-stone-100">{formatCurrency(total)}</span>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
@@ -624,7 +626,7 @@ export default function OrderPage() {
                     handleSave();
                     setIsMobileTicketOpen(false);
                   }}
-                  className="py-3 px-2 rounded-2xl font-bold text-xs bg-stone-200 text-stone-700 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer ios-spring"
+                  className="py-3 px-2 rounded-2xl font-bold text-xs bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-750 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer ios-spring"
                 >
                   <Save className="w-4 h-4" />
                   KAYDET
@@ -701,44 +703,44 @@ export default function OrderPage() {
                   <div className="flex justify-between items-start">
                     <div className="flex-1 pr-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-stone-900 text-sm">{item.name}</span>
+                        <span className="font-bold text-stone-900 dark:text-stone-100 text-sm">{item.name}</span>
                         {isSent && (
-                          <span className="text-[10px] bg-stone-200 text-stone-700 px-1.5 py-0.5 rounded font-semibold">
+                          <span className="text-[10px] bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 px-1.5 py-0.5 rounded font-semibold">
                             İletildi
                           </span>
                         )}
                       </div>
                       {item.modifiers && item.modifiers.length > 0 && (
-                        <p className="text-xs text-stone-500 mt-0.5">
+                        <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
                           {item.modifiers.map(m => `+${m.name}`).join(', ')}
                         </p>
                       )}
                     </div>
-                    <span className="font-bold text-stone-900 text-sm whitespace-nowrap">
+                    <span className="font-bold text-stone-900 dark:text-stone-100 text-sm whitespace-nowrap">
                       {formatCurrency(lineTotal)}
                     </span>
                   </div>
                   
                   {!isSent && (
-                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-orange-100">
-                      <div className="flex items-center bg-white rounded-lg border border-stone-200 shadow-2xs">
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-orange-100 dark:border-stone-800">
+                      <div className="flex items-center bg-white dark:bg-stone-800 rounded-lg border border-stone-200 dark:border-stone-700 shadow-2xs">
                         <button 
                           onClick={() => updateItemQuantity(item.id, -1)} 
-                          className="p-1.5 text-stone-600 hover:text-stone-900 active:bg-stone-100 rounded-l-lg"
+                          className="p-1.5 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 active:bg-stone-100 dark:active:bg-stone-700 rounded-l-lg cursor-pointer"
                         >
                           <Minus className="w-3.5 h-3.5" />
                         </button>
-                        <span className="w-7 text-center font-bold text-sm text-stone-800">{item.quantity}</span>
+                        <span className="w-7 text-center font-bold text-sm text-stone-800 dark:text-stone-100">{item.quantity}</span>
                         <button 
                           onClick={() => updateItemQuantity(item.id, 1)} 
-                          className="p-1.5 text-stone-600 hover:text-stone-900 active:bg-stone-100 rounded-r-lg"
+                          className="p-1.5 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 active:bg-stone-100 dark:active:bg-stone-700 rounded-r-lg cursor-pointer"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
                       </div>
                       <button 
                         onClick={() => removeItem(item.id)} 
-                        className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -751,24 +753,24 @@ export default function OrderPage() {
         </div>
 
         {/* Action / Checkout footer */}
-        <div className="p-4 bg-stone-50 border-t border-stone-200 flex flex-col gap-3 shrink-0">
+        <div className="p-4 bg-stone-50 dark:bg-stone-950 border-t border-stone-200 dark:border-stone-800 flex flex-col gap-3 shrink-0">
           <input
             type="text"
             placeholder="Mutfak için sipariş notu..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full text-xs p-2.5 bg-white border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full text-xs p-2.5 bg-white dark:bg-stone-850 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
           
           <div className="flex justify-between items-center py-1">
-            <span className="text-sm font-semibold text-stone-500">Toplam Tutar</span>
-            <span className="text-2xl font-black text-stone-900">{formatCurrency(total)}</span>
+            <span className="text-sm font-semibold text-stone-500 dark:text-stone-400">Toplam Tutar</span>
+            <span className="text-2xl font-black text-stone-900 dark:text-stone-100">{formatCurrency(total)}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <button 
               onClick={handleSave} 
-              className="py-3 px-2 rounded-xl font-bold text-xs bg-stone-200 text-stone-700 hover:bg-stone-300 active:bg-stone-400 flex items-center justify-center gap-1.5 cursor-pointer"
+              className="py-3 px-2 rounded-xl font-bold text-xs bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700 active:bg-stone-400 flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Save className="w-4 h-4" />
               KAYDET

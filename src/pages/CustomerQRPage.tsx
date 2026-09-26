@@ -86,36 +86,36 @@ export default function CustomerQRPage() {
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => handleCall('Garson Çağrıldı')}
-            className="p-3 bg-white hover:bg-orange-50 active:bg-orange-100 border border-stone-200 rounded-2xl flex flex-col items-center gap-1 shadow-xs transition-colors cursor-pointer"
+            className="p-3 bg-white dark:bg-stone-900 hover:bg-orange-50 dark:hover:bg-stone-850 active:bg-orange-100 border border-stone-200 dark:border-stone-800 rounded-2xl flex flex-col items-center gap-1 shadow-xs transition-colors cursor-pointer"
           >
-            <Bell size={20} className="text-orange-600" />
-            <span className="text-[11px] font-bold text-stone-700">Garson Çağır</span>
+            <Bell size={20} className="text-orange-600 dark:text-orange-400" />
+            <span className="text-[11px] font-bold text-stone-700 dark:text-stone-300">Garson Çağır</span>
           </button>
           <button
             onClick={() => handleCall('Hesap İstendi')}
-            className="p-3 bg-white hover:bg-emerald-50 active:bg-emerald-100 border border-stone-200 rounded-2xl flex flex-col items-center gap-1 shadow-xs transition-colors cursor-pointer"
+            className="p-3 bg-white dark:bg-stone-900 hover:bg-emerald-50 dark:hover:bg-stone-850 active:bg-emerald-100 border border-stone-200 dark:border-stone-800 rounded-2xl flex flex-col items-center gap-1 shadow-xs transition-colors cursor-pointer"
           >
-            <Receipt size={20} className="text-emerald-600" />
-            <span className="text-[11px] font-bold text-stone-700">Hesap İste</span>
+            <Receipt size={20} className="text-emerald-600 dark:text-emerald-400" />
+            <span className="text-[11px] font-bold text-stone-700 dark:text-stone-300">Hesap İste</span>
           </button>
           <button
             onClick={() => handleCall('Su İstendi')}
-            className="p-3 bg-white hover:bg-sky-50 active:bg-sky-100 border border-stone-200 rounded-2xl flex flex-col items-center gap-1 shadow-xs transition-colors cursor-pointer"
+            className="p-3 bg-white dark:bg-stone-900 hover:bg-sky-50 dark:hover:bg-stone-850 active:bg-sky-100 border border-stone-200 dark:border-stone-800 rounded-2xl flex flex-col items-center gap-1 shadow-xs transition-colors cursor-pointer"
           >
-            <Droplets size={20} className="text-sky-600" />
-            <span className="text-[11px] font-bold text-stone-700">Su İste</span>
+            <Droplets size={20} className="text-sky-600 dark:text-sky-400" />
+            <span className="text-[11px] font-bold text-stone-700 dark:text-stone-300">Su İste</span>
           </button>
         </div>
 
         {/* Search */}
         <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500" />
           <input
             type="text"
             placeholder="Lezzet ara (örn: burger, latte, cheesecake)..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 text-xs bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-2xs"
+            className="w-full pl-9 pr-4 py-2.5 text-xs bg-white dark:bg-stone-850 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-2xs"
           />
         </div>
 
@@ -125,7 +125,9 @@ export default function CustomerQRPage() {
             onClick={() => setActiveCategoryId('')}
             className={cn(
               "px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer",
-              !activeCategoryId ? "bg-orange-600 text-white shadow-xs" : "bg-white text-stone-600 border border-stone-200"
+              !activeCategoryId 
+                ? "bg-orange-600 text-white shadow-xs" 
+                : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800"
             )}
           >
             Tümü
@@ -136,7 +138,9 @@ export default function CustomerQRPage() {
               onClick={() => setActiveCategoryId(cat.id)}
               className={cn(
                 "px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer",
-                activeCategoryId === cat.id ? "bg-orange-600 text-white shadow-xs" : "bg-white text-stone-600 border border-stone-200"
+                activeCategoryId === cat.id 
+                  ? "bg-orange-600 text-white shadow-xs" 
+                  : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800"
               )}
             >
               <PosIcon name={cat.icon} className="w-3.5 h-3.5 shrink-0" />
@@ -148,11 +152,11 @@ export default function CustomerQRPage() {
         {/* Product Feed */}
         <div className="space-y-3 pt-2">
           {filteredItems.map(item => (
-            <div key={item.id} className="bg-white p-4 rounded-2xl border border-stone-200 shadow-xs flex justify-between items-center gap-3">
+            <div key={item.id} className="bg-white dark:bg-stone-900 p-4 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-xs flex justify-between items-center gap-3">
               <div className="flex-1">
-                <h3 className="font-bold text-sm text-stone-900">{item.name}</h3>
-                <p className="text-xs text-stone-400 mt-0.5 line-clamp-2">{item.description}</p>
-                <span className="text-base font-extrabold text-orange-600 mt-1 block">
+                <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100">{item.name}</h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 line-clamp-2">{item.description}</p>
+                <span className="text-base font-extrabold text-orange-600 dark:text-orange-400 mt-1 block">
                   {formatCurrency(item.price)}
                 </span>
               </div>
@@ -173,7 +177,7 @@ export default function CustomerQRPage() {
         <div className="fixed bottom-4 left-4 right-4 max-w-md mx-auto z-40">
           <button
             onClick={() => setIsCartOpen(true)}
-            className="w-full bg-stone-900 text-white p-4 rounded-2xl shadow-xl flex justify-between items-center border border-stone-700 cursor-pointer"
+            className="w-full bg-stone-900 dark:bg-stone-800 text-white p-4 rounded-2xl shadow-xl flex justify-between items-center border border-stone-700 dark:border-stone-700 cursor-pointer"
           >
             <div className="flex items-center gap-2">
               <div className="bg-orange-600 w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs">
@@ -189,27 +193,27 @@ export default function CustomerQRPage() {
       {/* Cart Drawer */}
       {isCartOpen && (
         <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs flex justify-end z-50">
-          <div className="bg-white w-full max-w-md h-full flex flex-col p-5 shadow-2xl">
-            <div className="flex justify-between items-center pb-4 border-b border-stone-200">
-              <h2 className="text-lg font-black text-stone-900">Masa {table?.label || '12'} Siparişi</h2>
-              <button onClick={() => setIsCartOpen(false)} className="text-stone-400 hover:text-stone-600 text-sm font-bold">
+          <div className="bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 w-full max-w-md h-full flex flex-col p-5 shadow-2xl border-l border-stone-200 dark:border-stone-800">
+            <div className="flex justify-between items-center pb-4 border-b border-stone-200 dark:border-stone-800">
+              <h2 className="text-lg font-black text-stone-900 dark:text-stone-100">Masa {table?.label || '12'} Siparişi</h2>
+              <button onClick={() => setIsCartOpen(false)} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 text-sm font-bold cursor-pointer">
                 Kapat
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto py-4 space-y-3">
               {cart.map(c => (
-                <div key={c.item.id} className="flex justify-between items-center p-3 bg-stone-50 rounded-xl border border-stone-200">
+                <div key={c.item.id} className="flex justify-between items-center p-3 bg-stone-50 dark:bg-stone-950 rounded-xl border border-stone-200 dark:border-stone-800">
                   <div>
-                    <h4 className="font-bold text-xs text-stone-800">{c.item.name}</h4>
-                    <span className="text-xs text-orange-600 font-bold">{formatCurrency(c.item.price)}</span>
+                    <h4 className="font-bold text-xs text-stone-800 dark:text-stone-200">{c.item.name}</h4>
+                    <span className="text-xs text-orange-600 dark:text-orange-400 font-bold">{formatCurrency(c.item.price)}</span>
                   </div>
-                  <div className="flex items-center gap-2 bg-white px-2 py-1 rounded-lg border border-stone-200">
-                    <button onClick={() => updateCartQty(c.item.id, -1)} className="text-stone-600 p-1">
+                  <div className="flex items-center gap-2 bg-white dark:bg-stone-800 px-2 py-1 rounded-lg border border-stone-200 dark:border-stone-700">
+                    <button onClick={() => updateCartQty(c.item.id, -1)} className="text-stone-600 dark:text-stone-300 p-1 cursor-pointer">
                       <Minus size={14} />
                     </button>
-                    <span className="font-bold text-xs">{c.quantity}</span>
-                    <button onClick={() => updateCartQty(c.item.id, 1)} className="text-stone-600 p-1">
+                    <span className="font-bold text-xs text-stone-900 dark:text-stone-100">{c.quantity}</span>
+                    <button onClick={() => updateCartQty(c.item.id, 1)} className="text-stone-600 dark:text-stone-300 p-1 cursor-pointer">
                       <Plus size={14} />
                     </button>
                   </div>
@@ -217,10 +221,10 @@ export default function CustomerQRPage() {
               ))}
             </div>
 
-            <div className="pt-4 border-t border-stone-200 space-y-3">
-              <div className="flex justify-between text-base font-bold">
+            <div className="pt-4 border-t border-stone-200 dark:border-stone-800 space-y-3">
+              <div className="flex justify-between text-base font-bold text-stone-900 dark:text-stone-100">
                 <span>Toplam</span>
-                <span className="text-xl font-black text-orange-600">{formatCurrency(cartTotal)}</span>
+                <span className="text-xl font-black text-orange-600 dark:text-orange-400">{formatCurrency(cartTotal)}</span>
               </div>
               <button
                 onClick={() => {

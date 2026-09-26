@@ -59,38 +59,38 @@ export default function Layout() {
   }, [location.pathname]);
 
   const allNavItems: NavItem[] = [
-    // Garson & Yetkili
-    { path: '/tables', label: 'Masa Planı', icon: Grid2X2, roles: ['waiter', 'owner', 'manager'] },
+    // Garson, Kasiyer & Yetkili
+    { path: '/tables', label: 'Masa Planı', icon: Grid2X2, roles: ['waiter', 'cashier', 'owner', 'manager'] },
     
-    // Mutfak & Yetkili
-    { path: '/kitchen', label: 'Mutfak Ekranı (KDS)', icon: ChefHat, roles: ['kitchen', 'owner', 'manager'] },
+    // Mutfak, Bar & Yetkili
+    { path: '/kitchen', label: 'Mutfak Ekranı (KDS)', icon: ChefHat, roles: ['kitchen', 'bar', 'owner', 'manager'] },
 
     // Yalnızca Yetkili / Patron
     { path: '/dashboard', label: 'Yönetim Dashboard', icon: LayoutDashboard, roles: ['owner', 'manager'] },
     { path: '/reports', label: 'Finansal Raporlar', icon: BarChart3, roles: ['owner', 'manager'] },
     { path: '/menu', label: 'Menü Yönetimi', icon: MenuSquare, roles: ['owner', 'manager'] },
-    { path: '/inventory', label: 'Stok & Reçeteler', icon: PackageSearch, roles: ['kitchen', 'owner', 'manager'] },
+    { path: '/inventory', label: 'Stok & Reçeteler', icon: PackageSearch, roles: ['kitchen', 'bar', 'owner', 'manager'] },
     { path: '/staff', label: 'Personel & PIN', icon: Users, roles: ['owner', 'manager'] },
     { path: '/customers', label: 'Müşteri CRM', icon: UserCircle, roles: ['owner', 'manager'] },
-    { path: '/reservations', label: 'Rezervasyonlar', icon: CalendarClock, roles: ['waiter', 'owner', 'manager'] },
+    { path: '/reservations', label: 'Rezervasyonlar', icon: CalendarClock, roles: ['waiter', 'cashier', 'owner', 'manager'] },
     { path: '/online-orders', label: 'Online Paket Sipariş', icon: Globe, roles: ['owner', 'manager'] },
     { path: '/audit', label: 'Denetim Günlüğü', icon: History, roles: ['owner', 'manager'] },
     { path: '/settings', label: 'Sistem Ayarları', icon: Settings, roles: ['owner', 'manager'] },
 
     // Ortak Yardımcı
-    { path: '/qr/t-2', label: 'Müşteri QR Menü', icon: Smartphone, roles: ['waiter', 'owner', 'manager'] },
+    { path: '/qr/t-2', label: 'Müşteri QR Menü', icon: Smartphone, roles: ['waiter', 'cashier', 'kitchen', 'bar', 'owner', 'manager'] },
   ];
 
   // Mobile Bottom Navigation Shortcuts
   const getMobileBottomNav = () => {
-    if (user.role === 'waiter') {
+    if (user.role === 'waiter' || user.role === 'cashier') {
       return [
         { path: '/tables', label: 'Masalar', icon: Grid2X2 },
         { path: '/reservations', label: 'Rezervasyon', icon: CalendarClock },
         { path: '/qr/t-2', label: 'QR Menü', icon: Smartphone },
       ];
     }
-    if (user.role === 'kitchen') {
+    if (user.role === 'kitchen' || user.role === 'bar') {
       return [
         { path: '/kitchen', label: 'Mutfak', icon: ChefHat },
         { path: '/inventory', label: 'Stok', icon: PackageSearch },
@@ -114,9 +114,9 @@ export default function Layout() {
   const isAuthorized = () => {
     const currentPath = location.pathname;
     
-    // Order pages accessible to waiter and owner
+    // Order pages accessible to waiter, cashier and owner
     if (currentPath.startsWith('/order/')) {
-      return user.role === 'waiter' || user.role === 'owner' || user.role === 'manager';
+      return user.role === 'waiter' || user.role === 'cashier' || user.role === 'owner' || user.role === 'manager';
     }
     
     const matchedItem = allNavItems.find(item => item.path === currentPath);
@@ -127,8 +127,8 @@ export default function Layout() {
   // Redirect if unauthorized for current role
   useEffect(() => {
     if (!isAuthorized()) {
-      if (user.role === 'waiter') navigate('/tables', { replace: true });
-      else if (user.role === 'kitchen') navigate('/kitchen', { replace: true });
+      if (user.role === 'waiter' || user.role === 'cashier') navigate('/tables', { replace: true });
+      else if (user.role === 'kitchen' || user.role === 'bar') navigate('/kitchen', { replace: true });
       else navigate('/dashboard', { replace: true });
     }
   }, [user.role, location.pathname]);
@@ -247,12 +247,12 @@ export default function Layout() {
         </div>
 
         {/* Mode Switcher Footer */}
-        <div className="p-3 border-t border-stone-200 shrink-0 bg-stone-50">
+        <div className="p-3 border-t border-stone-200 dark:border-stone-800 shrink-0 bg-stone-50 dark:bg-stone-950">
           {sidebarOpen ? (
             <div className="space-y-2">
               {isManager && (
                 <>
-                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                  <span className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider block">
                     Yetki / Mod Değiştir:
                   </span>
                   <div className="grid grid-cols-3 gap-1.5">
@@ -262,7 +262,7 @@ export default function Layout() {
                         "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 min-h-[44px]",
                         user.role === 'waiter'
                           ? "bg-orange-600 text-white border-orange-600 shadow-xs"
-                          : "bg-white text-stone-700 border-stone-200 hover:bg-stone-100"
+                          : "bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850"
                       )}
                     >
                       <UtensilsCrossed size={14} />
@@ -274,7 +274,7 @@ export default function Layout() {
                         "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 min-h-[44px]",
                         user.role === 'kitchen'
                           ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                          : "bg-white text-stone-700 border-stone-200 hover:bg-stone-100"
+                          : "bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850"
                       )}
                     >
                       <ChefHat size={14} />
@@ -285,8 +285,8 @@ export default function Layout() {
                       className={cn(
                         "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 min-h-[44px]",
                         user.role === 'owner'
-                          ? "bg-stone-900 text-white border-stone-900 shadow-xs"
-                          : "bg-white text-stone-700 border-stone-200 hover:bg-stone-100"
+                          ? "bg-stone-900 dark:bg-stone-800 text-white border-stone-900 dark:border-stone-700 shadow-xs"
+                          : "bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850"
                       )}
                     >
                       <ShieldCheck size={14} />
@@ -298,7 +298,7 @@ export default function Layout() {
 
               <button
                 onClick={() => navigate('/')}
-                className="w-full mt-1 py-2.5 bg-stone-200 hover:bg-stone-300 text-stone-700 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 min-h-[40px]"
+                className="w-full mt-1 py-2.5 bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 min-h-[40px]"
               >
                 <LogOut size={14} />
                 <span>Giriş Ekranına Dön</span>
@@ -515,7 +515,7 @@ export default function Layout() {
 
             {/* Current user avatar (compact, tooltip instead of wordy text) */}
             <div 
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 flex items-center justify-center font-bold text-xs shadow-2xs cursor-default select-none border border-stone-300/40 dark:border-stone-700"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs cursor-default select-none border border-orange-500/40"
               title={`${user.name} (${user.role === 'waiter' ? 'Garson' : user.role === 'kitchen' ? 'Mutfak' : 'Yönetici'})`}
             >
               {user.name.split(' ').map(n => n[0]).join('')}

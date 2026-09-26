@@ -160,8 +160,8 @@ export default function InventoryPage() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col dark:bg-stone-950 dark:text-stone-100">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 tracking-tight">Hammadde Stok & Reçeteler</h1>
-          <p className="text-stone-500 text-sm mt-1">Depo seviyeleri, reçete birim maliyeti ve brüt kâr analizi</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 dark:text-stone-100 tracking-tight">Hammadde Stok & Reçeteler</h1>
+          <p className="text-stone-500 dark:text-stone-400 text-sm mt-1">Depo seviyeleri, reçete birim maliyeti ve brüt kâr analizi</p>
         </div>
         <button 
           onClick={() => activeTab === 'STOCK' ? setIsAddItemModalOpen(true) : openAddRecipeModal()}
@@ -177,7 +177,9 @@ export default function InventoryPage() {
           onClick={() => setActiveTab('STOCK')}
           className={cn(
             "px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors cursor-pointer",
-            activeTab === 'STOCK' ? "bg-stone-900 text-white shadow-sm" : "bg-white text-stone-600 hover:bg-stone-50 border border-stone-200"
+            activeTab === 'STOCK' 
+              ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-sm" 
+              : "bg-white dark:bg-stone-850 text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-700"
           )}
         >
           <Package size={18} />
@@ -187,7 +189,9 @@ export default function InventoryPage() {
           onClick={() => setActiveTab('RECIPES')}
           className={cn(
             "px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors cursor-pointer",
-            activeTab === 'RECIPES' ? "bg-stone-900 text-white shadow-sm" : "bg-white text-stone-600 hover:bg-stone-50 border border-stone-200"
+            activeTab === 'RECIPES' 
+              ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-sm" 
+              : "bg-white dark:bg-stone-850 text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-700"
           )}
         >
           <BookOpen size={18} />
@@ -199,7 +203,7 @@ export default function InventoryPage() {
         {activeTab === 'STOCK' ? (
           <div className="overflow-x-auto h-full">
             <table className="w-full text-left border-collapse">
-              <thead className="bg-stone-50 text-xs uppercase tracking-wider font-bold text-stone-500 border-b border-stone-200 sticky top-0">
+              <thead className="bg-stone-50 dark:bg-stone-950/80 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-300 border-b border-stone-200 dark:border-stone-800 sticky top-0">
                 <tr>
                   <th className="py-3 sm:py-3.5 px-3 sm:px-6">Hammadde Malzeme</th>
                   <th className="py-3 sm:py-3.5 px-3 sm:px-6">Mevcut Miktar</th>
@@ -210,16 +214,16 @@ export default function InventoryPage() {
                   <th className="py-3 sm:py-3.5 px-3 sm:px-6 text-right">İşlemler</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100 text-sm">
+              <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-sm">
                 {inventoryItems.map((item: InventoryItem) => {
                   const isLow = item.currentStock <= item.minimumStock;
                   return (
-                    <tr key={item.id} className="hover:bg-stone-50/70 transition-colors">
-                      <td className="py-3 sm:py-4 px-3 sm:px-6 font-bold text-stone-800">
+                    <tr key={item.id} className="hover:bg-stone-50/70 dark:hover:bg-stone-800/50 transition-colors">
+                      <td className="py-3 sm:py-4 px-3 sm:px-6 font-bold text-stone-800 dark:text-stone-100">
                         <div className="flex items-center gap-2">
                           {item.name}
                           {isLow && (
-                            <span className="flex items-center gap-1 text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md">
+                            <span className="flex items-center gap-1 text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-900/60 px-2 py-0.5 rounded-md">
                               <AlertTriangle size={12} />
                               Kritik
                             </span>
@@ -228,32 +232,34 @@ export default function InventoryPage() {
                       </td>
                       <td className="py-3 sm:py-4 px-3 sm:px-6">
                         <span className={cn(
-                          "font-mono font-bold px-3 py-1 rounded-lg text-sm",
-                          isLow ? "bg-red-100 text-red-700" : "bg-stone-100 text-stone-800"
+                          "font-mono font-bold px-3 py-1 rounded-lg text-sm border",
+                          isLow 
+                            ? "bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900" 
+                            : "bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200 border-stone-200 dark:border-stone-700"
                         )}>
                           {item.currentStock} {item.unit}
                         </span>
                       </td>
-                      <td className="py-3 sm:py-4 px-3 sm:px-6 text-stone-500 font-mono text-xs">
+                      <td className="py-3 sm:py-4 px-3 sm:px-6 text-stone-500 dark:text-stone-400 font-mono text-xs">
                         Min. {item.minimumStock} {item.unit}
                       </td>
-                      <td className="py-3 sm:py-4 px-3 sm:px-6 font-bold text-stone-900">
+                      <td className="py-3 sm:py-4 px-3 sm:px-6 font-bold text-stone-900 dark:text-stone-100">
                         {formatCurrency(item.purchaseCost)} / {item.unit}
                       </td>
-                      <td className="py-3 sm:py-4 px-3 sm:px-6 text-stone-600 font-medium">{item.supplier || '-'}</td>
+                      <td className="py-3 sm:py-4 px-3 sm:px-6 text-stone-600 dark:text-stone-300 font-medium">{item.supplier || '-'}</td>
                       <td className="py-3 sm:py-4 px-3 sm:px-6 text-center">
                         <div className="flex justify-center items-center gap-1.5 text-stone-400">
                           <button 
                             onClick={() => handleStockAdjust(item.id, item.currentStock, -1)} 
-                            className="p-1 hover:text-red-500 active:bg-stone-100 rounded-md transition-colors cursor-pointer"
+                            className="p-1 hover:text-red-500 active:bg-stone-100 dark:active:bg-stone-800 rounded-md transition-colors cursor-pointer"
                             title="1 Azalt"
                           >
                             <MinusCircle size={22} />
                           </button>
-                          <span className="text-xs font-mono font-bold text-stone-700 px-1">±1</span>
+                          <span className="text-xs font-mono font-bold text-stone-700 dark:text-stone-300 px-1">±1</span>
                           <button 
                             onClick={() => handleStockAdjust(item.id, item.currentStock, 1)} 
-                            className="p-1 hover:text-emerald-500 active:bg-stone-100 rounded-md transition-colors cursor-pointer"
+                            className="p-1 hover:text-emerald-500 active:bg-stone-100 dark:active:bg-stone-800 rounded-md transition-colors cursor-pointer"
                             title="1 Ekle"
                           >
                             <PlusCircle size={22} />
@@ -263,7 +269,7 @@ export default function InventoryPage() {
                       <td className="py-3 sm:py-4 px-3 sm:px-6 text-right">
                         <button 
                           onClick={() => handleDeleteItem(item)}
-                          className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-stone-800 rounded-lg transition-colors cursor-pointer"
                           title="Malzemeyi Sil"
                         >
                           <Trash2 size={16} />
@@ -274,7 +280,7 @@ export default function InventoryPage() {
                 })}
                 {inventoryItems.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-stone-400">
+                    <td colSpan={7} className="py-12 text-center text-stone-400 dark:text-stone-500">
                       Depoda henüz hammadde malzemesi tanımlı değil.
                     </td>
                   </tr>
@@ -291,13 +297,13 @@ export default function InventoryPage() {
               const marginPercent = sellingPrice > 0 ? (margin / sellingPrice) * 100 : 0;
               
               return (
-                <div key={recipe.id} className="border border-stone-200 rounded-2xl p-5 hover:border-orange-300 transition-all bg-white shadow-xs flex flex-col justify-between">
+                <div key={recipe.id} className="border border-stone-200 dark:border-stone-800 rounded-2xl p-5 hover:border-orange-300 dark:hover:border-stone-700 transition-all bg-white dark:bg-stone-900 shadow-xs flex flex-col justify-between">
                   <div>
-                    <h3 className="text-base font-black text-stone-800 mb-3 pb-3 border-b border-stone-100 flex items-center justify-between">
+                    <h3 className="text-base font-black text-stone-800 dark:text-stone-100 mb-3 pb-3 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between">
                       <span>{recipe.menuItemName}</span>
                       <button
                         onClick={() => handleDeleteRecipe(recipe)}
-                        className="text-stone-300 hover:text-red-600 p-1 rounded-md"
+                        className="text-stone-300 dark:text-stone-600 hover:text-red-600 dark:hover:text-red-400 p-1 rounded-md"
                         title="Reçeteyi Sil"
                       >
                         <Trash2 size={15} />
@@ -306,26 +312,26 @@ export default function InventoryPage() {
                     <div className="space-y-2 mb-6">
                       <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Gerekli Malzemeler:</span>
                       {recipe.items.map((ing: RecipeItem, i: number) => (
-                        <div key={i} className="flex justify-between text-xs py-1 border-b border-stone-50">
-                          <span className="text-stone-600 font-medium">{ing.inventoryItemName}</span>
-                          <span className="font-mono font-bold text-stone-800">{ing.quantity} {ing.unit}</span>
+                        <div key={i} className="flex justify-between text-xs py-1 border-b border-stone-50 dark:border-stone-800/60">
+                          <span className="text-stone-600 dark:text-stone-300 font-medium">{ing.inventoryItemName}</span>
+                          <span className="font-mono font-bold text-stone-800 dark:text-stone-100">{ing.quantity} {ing.unit}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="bg-stone-50 p-4 rounded-xl border border-stone-200 space-y-2 text-xs">
+                  <div className="bg-stone-50 dark:bg-stone-950 p-4 rounded-xl border border-stone-200 dark:border-stone-800 space-y-2 text-xs">
                     <div className="flex justify-between">
-                      <span className="text-stone-500">Satış Fiyatı</span>
-                      <span className="font-bold text-stone-900">{formatCurrency(sellingPrice)}</span>
+                      <span className="text-stone-500 dark:text-stone-400">Satış Fiyatı</span>
+                      <span className="font-bold text-stone-900 dark:text-stone-100">{formatCurrency(sellingPrice)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-stone-500">Hammadde Maliyeti</span>
-                      <span className="font-bold text-red-600">{formatCurrency(recipe.totalCost)}</span>
+                      <span className="text-stone-500 dark:text-stone-400">Hammadde Maliyeti</span>
+                      <span className="font-bold text-red-600 dark:text-red-400">{formatCurrency(recipe.totalCost)}</span>
                     </div>
-                    <div className="border-t border-stone-200 pt-2 flex justify-between font-bold">
-                      <span className="text-stone-800">Brüt Kâr</span>
-                      <span className="text-emerald-600">
+                    <div className="border-t border-stone-200 dark:border-stone-800 pt-2 flex justify-between font-bold">
+                      <span className="text-stone-800 dark:text-stone-200">Brüt Kâr</span>
+                      <span className="text-emerald-600 dark:text-emerald-400">
                         {formatCurrency(margin)} (%{marginPercent.toFixed(0)})
                       </span>
                     </div>
@@ -334,10 +340,10 @@ export default function InventoryPage() {
               );
             })}
             {recipes.length === 0 && (
-              <div className="col-span-3 py-16 text-center text-stone-400">
-                <ChefHat className="w-12 h-12 mx-auto text-stone-300 mb-2" />
-                <p className="font-bold text-sm">Henüz ürün reçetesi tanımlanmadı.</p>
-                <p className="text-xs text-stone-400 mt-1">Yukarıdaki "Yeni Reçete Tanımla" butonuna basarak menü ürünlerine malzeme reçetesi bağlayabilirsiniz.</p>
+              <div className="col-span-3 py-16 text-center text-stone-400 dark:text-stone-500">
+                <ChefHat className="w-12 h-12 mx-auto text-stone-300 dark:text-stone-600 mb-2" />
+                <p className="font-bold text-sm text-stone-600 dark:text-stone-300">Henüz ürün reçetesi tanımlanmadı.</p>
+                <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">Yukarıdaki "Yeni Reçete Tanımla" butonuna basarak menü ürünlerine malzeme reçetesi bağlayabilirsiniz.</p>
               </div>
             )}
           </div>
@@ -348,14 +354,14 @@ export default function InventoryPage() {
       {isAddItemModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs">
           <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-md shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95">
-            <div className="flex justify-between items-center mb-5 pb-3 border-b border-stone-100">
-              <h3 className="text-xl font-black text-stone-800 flex items-center gap-2">
-                <Package className="text-orange-600" size={22} />
+            <div className="flex justify-between items-center mb-5 pb-3 border-b border-stone-100 dark:border-stone-800">
+              <h3 className="text-xl font-black text-stone-800 dark:text-stone-100 flex items-center gap-2">
+                <Package className="text-orange-600 dark:text-orange-400" size={22} />
                 Yeni Hammadde Ekle
               </h3>
               <button 
                 onClick={() => setIsAddItemModalOpen(false)}
-                className="text-stone-400 hover:text-stone-700 p-1.5 rounded-full hover:bg-stone-100"
+                className="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800"
               >
                 <X size={20} />
               </button>
@@ -363,24 +369,24 @@ export default function InventoryPage() {
 
             <form onSubmit={handleSaveNewItem} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Malzeme Adı</label>
+                <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Malzeme Adı</label>
                 <input
                   type="text"
                   required
                   placeholder="Örn: Zeytinyağı"
                   value={itemName}
                   onChange={e => setItemName(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
+                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Birim</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Birim</label>
                   <select
                     value={itemUnit}
                     onChange={e => setItemUnit(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold bg-white"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
                   >
                     <option value="kg">kg (Kilogram)</option>
                     <option value="lt">lt (Litre)</option>
@@ -390,51 +396,51 @@ export default function InventoryPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Birim Alış (₺)</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Birim Alış (₺)</label>
                   <input
                     type="number"
                     min={0}
                     required
                     value={itemCost}
                     onChange={e => setItemCost(Number(e.target.value))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Mevcut Stok</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Mevcut Stok</label>
                   <input
                     type="number"
                     min={0}
                     required
                     value={itemStock}
                     onChange={e => setItemStock(Number(e.target.value))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Kritik Eşik</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Kritik Eşik</label>
                   <input
                     type="number"
                     min={0}
                     required
                     value={itemMinStock}
                     onChange={e => setItemMinStock(Number(e.target.value))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Tedarikçi Firma (İsteğe bağlı)</label>
+                <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Tedarikçi Firma (İsteğe bağlı)</label>
                 <input
                   type="text"
                   placeholder="Örn: Hal Toptan Ticaret"
                   value={itemSupplier}
                   onChange={e => setItemSupplier(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
+                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
                 />
               </div>
 
@@ -442,7 +448,7 @@ export default function InventoryPage() {
                 <button
                   type="button"
                   onClick={() => setIsAddItemModalOpen(false)}
-                  className="flex-1 py-2.5 border border-stone-200 rounded-xl font-bold text-xs text-stone-600 hover:bg-stone-50 cursor-pointer"
+                  className="flex-1 py-2.5 border border-stone-200 dark:border-stone-700 rounded-xl font-bold text-xs text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 cursor-pointer"
                 >
                   İptal
                 </button>
@@ -462,14 +468,14 @@ export default function InventoryPage() {
       {isAddRecipeModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs">
           <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-lg shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95">
-            <div className="flex justify-between items-center mb-5 pb-3 border-b border-stone-100">
-              <h3 className="text-xl font-black text-stone-800 flex items-center gap-2">
-                <ChefHat className="text-orange-600" size={22} />
+            <div className="flex justify-between items-center mb-5 pb-3 border-b border-stone-100 dark:border-stone-800">
+              <h3 className="text-xl font-black text-stone-800 dark:text-stone-100 flex items-center gap-2">
+                <ChefHat className="text-orange-600 dark:text-orange-400" size={22} />
                 Yeni Ürün Reçetesi Tanımla
               </h3>
               <button 
                 onClick={() => setIsAddRecipeModalOpen(false)}
-                className="text-stone-400 hover:text-stone-700 p-1.5 rounded-full hover:bg-stone-100"
+                className="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800"
               >
                 <X size={20} />
               </button>
@@ -477,11 +483,11 @@ export default function InventoryPage() {
 
             <form onSubmit={handleSaveRecipe} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Reçete Eklenecek Menü Ürünü</label>
+                <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Reçete Eklenecek Menü Ürünü</label>
                 <select
                   value={recipeMenuItemId}
                   onChange={e => setRecipeMenuItemId(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold bg-white"
+                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
                 >
                   {menuItems.map(m => (
                     <option key={m.id} value={m.id}>{m.name} ({formatCurrency(m.price)})</option>
@@ -491,11 +497,11 @@ export default function InventoryPage() {
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-xs font-bold uppercase text-stone-500">Kullanılan Hammaddeler</label>
+                  <label className="text-xs font-bold uppercase text-stone-500 dark:text-stone-400">Kullanılan Hammaddeler</label>
                   <button
                     type="button"
                     onClick={handleAddIngredientRow}
-                    className="text-xs font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1 cursor-pointer"
+                    className="text-xs font-bold text-orange-600 dark:text-orange-400 hover:text-orange-700 flex items-center gap-1 cursor-pointer"
                   >
                     <Plus size={14} /> Malzeme Ekle
                   </button>
@@ -505,11 +511,11 @@ export default function InventoryPage() {
                   {recipeIngredients.map((row, idx) => {
                     const selectedInv = inventoryItems.find(i => i.id === row.inventoryItemId);
                     return (
-                      <div key={idx} className="flex gap-2 items-center bg-stone-50 p-2 rounded-xl border border-stone-200">
+                      <div key={idx} className="flex gap-2 items-center bg-stone-50 dark:bg-stone-800 p-2 rounded-xl border border-stone-200 dark:border-stone-700">
                         <select
                           value={row.inventoryItemId}
                           onChange={e => handleIngredientChange(idx, 'inventoryItemId', e.target.value)}
-                          className="flex-1 px-3 py-1.5 rounded-lg border border-stone-200 text-xs font-semibold bg-white"
+                          className="flex-1 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-xs font-semibold bg-white dark:bg-stone-850 text-stone-800 dark:text-stone-100"
                         >
                           {inventoryItems.map(inv => (
                             <option key={inv.id} value={inv.id}>
@@ -525,14 +531,14 @@ export default function InventoryPage() {
                             required
                             value={row.quantity}
                             onChange={e => handleIngredientChange(idx, 'quantity', Number(e.target.value))}
-                            className="w-full px-2 py-1.5 rounded-lg border border-stone-200 text-xs font-mono font-bold text-right"
+                            className="w-full px-2 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-850 text-stone-800 dark:text-stone-100 text-xs font-mono font-bold text-right"
                           />
-                          <span className="text-xs text-stone-500 font-bold">{selectedInv?.unit}</span>
+                          <span className="text-xs text-stone-500 dark:text-stone-400 font-bold">{selectedInv?.unit}</span>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleRemoveIngredientRow(idx)}
-                          className="text-stone-400 hover:text-red-600 p-1"
+                          className="text-stone-400 hover:text-red-600 dark:hover:text-red-400 p-1"
                         >
                           <X size={16} />
                         </button>
@@ -546,7 +552,7 @@ export default function InventoryPage() {
                 <button
                   type="button"
                   onClick={() => setIsAddRecipeModalOpen(false)}
-                  className="flex-1 py-2.5 border border-stone-200 rounded-xl font-bold text-xs text-stone-600 hover:bg-stone-50 cursor-pointer"
+                  className="flex-1 py-2.5 border border-stone-200 dark:border-stone-700 rounded-xl font-bold text-xs text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 cursor-pointer"
                 >
                   İptal
                 </button>

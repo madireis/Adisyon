@@ -184,8 +184,8 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
 
           <div className="p-4 sm:p-5 flex-1 overflow-y-auto space-y-4">
             {/* Quick 1-Tap Checkout Buttons */}
-            <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-stone-200/80 shadow-2xs space-y-2.5">
-              <span className="text-[10px] font-black text-stone-400 uppercase tracking-wider block">
+            <div className="bg-white dark:bg-stone-900 p-3.5 sm:p-4 rounded-2xl border border-stone-200/80 dark:border-stone-800 shadow-2xs space-y-2.5">
+              <span className="text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-wider block">
                 ⚡ Hızlı Tek Tıkla Ödeme (Tam Tutar)
               </span>
               <div className="grid grid-cols-2 gap-2.5">
@@ -213,21 +213,21 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
             </div>
 
             {/* Bill Summary */}
-            <div className="bg-white p-4 rounded-2xl border border-stone-200/80 shadow-2xs space-y-2.5">
-              <div className="flex justify-between items-center text-sm text-stone-600">
+            <div className="bg-white dark:bg-stone-900 p-4 rounded-2xl border border-stone-200/80 dark:border-stone-800 shadow-2xs space-y-2.5">
+              <div className="flex justify-between items-center text-sm text-stone-600 dark:text-stone-300">
                 <span>Adisyon Tutarı</span>
-                <span className="font-bold text-stone-900 font-mono">{formatCurrency(order.total)}</span>
+                <span className="font-bold text-stone-900 dark:text-stone-100 font-mono">{formatCurrency(order.total)}</span>
               </div>
-              <div className="flex justify-between items-center text-sm text-stone-600">
+              <div className="flex justify-between items-center text-sm text-stone-600 dark:text-stone-300">
                 <span>Tahsil Edilen</span>
-                <span className="font-bold text-emerald-600 font-mono">{formatCurrency(totalPaid)}</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">{formatCurrency(totalPaid)}</span>
               </div>
-              <div className="border-t border-stone-100 pt-2.5 flex justify-between items-center">
-                <span className="font-bold text-base text-stone-800">Kalan Tutar</span>
-                <span className="text-2xl font-black text-orange-600 font-mono">{formatCurrency(remaining)}</span>
+              <div className="border-t border-stone-100 dark:border-stone-800 pt-2.5 flex justify-between items-center">
+                <span className="font-bold text-base text-stone-800 dark:text-stone-200">Kalan Tutar</span>
+                <span className="text-2xl font-black text-orange-600 dark:text-orange-500 font-mono">{formatCurrency(remaining)}</span>
               </div>
               {change > 0 && (
-                <div className="flex justify-between items-center text-sm bg-emerald-50 text-emerald-800 p-3 rounded-xl font-bold border border-emerald-200/50">
+                <div className="flex justify-between items-center text-sm bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 p-3 rounded-xl font-bold border border-emerald-200/50 dark:border-emerald-800">
                   <span>Para Üstü</span>
                   <span className="font-mono">{formatCurrency(change)}</span>
                 </div>
@@ -236,17 +236,17 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
 
             {parts.length > 0 && (
               <div className="space-y-2">
-                <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider">Tahsil Edilen Kalemler</h3>
+                <h3 className="text-xs font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider">Tahsil Edilen Kalemler</h3>
                 {parts.map((p, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-3 bg-white rounded-2xl border border-stone-200/80 shadow-2xs">
+                  <div key={idx} className="flex justify-between items-center p-3 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 shadow-2xs">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs text-stone-800 uppercase">
+                      <span className="font-bold text-xs text-stone-800 dark:text-stone-200 uppercase">
                          {paymentMethods.find(m => m.id === p.method)?.label || p.method}
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="font-extrabold text-sm text-stone-900 font-mono">{formatCurrency(p.amount)}</span>
-                      <button onClick={() => removePart(idx)} className="p-1.5 text-red-500 hover:bg-red-50 active:scale-95 rounded-lg cursor-pointer transition-all">
+                      <span className="font-extrabold text-sm text-stone-900 dark:text-stone-100 font-mono">{formatCurrency(p.amount)}</span>
+                      <button onClick={() => removePart(idx)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 active:scale-95 rounded-lg cursor-pointer transition-all">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -256,7 +256,7 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
             )}
           </div>
 
-          <div className="p-4 bg-white border-t border-stone-100 shrink-0">
+          <div className="p-4 bg-white dark:bg-stone-900 border-t border-stone-100 dark:border-stone-800 shrink-0">
             <button
               onClick={handleConfirm}
               disabled={totalPaid < order.total}

@@ -248,7 +248,9 @@ export default function ReportsPage() {
                 onClick={() => setDateRange(range)}
                 className={cn(
                   "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer",
-                  dateRange === range ? "bg-stone-900 text-white shadow-xs" : "text-stone-500 hover:text-stone-800"
+                  dateRange === range 
+                    ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-xs" 
+                    : "text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200"
                 )}
               >
                 {range === 'TODAY' ? 'Bugün' : range === 'YESTERDAY' ? 'Dün' : range === 'WEEK' ? 'Bu Hafta' : 'Bu Ay'}
@@ -267,7 +269,7 @@ export default function ReportsPage() {
 
       <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 flex-1 flex flex-col overflow-hidden">
         {/* Navigation Tabs */}
-        <div className="flex overflow-x-auto border-b border-stone-200 px-4 sm:px-6 pt-3 gap-4 sm:gap-6 bg-stone-50 whitespace-nowrap">
+        <div className="flex overflow-x-auto border-b border-stone-200 dark:border-stone-800 px-4 sm:px-6 pt-3 gap-4 sm:gap-6 bg-stone-50 dark:bg-stone-950/60 whitespace-nowrap">
           {tabs.map(tab => (
             <button
               key={tab.id}
@@ -276,7 +278,7 @@ export default function ReportsPage() {
                 "pb-3 font-bold text-xs flex items-center gap-2 border-b-2 transition-colors cursor-pointer",
                 activeTab === tab.id 
                   ? "border-orange-600 text-orange-600" 
-                  : "border-transparent text-stone-500 hover:text-stone-800"
+                  : "border-transparent text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200"
               )}
             >
               {tab.icon}
@@ -290,25 +292,25 @@ export default function ReportsPage() {
           {activeTab === 'SALES' && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
-                <div className="p-5 bg-stone-50 rounded-2xl border border-stone-200">
+                <div className="p-5 bg-stone-50 dark:bg-stone-950/60 rounded-2xl border border-stone-200 dark:border-stone-800">
                   <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">Dönem Cirosu ({dateRangeLabel})</p>
-                  <p className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900">{formatCurrency(totalRevenue)}</p>
-                  <span className="text-xs text-stone-500 font-medium mt-1 inline-block">Toplam tahsilat</span>
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 dark:text-stone-100">{formatCurrency(totalRevenue)}</p>
+                  <span className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-1 inline-block">Toplam tahsilat</span>
                 </div>
-                <div className="p-5 bg-stone-50 rounded-2xl border border-stone-200">
+                <div className="p-5 bg-stone-50 dark:bg-stone-950/60 rounded-2xl border border-stone-200 dark:border-stone-800">
                   <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">Kapanan Adisyon</p>
-                  <p className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900">{closedOrdersCount}</p>
-                  <span className="text-xs text-stone-500 font-medium mt-1 inline-block">Ödenen masa sayısı</span>
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 dark:text-stone-100">{closedOrdersCount}</p>
+                  <span className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-1 inline-block">Ödenen masa sayısı</span>
                 </div>
-                <div className="p-5 bg-stone-50 rounded-2xl border border-stone-200">
+                <div className="p-5 bg-stone-50 dark:bg-stone-950/60 rounded-2xl border border-stone-200 dark:border-stone-800">
                   <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">Ortalama Masa Hesabı</p>
-                  <p className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900">{formatCurrency(Math.round(avgCheck))}</p>
-                  <span className="text-xs text-stone-500 font-medium mt-1 inline-block">Adisyon başına ortalama</span>
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 dark:text-stone-100">{formatCurrency(Math.round(avgCheck))}</p>
+                  <span className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-1 inline-block">Adisyon başına ortalama</span>
                 </div>
               </div>
 
-              <div className="bg-stone-50 p-4 sm:p-6 rounded-2xl border border-stone-200">
-                <h3 className="text-sm font-bold text-stone-800 uppercase tracking-wider mb-4">Ciro Dağılım Grafiği ({dateRangeLabel})</h3>
+              <div className="bg-stone-50 dark:bg-stone-950/60 p-4 sm:p-6 rounded-2xl border border-stone-200 dark:border-stone-800">
+                <h3 className="text-sm font-bold text-stone-800 dark:text-stone-100 uppercase tracking-wider mb-4">Ciro Dağılım Grafiği ({dateRangeLabel})</h3>
                 <div className="h-48 sm:h-64 lg:h-72 w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={salesTrend}>
@@ -328,7 +330,7 @@ export default function ReportsPage() {
             <div className="space-y-4 overflow-x-auto">
               {topProducts.length > 0 ? (
                 <table className="w-full text-left border-collapse">
-                  <thead className="bg-stone-50 text-xs uppercase tracking-wider font-bold text-stone-500 border-b border-stone-200">
+                  <thead className="bg-stone-50 dark:bg-stone-950/80 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-400 border-b border-stone-200 dark:border-stone-800">
                     <tr>
                       <th className="py-3 px-4">Sıra</th>
                       <th className="py-3 px-4">Ürün Adı</th>
@@ -337,23 +339,23 @@ export default function ReportsPage() {
                       <th className="py-3 px-4 text-right">Toplam Ciro</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100 text-sm">
+                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-sm">
                     {topProducts.map((prod, idx) => (
-                      <tr key={idx} className="hover:bg-stone-50/70 transition-colors">
+                      <tr key={idx} className="hover:bg-stone-50/70 dark:hover:bg-stone-800/50 transition-colors">
                         <td className="py-3 px-4 font-bold text-stone-400">
                           {idx === 0 ? <Award className="w-5 h-5 text-amber-500 inline" /> : `#${idx + 1}`}
                         </td>
-                        <td className="py-3 px-4 font-bold text-stone-800">{prod.name}</td>
-                        <td className="py-3 px-4 text-stone-500">{prod.category}</td>
-                        <td className="py-3 px-4 text-center font-bold font-mono text-orange-600">{prod.count} adet</td>
-                        <td className="py-3 px-4 text-right font-black text-stone-900">{formatCurrency(prod.revenue)}</td>
+                        <td className="py-3 px-4 font-bold text-stone-800 dark:text-stone-100">{prod.name}</td>
+                        <td className="py-3 px-4 text-stone-500 dark:text-stone-400">{prod.category}</td>
+                        <td className="py-3 px-4 text-center font-bold font-mono text-orange-600 dark:text-orange-400">{prod.count} adet</td>
+                        <td className="py-3 px-4 text-right font-black text-stone-900 dark:text-stone-100">{formatCurrency(prod.revenue)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               ) : (
                 <div className="py-16 text-center text-stone-400">
-                  <AlertCircle className="w-10 h-10 mx-auto text-stone-300 mb-2" />
+                  <AlertCircle className="w-10 h-10 mx-auto text-stone-300 dark:text-stone-600 mb-2" />
                   <p className="font-semibold text-sm">Seçili dönemde ürün satışı bulunamadı.</p>
                 </div>
               )}
@@ -364,7 +366,7 @@ export default function ReportsPage() {
             <div className="space-y-4 overflow-x-auto">
               {staffPerformance.length > 0 ? (
                 <table className="w-full text-left border-collapse">
-                  <thead className="bg-stone-50 text-xs uppercase tracking-wider font-bold text-stone-500 border-b border-stone-200">
+                  <thead className="bg-stone-50 dark:bg-stone-950/80 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-400 border-b border-stone-200 dark:border-stone-800">
                     <tr>
                       <th className="py-3 px-4">Personel</th>
                       <th className="py-3 px-4">Görevi</th>
@@ -373,21 +375,21 @@ export default function ReportsPage() {
                       <th className="py-3 px-4 text-right">Toplam Ciro</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100 text-sm">
+                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-sm">
                     {staffPerformance.map((st, idx) => (
-                      <tr key={idx} className="hover:bg-stone-50/70 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-stone-800">{st.name}</td>
-                        <td className="py-3.5 px-4 text-xs font-semibold text-stone-500">{st.role}</td>
-                        <td className="py-3.5 px-4 text-center font-bold font-mono">{st.orderCount} masa</td>
-                        <td className="py-3.5 px-4 text-center font-semibold text-stone-700">{formatCurrency(st.avgCheck)}</td>
-                        <td className="py-3.5 px-4 text-right font-black text-emerald-600">{formatCurrency(st.totalRevenue)}</td>
+                      <tr key={idx} className="hover:bg-stone-50/70 dark:hover:bg-stone-800/50 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-stone-800 dark:text-stone-100">{st.name}</td>
+                        <td className="py-3.5 px-4 text-xs font-semibold text-stone-500 dark:text-stone-400">{st.role}</td>
+                        <td className="py-3.5 px-4 text-center font-bold font-mono text-stone-700 dark:text-stone-300">{st.orderCount} masa</td>
+                        <td className="py-3.5 px-4 text-center font-semibold text-stone-700 dark:text-stone-300">{formatCurrency(st.avgCheck)}</td>
+                        <td className="py-3.5 px-4 text-right font-black text-emerald-600 dark:text-emerald-400">{formatCurrency(st.totalRevenue)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               ) : (
                 <div className="py-16 text-center text-stone-400">
-                  <AlertCircle className="w-10 h-10 mx-auto text-stone-300 mb-2" />
+                  <AlertCircle className="w-10 h-10 mx-auto text-stone-300 dark:text-stone-600 mb-2" />
                   <p className="font-semibold text-sm">Seçili dönemde personel sipariş aktivitesi bulunamadı.</p>
                 </div>
               )}
@@ -398,7 +400,7 @@ export default function ReportsPage() {
             <div className="space-y-4 overflow-x-auto">
               {paymentBreakdown.length > 0 ? (
                 <table className="w-full text-left border-collapse">
-                  <thead className="bg-stone-50 text-xs uppercase tracking-wider font-bold text-stone-500 border-b border-stone-200">
+                  <thead className="bg-stone-50 dark:bg-stone-950/80 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-400 border-b border-stone-200 dark:border-stone-800">
                     <tr>
                       <th className="py-3 px-4">Ödeme Metodu</th>
                       <th className="py-3 px-4 text-center">İşlem Sayısı</th>
@@ -406,22 +408,22 @@ export default function ReportsPage() {
                       <th className="py-3 px-4 text-right">Tahsil Edilen Tutar</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100 text-sm">
+                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-sm">
                     {paymentBreakdown.map((pay, idx) => (
-                      <tr key={idx} className="hover:bg-stone-50/70 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-stone-800">{pay.method}</td>
-                        <td className="py-3.5 px-4 text-center font-mono text-stone-600">{pay.count} işlem</td>
+                      <tr key={idx} className="hover:bg-stone-50/70 dark:hover:bg-stone-800/50 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-stone-800 dark:text-stone-100">{pay.method}</td>
+                        <td className="py-3.5 px-4 text-center font-mono text-stone-600 dark:text-stone-400">{pay.count} işlem</td>
                         <td className="py-3.5 px-4 text-center">
-                          <span className="font-bold text-xs bg-stone-100 px-2 py-0.5 rounded-md">%{pay.percent}</span>
+                          <span className="font-bold text-xs bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 px-2 py-0.5 rounded-md">%{pay.percent}</span>
                         </td>
-                        <td className="py-3.5 px-4 text-right font-black text-stone-900">{formatCurrency(pay.total)}</td>
+                        <td className="py-3.5 px-4 text-right font-black text-stone-900 dark:text-stone-100">{formatCurrency(pay.total)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               ) : (
                 <div className="py-16 text-center text-stone-400">
-                  <AlertCircle className="w-10 h-10 mx-auto text-stone-300 mb-2" />
+                  <AlertCircle className="w-10 h-10 mx-auto text-stone-300 dark:text-stone-600 mb-2" />
                   <p className="font-semibold text-sm">Seçili dönemde tahsilat işlemi bulunamadı.</p>
                 </div>
               )}

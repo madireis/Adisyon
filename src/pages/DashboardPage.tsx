@@ -127,11 +127,11 @@ export default function DashboardPage() {
   const StatCard = ({ title, value, icon, trend }: { title: string; value: string; icon: React.ReactNode; trend?: string }) => (
     <div className="bg-white dark:bg-stone-900 p-3.5 sm:p-5 rounded-2xl shadow-xs border border-stone-200 dark:border-stone-800">
       <div className="flex justify-between items-start mb-3">
-        <div className="p-2.5 bg-stone-50 rounded-xl text-orange-600 border border-stone-100">
+        <div className="p-2.5 bg-stone-50 dark:bg-stone-800 rounded-xl text-orange-600 dark:text-orange-400 border border-stone-100 dark:border-stone-700/60 shadow-2xs">
           {icon}
         </div>
         {trend && (
-          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-transparent dark:border-emerald-800/60 px-2 py-0.5 rounded-md">
             {trend}
           </span>
         )}
@@ -150,7 +150,7 @@ export default function DashboardPage() {
           <p className="text-stone-500 dark:text-stone-400 text-sm mt-1">Silivri Sahil Şubesi Canlı Finans & Operasyon Tablosu</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold flex items-center gap-1.5">
+          <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-transparent dark:border-emerald-800/60 rounded-full text-xs font-bold flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             Canlı Restoran Verisi
           </span>
@@ -171,10 +171,10 @@ export default function DashboardPage() {
       <div className="bg-white dark:bg-stone-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-lg font-bold text-stone-800">Saatlik Ciro Eğrisi</h2>
-            <p className="text-xs text-stone-400">Bugünkü saatlik satış ve tahsilat performansı</p>
+            <h2 className="text-lg font-bold text-stone-800 dark:text-stone-100">Saatlik Ciro Eğrisi</h2>
+            <p className="text-xs text-stone-500 dark:text-stone-400">Bugünkü saatlik satış ve tahsilat performansı</p>
           </div>
-          <span className="text-xs font-bold text-stone-500 bg-stone-100 px-3 py-1 rounded-lg">Bugün</span>
+          <span className="text-xs font-bold text-stone-500 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 border border-transparent dark:border-stone-700 px-3 py-1 rounded-lg">Bugün</span>
         </div>
         <div className="h-48 sm:h-64 lg:h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -185,7 +185,7 @@ export default function DashboardPage() {
                   <stop offset="95%" stopColor="#ea580c" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0ece6" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#71717a" strokeOpacity={0.2} />
               <XAxis dataKey="time" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} tickFormatter={val => `₺${val}`} />
               <RechartsTooltip formatter={(val: any) => [`₺${val}`, 'Ciro']} />
@@ -199,7 +199,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Categories Pie */}
         <div className="bg-white dark:bg-stone-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800">
-          <h3 className="text-lg font-bold text-stone-800 mb-4">Kategori Bazlı Satışlar</h3>
+          <h3 className="text-lg font-bold text-stone-800 dark:text-stone-100 mb-4">Kategori Bazlı Satışlar</h3>
           <div className="h-64 w-full flex items-center justify-center">
             {pieData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -223,7 +223,7 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             ) : (
               <div className="text-center py-8 text-stone-400">
-                <AlertCircle className="w-8 h-8 mx-auto text-stone-300 mb-1" />
+                <AlertCircle className="w-8 h-8 mx-auto text-stone-300 dark:text-stone-600 mb-1" />
                 <p className="text-xs">Bugün henüz sipariş satışı oluşmadı.</p>
               </div>
             )}
@@ -232,12 +232,12 @@ export default function DashboardPage() {
 
         {/* Payments Bar */}
         <div className="bg-white dark:bg-stone-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800">
-          <h3 className="text-lg font-bold text-stone-800 mb-4">Ödeme Yöntemi Dağılımı</h3>
+          <h3 className="text-lg font-bold text-stone-800 dark:text-stone-100 mb-4">Ödeme Yöntemi Dağılımı</h3>
           <div className="h-64 w-full flex items-center justify-center">
             {todayRevenue > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={paymentData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0ece6" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#71717a" strokeOpacity={0.2} />
                   <XAxis dataKey="name" stroke="#a8a29e" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis stroke="#a8a29e" fontSize={11} tickLine={false} axisLine={false} tickFormatter={val => `₺${val}`} />
                   <RechartsTooltip formatter={(val: any) => [`₺${val}`, 'Tahsilat']} />
@@ -246,7 +246,7 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             ) : (
               <div className="text-center py-8 text-stone-400">
-                <AlertCircle className="w-8 h-8 mx-auto text-stone-300 mb-1" />
+                <AlertCircle className="w-8 h-8 mx-auto text-stone-300 dark:text-stone-600 mb-1" />
                 <p className="text-xs">Bugün henüz tahsilat gerçekleşmedi.</p>
               </div>
             )}
@@ -255,25 +255,25 @@ export default function DashboardPage() {
 
         {/* Recent Activity */}
         <div className="bg-white dark:bg-stone-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 flex flex-col">
-          <h3 className="text-lg font-bold text-stone-800 mb-4">Canlı İşlem Günlüğü (Audit)</h3>
+          <h3 className="text-lg font-bold text-stone-800 dark:text-stone-100 mb-4">Canlı İşlem Günlüğü (Audit)</h3>
           <div className="flex-1 overflow-y-auto pr-1 space-y-3 max-h-64">
             {auditLogs.length > 0 ? (
               auditLogs.map((log: AuditLog) => (
                 <div key={log.id} className="flex gap-3 items-start pb-3 border-b border-stone-100 dark:border-stone-800/60 last:border-0">
-                  <div className="bg-orange-50 p-2 rounded-xl text-orange-600 mt-0.5 shrink-0">
+                  <div className="bg-orange-50 dark:bg-stone-800 p-2 rounded-xl text-orange-600 dark:text-orange-400 border border-stone-100 dark:border-stone-700/60 mt-0.5 shrink-0 shadow-2xs">
                     <Utensils size={14} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-stone-800 truncate">{log.action}</p>
-                    <p className="text-[11px] text-stone-400 mt-0.5">
+                    <p className="text-xs font-bold text-stone-800 dark:text-stone-100 truncate">{log.action}</p>
+                    <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
                       {log.userName} • {getTimeString(new Date(log.timestamp))}
                     </p>
-                    <p className="text-[11px] text-stone-500 mt-0.5 line-clamp-1">{log.details}</p>
+                    <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-0.5 line-clamp-1">{log.details}</p>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-stone-400 text-xs italic py-8 text-center">Henüz aktivite kaydı yok.</p>
+              <p className="text-stone-500 dark:text-stone-400 text-xs italic py-8 text-center">Henüz aktivite kaydı yok.</p>
             )}
           </div>
         </div>

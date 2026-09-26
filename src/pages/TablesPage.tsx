@@ -102,7 +102,7 @@ export default function TablesPage() {
   return (
     <div className="flex flex-col h-full bg-stone-50 dark:bg-stone-950 dark:text-stone-100 select-none">
       {/* Blended Toolbar: Floors & Live Indicators */}
-      <div className="px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2.5 shrink-0 bg-[#f8f7f5]/80 backdrop-blur-md border-b border-stone-200/50">
+      <div className="px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2.5 shrink-0 bg-[#f8f7f5]/80 dark:bg-stone-900/90 backdrop-blur-md border-b border-stone-200/50 dark:border-stone-800">
         {/* Floor Switcher */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
           {floors.map((floor: Floor) => (
@@ -113,7 +113,7 @@ export default function TablesPage() {
                 "px-3 py-1.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shrink-0",
                 currentFloorId === floor.id
                   ? "bg-stone-900 dark:bg-orange-600 text-white shadow-xs"
-                  : "bg-white/90 dark:bg-stone-900 text-stone-600 dark:text-stone-400 hover:bg-white dark:hover:text-stone-200 hover:text-stone-900 border border-stone-200/60 dark:border-stone-800"
+                  : "bg-white/90 dark:bg-stone-850 text-stone-600 dark:text-stone-300 hover:bg-white dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-white border border-stone-200/60 dark:border-stone-700"
               )}
             >
               <PosIcon name={floor.icon} className="w-3.5 h-3.5 shrink-0" />
@@ -128,7 +128,7 @@ export default function TablesPage() {
                 setEditingFloor(null);
                 setIsSectionModalOpen(true);
               }}
-              className="p-1.5 rounded-xl bg-white/80 hover:bg-white text-stone-500 hover:text-stone-900 border border-stone-200/60 transition-colors cursor-pointer shrink-0 active:scale-95"
+              className="p-1.5 rounded-xl bg-white/80 dark:bg-stone-850 hover:bg-white dark:hover:bg-stone-800 text-stone-500 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white border border-stone-200/60 dark:border-stone-700 transition-colors cursor-pointer shrink-0 active:scale-95"
               title="Yeni Bölüm Ekle"
             >
               <Plus size={15} />
@@ -141,14 +141,14 @@ export default function TablesPage() {
           {/* Status indicators (minimalist badges, no wordy headers) */}
           <div className="flex items-center gap-1.5 text-xs font-semibold">
             <span 
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/60 cursor-default" 
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 cursor-default" 
               title="Boş Masalar"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
               <span className="font-bold">{totalAvailable}</span>
             </span>
             <span 
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-50 text-orange-800 border border-orange-200/60 cursor-default" 
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-50 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 border border-orange-200/60 dark:border-orange-800/60 cursor-default" 
               title="Dolu Masalar"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
@@ -156,7 +156,7 @@ export default function TablesPage() {
             </span>
             {totalPaymentWaiting > 0 && (
               <span 
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-50 text-red-800 border border-red-200/60 animate-pulse cursor-default" 
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-50 dark:bg-red-950/60 text-red-800 dark:text-red-300 border border-red-200/60 dark:border-red-800/60 animate-pulse cursor-default" 
                 title="Hesap Bekleyenler"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
@@ -164,10 +164,10 @@ export default function TablesPage() {
               </span>
             )}
             <span 
-              className="hidden xs:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-stone-200/70 text-stone-700 cursor-default" 
+              className="hidden xs:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-stone-200/70 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-transparent dark:border-stone-700 cursor-default" 
               title="Toplam Misafir Sayısı"
             >
-              <Users size={12} className="text-stone-500" />
+              <Users size={12} className="text-stone-500 dark:text-stone-400" />
               <span className="font-bold">{totalGuests}</span>
             </span>
             {isManager && (
@@ -182,14 +182,14 @@ export default function TablesPage() {
 
           {/* Manager Quick Actions */}
           {isManager && (
-            <div className="flex items-center gap-1.5 border-l border-stone-200/80 pl-2 sm:pl-3">
+            <div className="flex items-center gap-1.5 border-l border-stone-200/80 dark:border-stone-800 pl-2 sm:pl-3">
               <button
                 onClick={() => setIsEditMode(!isEditMode)}
                 className={cn(
                   "px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer border active:scale-95",
                   activeEditMode
                     ? "bg-amber-500 text-white border-amber-600 shadow-xs"
-                    : "bg-white/80 text-stone-600 hover:bg-white border-stone-200/60"
+                    : "bg-white/80 dark:bg-stone-850 text-stone-600 dark:text-stone-300 hover:bg-white dark:hover:bg-stone-800 border-stone-200/60 dark:border-stone-700"
                 )}
                 title={activeEditMode ? 'Düzenlemeyi Bitir' : 'Masa Planını Düzenle'}
               >
@@ -281,17 +281,17 @@ export default function TablesPage() {
                       </span>
                       {isOccupied && order ? (
                         <>
-                          <span className="text-sm sm:text-base font-black text-stone-900 tracking-tight leading-tight">
+                          <span className="text-sm sm:text-base font-black text-stone-900 dark:text-stone-100 tracking-tight leading-tight">
                             {formatCurrency(order.total)}
                           </span>
                           {order.waiterName && (
-                            <span className="text-[10px] text-stone-500 font-medium truncate max-w-[85px]">
+                            <span className="text-[10px] text-stone-500 dark:text-stone-400 font-medium truncate max-w-[85px]">
                               {order.waiterName}
                             </span>
                           )}
                         </>
                       ) : (
-                        <span className="text-[10px] text-stone-400 font-semibold group-hover:text-emerald-700 transition-colors">
+                        <span className="text-[10px] text-stone-400 dark:text-stone-400 font-semibold group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                           {table.seats}K • <span className="font-bold">Boş</span>
                         </span>
                       )}
@@ -299,15 +299,15 @@ export default function TablesPage() {
 
                     {/* Bottom: Floating Curved Pill (matches circle arc) */}
                     {isOccupied && !activeEditMode ? (
-                      <div className="rounded-full bg-stone-900/10 backdrop-blur-xs px-2.5 py-0.5 flex items-center gap-1.5 text-[10px] font-semibold text-stone-700">
-                        <Users className="w-2.5 h-2.5 text-stone-500" />
+                      <div className="rounded-full bg-stone-900/10 dark:bg-stone-950/60 backdrop-blur-xs px-2.5 py-0.5 flex items-center gap-1.5 text-[10px] font-semibold text-stone-700 dark:text-stone-300">
+                        <Users className="w-2.5 h-2.5 text-stone-500 dark:text-stone-400" />
                         <span>{table.guestCount || 1}</span>
-                        <span className="text-stone-300">•</span>
-                        <Clock className="w-2.5 h-2.5 text-stone-500" />
+                        <span className="text-stone-300 dark:text-stone-600">•</span>
+                        <Clock className="w-2.5 h-2.5 text-stone-500 dark:text-stone-400" />
                         <span>{table.occupiedAt ? getElapsedMinutes(new Date(table.occupiedAt)) + 'm' : '-'}</span>
                       </div>
                     ) : activeEditMode ? (
-                      <span className="text-[9px] font-bold text-amber-900 bg-amber-500/20 px-2 py-0.5 rounded-full">
+                      <span className="text-[9px] font-bold text-amber-900 dark:text-amber-200 bg-amber-500/20 px-2 py-0.5 rounded-full">
                         Düzenle
                       </span>
                     ) : (
@@ -321,7 +321,7 @@ export default function TablesPage() {
                     <div className="flex justify-between items-center w-full">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xl sm:text-2xl font-black tracking-tight">{table.label}</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-stone-100/90 text-stone-600 font-bold border border-stone-200">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-stone-100/90 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-bold border border-stone-200 dark:border-stone-700">
                           {table.seats} Kişilik
                         </span>
                       </div>
@@ -358,41 +358,41 @@ export default function TablesPage() {
                     {isOccupied && order ? (
                       <div className="my-auto py-1 flex items-baseline justify-between w-full">
                         <div>
-                          <span className="text-lg sm:text-xl font-black text-stone-900 tracking-tight block leading-tight">
+                          <span className="text-lg sm:text-xl font-black text-stone-900 dark:text-stone-100 tracking-tight block leading-tight">
                             {formatCurrency(order.total)}
                           </span>
-                          <span className="text-[10px] font-medium text-stone-500 truncate max-w-[120px] block">
+                          <span className="text-[10px] font-medium text-stone-500 dark:text-stone-400 truncate max-w-[120px] block">
                             {order.waiterName}
                           </span>
                         </div>
                         <div className="text-right">
-                          <span className="text-[10px] font-bold text-stone-600 bg-white/80 px-2 py-0.5 rounded-md border border-stone-200/60 shadow-2xs">
+                          <span className="text-[10px] font-bold text-stone-600 dark:text-stone-300 bg-white/80 dark:bg-stone-800 px-2 py-0.5 rounded-md border border-stone-200/60 dark:border-stone-700 shadow-2xs">
                             {order.items?.length || 0} Kalem
                           </span>
                         </div>
                       </div>
                     ) : (
-                      <div className="my-auto py-1 text-stone-400 text-xs font-semibold group-hover:text-emerald-700 transition-colors">
+                      <div className="my-auto py-1 text-stone-400 text-xs font-semibold group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                         Geniş Aile Masası • <span className="font-bold">Boş</span>
                       </div>
                     )}
 
                     {/* Bottom: Wide Footer */}
                     {isOccupied && !activeEditMode && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-stone-900/10 backdrop-blur-xs px-3.5 py-1.5 flex justify-between items-center text-[11px] font-semibold text-stone-700 rounded-b-2xl">
+                      <div className="absolute bottom-0 left-0 right-0 bg-stone-900/10 dark:bg-stone-950/60 backdrop-blur-xs px-3.5 py-1.5 flex justify-between items-center text-[11px] font-semibold text-stone-700 dark:text-stone-300 rounded-b-2xl">
                         <div className="flex items-center gap-1">
-                          <Users className="w-3 h-3 text-stone-500" />
+                          <Users className="w-3 h-3 text-stone-500 dark:text-stone-400" />
                           <span>{table.guestCount || 1} / {table.seats} kişi</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-stone-500" />
+                          <Clock className="w-3 h-3 text-stone-500 dark:text-stone-400" />
                           <span>{table.occupiedAt ? getElapsedMinutes(new Date(table.occupiedAt)) + ' dk' : '-'}</span>
                         </div>
                       </div>
                     )}
 
                     {activeEditMode && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-amber-500/15 text-amber-950 text-center py-1 text-[10px] font-bold rounded-b-2xl">
+                      <div className="absolute bottom-0 left-0 right-0 bg-amber-500/15 text-amber-950 dark:text-amber-200 text-center py-1 text-[10px] font-bold rounded-b-2xl">
                         Düzenlemek İçin Tıkla
                       </div>
                     )}
@@ -434,31 +434,31 @@ export default function TablesPage() {
                     {/* Occupied State or Capacity */}
                     {isOccupied && order ? (
                       <div className="mt-auto pt-2 space-y-0.5 w-full flex flex-col items-center justify-center pb-6">
-                        <span className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">{formatCurrency(order.total)}</span>
-                        <span className="text-[11px] font-medium text-stone-600 truncate max-w-[120px]">{order.waiterName}</span>
+                        <span className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight">{formatCurrency(order.total)}</span>
+                        <span className="text-[11px] font-medium text-stone-600 dark:text-stone-400 truncate max-w-[120px]">{order.waiterName}</span>
                       </div>
                     ) : (
-                      <div className="mt-auto pb-5 text-stone-400 text-xs font-semibold text-center group-hover:text-emerald-700 transition-colors">
+                      <div className="mt-auto pb-5 text-stone-400 text-xs font-semibold text-center group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                         {table.seats} Kişilik • <span className="font-bold">Boş</span>
                       </div>
                     )}
 
                     {/* Bottom Bar info */}
                     {isOccupied && !activeEditMode && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-stone-900/10 backdrop-blur-xs px-3 py-1.5 flex justify-between items-center text-[11px] font-semibold text-stone-700 rounded-b-2xl">
+                      <div className="absolute bottom-0 left-0 right-0 bg-stone-900/10 dark:bg-stone-950/60 backdrop-blur-xs px-3 py-1.5 flex justify-between items-center text-[11px] font-semibold text-stone-700 dark:text-stone-300 rounded-b-2xl">
                         <div className="flex items-center gap-1">
-                          <Users className="w-3 h-3 text-stone-500" />
+                          <Users className="w-3 h-3 text-stone-500 dark:text-stone-400" />
                           <span>{table.guestCount || 1} kişi</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-stone-500" />
+                          <Clock className="w-3 h-3 text-stone-500 dark:text-stone-400" />
                           <span>{table.occupiedAt ? getElapsedMinutes(new Date(table.occupiedAt)) + ' dk' : '-'}</span>
                         </div>
                       </div>
                     )}
 
                     {activeEditMode && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-amber-500/15 text-amber-950 text-center py-1 text-[10px] font-bold rounded-b-2xl">
+                      <div className="absolute bottom-0 left-0 right-0 bg-amber-500/15 text-amber-950 dark:text-amber-200 text-center py-1 text-[10px] font-bold rounded-b-2xl">
                         Düzenlemek İçin Tıkla
                       </div>
                     )}
@@ -475,9 +475,9 @@ export default function TablesPage() {
                 setEditingTable(null);
                 setIsTableModalOpen(true);
               }}
-              className="border-2 border-dashed border-stone-300 hover:border-orange-500 rounded-2xl flex flex-col items-center justify-center p-4 sm:p-6 text-stone-400 hover:text-orange-600 hover:bg-orange-50/40 transition-all cursor-pointer min-h-[140px]"
+              className="border-2 border-dashed border-stone-300 dark:border-stone-800 hover:border-orange-500 rounded-2xl flex flex-col items-center justify-center p-4 sm:p-6 text-stone-400 hover:text-orange-600 hover:bg-orange-50/40 dark:hover:bg-stone-900 transition-all cursor-pointer min-h-[140px]"
             >
-              <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center mb-2">
+              <div className="w-10 h-10 rounded-full bg-stone-100 dark:bg-stone-850 flex items-center justify-center mb-2">
                 <Plus size={20} />
               </div>
               <span className="text-xs font-bold">Yeni Masa Ekle</span>

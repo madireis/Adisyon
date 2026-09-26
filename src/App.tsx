@@ -22,7 +22,7 @@ const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 const CustomerQRPage = lazy(() => import('@/pages/CustomerQRPage'));
 
 const SuspenseFallback = () => (
-  <div className="p-4 sm:p-8 flex items-center justify-center min-h-screen bg-stone-50">
+  <div className="p-4 sm:p-8 flex items-center justify-center min-h-screen bg-stone-50 dark:bg-stone-950">
     <div className="w-10 h-10 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
   </div>
 );

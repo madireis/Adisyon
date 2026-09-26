@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
-import { UserPlus, Shield, Edit2, Trash2, X, Check, KeyRound, Wifi, QrCode, Smartphone } from 'lucide-react';
+import { UserPlus, Shield, Edit2, Trash2, X, Check, KeyRound, Wifi, QrCode, Smartphone, Eye, EyeOff } from 'lucide-react';
 import { cn, generateId } from '@/lib/utils';
 import type { Staff, UserRole } from '@/types/pos';
 import { useLocalNetwork } from '@/lib/useLocalNetwork';
@@ -23,6 +23,12 @@ export default function StaffPage() {
   const [pin, setPin] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Password / PIN blur & reveal states
+  const [revealedPins, setRevealedPins] = useState<Record<string, boolean>>({});
+  const [revealAllPins, setRevealAllPins] = useState(false);
+  const [showAddPin, setShowAddPin] = useState(false);
+  const [showEditPin, setShowEditPin] = useState(false);
+
   const roleOptions: { value: UserRole; label: string }[] = [
     { value: 'waiter', label: 'Garson' },
     { value: 'cashier', label: 'Kasiyer' },
@@ -35,24 +41,41 @@ export default function StaffPage() {
   const roleBadge = (role: UserRole) => {
     switch (role) {
       case 'owner':
-        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 flex items-center gap-1 w-max"><Shield size={12} /> Patron</span>;
+        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 flex items-center gap-1 w-max"><Shield size={12} /> Patron</span>;
       case 'manager':
-        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 flex items-center gap-1 w-max"><Shield size={12} /> Müdür</span>;
+        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 flex items-center gap-1 w-max"><Shield size={12} /> Müdür</span>;
       case 'cashier':
-        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 w-max">Kasiyer</span>;
+        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 w-max">Kasiyer</span>;
       case 'waiter':
-        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700 w-max">Garson</span>;
+        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/60 w-max">Garson</span>;
       case 'kitchen':
-        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 w-max">Mutfak Şefi</span>;
+        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 w-max">Mutfak Şefi</span>;
       case 'bar':
-        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-700 w-max">Bar & Kahve</span>;
+        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800/60 w-max">Bar & Kahve</span>;
       default:
-        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-stone-100 text-stone-700 w-max">{role}</span>;
+        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 w-max">{role}</span>;
     }
   };
 
   const toggleActive = async (member: Staff) => {
     await db.staff.update(member.id, { active: !member.active });
+  };
+
+  const togglePinVisibility = (staffId: string) => {
+    setRevealedPins(prev => ({
+      ...prev,
+      [staffId]: !prev[staffId]
+    }));
+  };
+
+  const toggleAllPins = () => {
+    const next = !revealAllPins;
+    setRevealAllPins(next);
+    const updated: Record<string, boolean> = {};
+    staffMembers.forEach((m: Staff) => {
+      updated[m.id] = next;
+    });
+    setRevealedPins(updated);
   };
 
   const getNextUsername = () => {
@@ -66,6 +89,7 @@ export default function StaffPage() {
     setUsername(getNextUsername());
     setRole('waiter');
     setPin('');
+    setShowAddPin(false);
     setErrorMessage('');
     setIsAddModalOpen(true);
   };
@@ -76,6 +100,7 @@ export default function StaffPage() {
     setUsername(member.username || '');
     setRole(member.role);
     setPin(member.pin);
+    setShowEditPin(false);
     setErrorMessage('');
   };
 
@@ -114,7 +139,7 @@ export default function StaffPage() {
         name: name.trim(),
         username: username.trim(),
         role,
-        pin,
+        pin: pin.trim(),
         active: true,
       };
 
@@ -207,12 +232,24 @@ export default function StaffPage() {
 
       <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 overflow-x-auto">
         <table className="w-full text-left">
-          <thead className="bg-stone-50 dark:bg-stone-900 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-400 border-b border-stone-200 dark:border-stone-800">
+          <thead className="bg-stone-50 dark:bg-stone-950/80 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-300 border-b border-stone-200 dark:border-stone-800">
             <tr>
               <th className="py-3 sm:py-3.5 px-3 sm:px-6">Kullanıcı No</th>
               <th className="py-3 sm:py-3.5 px-3 sm:px-6">Personel Adı</th>
               <th className="py-3 sm:py-3.5 px-3 sm:px-6">Görevi / Rolü</th>
-              <th className="py-3 sm:py-3.5 px-3 sm:px-6">Giriş PIN Kodu</th>
+              <th className="py-3 sm:py-3.5 px-3 sm:px-6">
+                <div className="flex items-center gap-1.5">
+                  <span>Giriş PIN Kodu</span>
+                  <button
+                    type="button"
+                    onClick={toggleAllPins}
+                    className="p-1 rounded text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-200/50 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                    title={revealAllPins ? "Tüm PIN'leri Bulanıklaştır" : "Tüm PIN'leri Göster"}
+                  >
+                    {revealAllPins ? <EyeOff size={13} /> : <Eye size={13} />}
+                  </button>
+                </div>
+              </th>
               <th className="py-3 sm:py-3.5 px-3 sm:px-6">Yerel WiFi Cihazı</th>
               <th className="py-3 sm:py-3.5 px-3 sm:px-6">Durum</th>
               <th className="py-3 sm:py-3.5 px-3 sm:px-6 text-right">İşlemler</th>
@@ -224,9 +261,10 @@ export default function StaffPage() {
                 g => g.id === member.id || g.name.toLowerCase().includes(member.name.toLowerCase())
               );
               const isWifiOnline = liveConnection?.isOnline;
+              const isPinRevealed = revealedPins[member.id] || false;
 
               return (
-                <tr key={member.id} className="hover:bg-stone-50/70 dark:hover:bg-stone-900/60 transition-colors">
+                <tr key={member.id} className="hover:bg-stone-50/70 dark:hover:bg-stone-800/50 transition-colors">
                   <td className="py-3 sm:py-4 px-3 sm:px-6 font-mono font-bold text-orange-600 dark:text-orange-400">
                     <span className="bg-orange-50 dark:bg-orange-950/50 px-2.5 py-1 rounded-md text-xs border border-orange-200 dark:border-orange-900">
                       {member.username || member.id}
@@ -250,8 +288,23 @@ export default function StaffPage() {
                   <td className="py-3 sm:py-4 px-3 sm:px-6">
                     {roleBadge(member.role)}
                   </td>
-                  <td className="py-3 sm:py-4 px-3 sm:px-6 font-mono text-stone-600 dark:text-stone-400 font-bold tracking-wider">
-                    <span className="bg-stone-100 dark:bg-stone-800 px-2.5 py-1 rounded-md text-xs">{member.pin}</span>
+                  <td className="py-3 sm:py-4 px-3 sm:px-6 font-mono font-bold tracking-wider">
+                    <div className="flex items-center gap-2">
+                      <span className={cn(
+                        "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 px-2.5 py-1 rounded-md text-xs transition-all select-none",
+                        !isPinRevealed && "filter blur-xs hover:blur-none select-none"
+                      )}>
+                        {member.pin}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => togglePinVisibility(member.id)}
+                        className="p-1 rounded text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                        title={isPinRevealed ? "PIN'i Bulanıklaştır" : "PIN'i Göster"}
+                      >
+                        {isPinRevealed ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                    </div>
                   </td>
                   <td className="py-3 sm:py-4 px-3 sm:px-6">
                     {isWifiOnline ? (
@@ -274,8 +327,8 @@ export default function StaffPage() {
                       className={cn(
                         "px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer",
                         member.active 
-                          ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200" 
-                          : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                          ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60" 
+                          : "bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700"
                       )}
                     >
                       {member.active ? 'Aktif' : 'Pasif'}
@@ -370,15 +423,25 @@ export default function StaffPage() {
 
               <div>
                 <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Giriş PIN Kodu (4 Hane)</label>
-                <input
-                  type="password"
-                  maxLength={4}
-                  required
-                  placeholder="4 Haneli PIN (Örn: 1234)"
-                  value={pin}
-                  onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
-                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-800 dark:bg-stone-950 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-mono tracking-widest text-center text-lg font-bold"
-                />
+                <div className="relative">
+                  <input
+                    type={showAddPin ? "text" : "password"}
+                    maxLength={4}
+                    required
+                    placeholder="••••"
+                    value={pin}
+                    onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-800 dark:bg-stone-950 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-mono tracking-widest text-center text-lg font-bold pr-11"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowAddPin(!showAddPin)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
+                    title={showAddPin ? "PIN'i Gizle" : "PIN'i Göster"}
+                  >
+                    {showAddPin ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
 
               <div className="pt-3 flex gap-3">
@@ -463,14 +526,24 @@ export default function StaffPage() {
 
               <div>
                 <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Giriş PIN Kodu (4 Hane)</label>
-                <input
-                  type="text"
-                  maxLength={4}
-                  required
-                  value={pin}
-                  onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
-                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-800 dark:bg-stone-950 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-mono tracking-widest text-center text-lg font-bold"
-                />
+                <div className="relative">
+                  <input
+                    type={showEditPin ? "text" : "password"}
+                    maxLength={4}
+                    required
+                    value={pin}
+                    onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-800 dark:bg-stone-950 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-mono tracking-widest text-center text-lg font-bold pr-11"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowEditPin(!showEditPin)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
+                    title={showEditPin ? "PIN'i Gizle" : "PIN'i Göster"}
+                  >
+                    {showEditPin ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
 
               <div className="pt-3 flex gap-3">

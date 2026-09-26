@@ -157,13 +157,13 @@ export default function MenuPage() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col dark:bg-stone-950 dark:text-stone-100">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 tracking-tight">Menü Yönetimi</h1>
-          <p className="text-stone-500 text-sm mt-1">Wot's Cafe lezzetlerini, porsiyonlarını ve istasyonlarını yönetin</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 dark:text-stone-100 tracking-tight">Menü Yönetimi</h1>
+          <p className="text-stone-500 dark:text-stone-400 text-sm mt-1">Wot's Cafe lezzetlerini, porsiyonlarını ve istasyonlarını yönetin</p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
           <button 
             onClick={handleLoadDefaultMenu}
-            className="bg-white hover:bg-stone-50 text-stone-700 px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 border border-stone-200 shadow-xs transition-colors cursor-pointer"
+            className="bg-white dark:bg-stone-850 hover:bg-stone-50 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 border border-stone-200 dark:border-stone-700 shadow-xs transition-colors cursor-pointer"
             title="Wot's Cafe 85 kalem standart restoran menüsünü yükle"
           >
             <Sparkles size={16} className="text-orange-500" />
@@ -181,13 +181,15 @@ export default function MenuPage() {
 
       <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 flex flex-col flex-1 overflow-hidden">
         {/* Toolbar */}
-        <div className="p-4 border-b border-stone-200 dark:border-stone-800 flex flex-col sm:flex-row gap-4 justify-between items-center bg-stone-50/50 dark:bg-stone-900/50">
+        <div className="p-4 border-b border-stone-200 dark:border-stone-800 flex flex-col sm:flex-row gap-4 justify-between items-center bg-stone-50/50 dark:bg-stone-950/50">
           <div className="flex gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
             <button
               onClick={() => setActiveCategory('ALL')}
               className={cn(
                 "px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer",
-                activeCategory === 'ALL' ? "bg-stone-900 text-white shadow-sm" : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200"
+                activeCategory === 'ALL' 
+                  ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-sm" 
+                  : "bg-white dark:bg-stone-850 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-700"
               )}
             >
               Tümü ({menuItems.length})
@@ -198,7 +200,9 @@ export default function MenuPage() {
                 onClick={() => setActiveCategory(cat.id)}
                 className={cn(
                   "px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer",
-                  activeCategory === cat.id ? "bg-stone-900 text-white shadow-sm" : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200"
+                  activeCategory === cat.id 
+                    ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-sm" 
+                    : "bg-white dark:bg-stone-850 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-700"
                 )}
               >
                 <PosIcon name={cat.icon} className="w-4 h-4 shrink-0" />
@@ -214,7 +218,7 @@ export default function MenuPage() {
               placeholder="Ürün adı ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full pl-9 pr-4 py-2 text-sm bg-white dark:bg-stone-850 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -222,7 +226,7 @@ export default function MenuPage() {
         {/* Table */}
         <div className="flex-1 overflow-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-stone-50 dark:bg-stone-900 sticky top-0 z-10 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-400 border-b border-stone-200 dark:border-stone-800">
+            <thead className="bg-stone-50 dark:bg-stone-950/80 sticky top-0 z-10 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-300 border-b border-stone-200 dark:border-stone-800">
               <tr>
                 <th className="py-3 sm:py-3.5 px-3 sm:px-6">Ürün Adı</th>
                 <th className="py-3 sm:py-3.5 px-3 sm:px-6">Kategori</th>
@@ -238,13 +242,13 @@ export default function MenuPage() {
                 return (
                   <tr key={item.id} className="hover:bg-stone-50/70 dark:hover:bg-stone-850/60 transition-colors">
                     <td className="py-3 sm:py-4 px-3 sm:px-6">
-                      <div className="font-bold text-stone-800">{item.name}</div>
+                      <div className="font-bold text-stone-800 dark:text-stone-100">{item.name}</div>
                       {item.description && <div className="text-xs text-stone-400 truncate max-w-xs mt-0.5">{item.description}</div>}
                     </td>
-                    <td className="py-3 sm:py-4 px-3 sm:px-6 text-stone-600 font-medium">{category?.name || '-'}</td>
-                    <td className="py-3 sm:py-4 px-3 sm:px-6 text-right font-extrabold text-stone-900">₺{item.price}</td>
+                    <td className="py-3 sm:py-4 px-3 sm:px-6 text-stone-600 dark:text-stone-300 font-medium">{category?.name || '-'}</td>
+                    <td className="py-3 sm:py-4 px-3 sm:px-6 text-right font-extrabold text-stone-900 dark:text-stone-100">₺{item.price}</td>
                     <td className="py-3 sm:py-4 px-3 sm:px-6">
-                      <span className="px-2.5 py-1 bg-stone-100 text-stone-700 rounded-lg text-xs font-semibold">
+                      <span className="px-2.5 py-1 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 rounded-lg text-xs font-semibold">
                         {stationLabels[item.station] || item.station}
                       </span>
                     </td>
@@ -254,8 +258,8 @@ export default function MenuPage() {
                         className={cn(
                           "px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 cursor-pointer",
                           item.available 
-                            ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200" 
-                            : "bg-red-100 text-red-700 hover:bg-red-200"
+                            ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-200 dark:hover:bg-emerald-900/60" 
+                            : "bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/60 hover:bg-red-200 dark:hover:bg-red-900/60"
                         )}
                       >
                         {item.available ? <Check size={13} /> : <X size={13} />}
@@ -266,14 +270,14 @@ export default function MenuPage() {
                       <div className="flex justify-end items-center gap-2">
                         <button 
                           onClick={() => openEditModal(item)}
-                          className="p-1.5 text-stone-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-stone-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-stone-800 rounded-lg transition-colors cursor-pointer"
                           title="Ürünü Düzenle"
                         >
                           <Edit2 size={16} />
                         </button>
                         <button 
                           onClick={() => handleDeleteItem(item)}
-                          className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-stone-800 rounded-lg transition-colors cursor-pointer"
                           title="Ürünü Sil"
                         >
                           <Trash2 size={16} />
@@ -318,14 +322,14 @@ export default function MenuPage() {
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs">
           <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-lg shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95">
-            <div className="flex justify-between items-center mb-5 pb-3 border-b border-stone-100">
-              <h3 className="text-xl font-black text-stone-800 flex items-center gap-2">
-                <Utensils className="text-orange-600" size={22} />
+            <div className="flex justify-between items-center mb-5 pb-3 border-b border-stone-100 dark:border-stone-800">
+              <h3 className="text-xl font-black text-stone-800 dark:text-stone-100 flex items-center gap-2">
+                <Utensils className="text-orange-600 dark:text-orange-400" size={22} />
                 Yeni Menü Ürünü Ekle
               </h3>
               <button 
                 onClick={() => setIsAddModalOpen(false)}
-                className="text-stone-400 hover:text-stone-700 p-1.5 rounded-full hover:bg-stone-100"
+                className="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800"
               >
                 <X size={20} />
               </button>
@@ -340,23 +344,23 @@ export default function MenuPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="col-span-2">
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Ürün Adı</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Ürün Adı</label>
                   <input
                     type="text"
                     required
                     placeholder="Örn: Trüflü Burger"
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Kategori</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Kategori</label>
                   <select
                     value={categoryId}
                     onChange={e => setCategoryId(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold bg-white cursor-pointer"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold cursor-pointer"
                   >
                     {categories.map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
@@ -365,23 +369,23 @@ export default function MenuPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Satış Fiyatı (₺)</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Satış Fiyatı (₺)</label>
                   <input
                     type="number"
                     min={1}
                     required
                     value={price}
                     onChange={e => setPrice(Number(e.target.value))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-extrabold text-stone-900"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-extrabold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Hazırlık İstasyonu</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Hazırlık İstasyonu</label>
                   <select
                     value={station}
                     onChange={e => setStation(e.target.value as KitchenStation)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold bg-white cursor-pointer"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold cursor-pointer"
                   >
                     <option value="kitchen">Sıcak Mutfak</option>
                     <option value="bar">Bar</option>
@@ -391,24 +395,24 @@ export default function MenuPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Hazırlık Süresi (dk)</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Hazırlık Süresi (dk)</label>
                   <input
                     type="number"
                     min={1}
                     value={preparationTime}
                     onChange={e => setPreparationTime(Number(e.target.value))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
                   />
                 </div>
 
                 <div className="col-span-2">
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Açıklama / İçindekiler</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Açıklama / İçindekiler</label>
                   <textarea
                     rows={2}
                     placeholder="Örn: 180gr dana köfte, cheddar, karamelize soğan"
                     value={description}
                     onChange={e => setDescription(e.target.value)}
-                    className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none"
+                    className="w-full px-4 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none"
                   />
                 </div>
               </div>
@@ -417,7 +421,7 @@ export default function MenuPage() {
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="flex-1 py-2.5 border border-stone-200 rounded-xl font-bold text-xs text-stone-600 hover:bg-stone-50 cursor-pointer"
+                  className="flex-1 py-2.5 border border-stone-200 dark:border-stone-700 rounded-xl font-bold text-xs text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 cursor-pointer"
                 >
                   İptal
                 </button>
@@ -437,14 +441,14 @@ export default function MenuPage() {
       {editingItem && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs">
           <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-lg shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95">
-            <div className="flex justify-between items-center mb-5 pb-3 border-b border-stone-100">
-              <h3 className="text-xl font-black text-stone-800 flex items-center gap-2">
-                <Edit2 className="text-orange-600" size={20} />
+            <div className="flex justify-between items-center mb-5 pb-3 border-b border-stone-100 dark:border-stone-800">
+              <h3 className="text-xl font-black text-stone-800 dark:text-stone-100 flex items-center gap-2">
+                <Edit2 className="text-orange-600 dark:text-orange-400" size={20} />
                 Ürünü Düzenle
               </h3>
               <button 
                 onClick={() => setEditingItem(null)}
-                className="text-stone-400 hover:text-stone-700 p-1.5 rounded-full hover:bg-stone-100"
+                className="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800"
               >
                 <X size={20} />
               </button>
@@ -459,22 +463,22 @@ export default function MenuPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="col-span-2">
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Ürün Adı</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Ürün Adı</label>
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Kategori</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Kategori</label>
                   <select
                     value={categoryId}
                     onChange={e => setCategoryId(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold bg-white cursor-pointer"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold cursor-pointer"
                   >
                     {categories.map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
@@ -483,23 +487,23 @@ export default function MenuPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Satış Fiyatı (₺)</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Satış Fiyatı (₺)</label>
                   <input
                     type="number"
                     min={1}
                     required
                     value={price}
                     onChange={e => setPrice(Number(e.target.value))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-extrabold text-stone-900"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-extrabold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Hazırlık İstasyonu</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Hazırlık İstasyonu</label>
                   <select
                     value={station}
                     onChange={e => setStation(e.target.value as KitchenStation)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold bg-white cursor-pointer"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold cursor-pointer"
                   >
                     <option value="kitchen">Sıcak Mutfak</option>
                     <option value="bar">Bar</option>
@@ -509,23 +513,23 @@ export default function MenuPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Hazırlık Süresi (dk)</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Hazırlık Süresi (dk)</label>
                   <input
                     type="number"
                     min={1}
                     value={preparationTime}
                     onChange={e => setPreparationTime(Number(e.target.value))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-semibold"
                   />
                 </div>
 
                 <div className="col-span-2">
-                  <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Açıklama / İçindekiler</label>
+                  <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Açıklama / İçindekiler</label>
                   <textarea
                     rows={2}
                     value={description}
                     onChange={e => setDescription(e.target.value)}
-                    className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none"
+                    className="w-full px-4 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm resize-none"
                   />
                 </div>
               </div>
@@ -534,7 +538,7 @@ export default function MenuPage() {
                 <button
                   type="button"
                   onClick={() => setEditingItem(null)}
-                  className="flex-1 py-2.5 border border-stone-200 rounded-xl font-bold text-xs text-stone-600 hover:bg-stone-50 cursor-pointer"
+                  className="flex-1 py-2.5 border border-stone-200 dark:border-stone-700 rounded-xl font-bold text-xs text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 cursor-pointer"
                 >
                   İptal
                 </button>

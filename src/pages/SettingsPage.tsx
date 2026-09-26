@@ -330,8 +330,8 @@ export default function SettingsPage() {
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
               <div>
-                <h2 className="text-xl font-black text-stone-900 mb-1">Mutfak & Kasa Termal Yazıcıları</h2>
-                <p className="text-xs text-stone-500">ESC/POS 80mm fiş ve adisyon yazıcı istasyonları</p>
+                <h2 className="text-xl font-black text-stone-900 dark:text-stone-100 mb-1">Mutfak & Kasa Termal Yazıcıları</h2>
+                <p className="text-xs text-stone-500 dark:text-stone-400">ESC/POS 80mm fiş ve adisyon yazıcı istasyonları</p>
               </div>
               <button
                 onClick={() => setIsAddPrinterOpen(true)}
@@ -344,18 +344,18 @@ export default function SettingsPage() {
 
             <div className="space-y-3 max-w-xl">
               {printers.map((p) => (
-                <div key={p.id} className="flex justify-between items-center p-4 rounded-2xl border border-stone-200 bg-stone-50">
+                <div key={p.id} className="flex justify-between items-center p-4 rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950">
                   <div>
-                    <h4 className="font-bold text-sm text-stone-900">{p.name}</h4>
-                    <p className="text-xs text-stone-500 font-mono mt-0.5">{p.ip} (LAN) • İstasyon: {p.station}</p>
+                    <h4 className="font-bold text-sm text-stone-900 dark:text-stone-100">{p.name}</h4>
+                    <p className="text-xs text-stone-500 dark:text-stone-400 font-mono mt-0.5">{p.ip} (LAN) • İstasyon: {p.station}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full">
+                    <span className="bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
                       {p.status}
                     </span>
                     <button
                       onClick={() => handleDeletePrinter(p.id)}
-                      className="p-1.5 text-stone-400 hover:text-red-600 rounded-lg"
+                      className="p-1.5 text-stone-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg cursor-pointer transition-colors"
                       title="Yazıcıyı Kaldır"
                     >
                       <Trash2 size={15} />
@@ -368,45 +368,45 @@ export default function SettingsPage() {
             {/* Add Printer Modal */}
             {isAddPrinterOpen && (
               <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs">
-                <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95">
-                  <div className="flex justify-between items-center mb-4 pb-2 border-b border-stone-100">
-                    <h3 className="text-lg font-black text-stone-800 flex items-center gap-2">
+                <div className="bg-white dark:bg-stone-900 rounded-3xl p-6 w-full max-w-md shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95">
+                  <div className="flex justify-between items-center mb-4 pb-2 border-b border-stone-100 dark:border-stone-800">
+                    <h3 className="text-lg font-black text-stone-800 dark:text-stone-100 flex items-center gap-2">
                       <Printer className="text-orange-600" size={20} />
                       Yeni Termal Yazıcı Tanımla
                     </h3>
-                    <button onClick={() => setIsAddPrinterOpen(false)} className="text-stone-400 hover:text-stone-700">
+                    <button onClick={() => setIsAddPrinterOpen(false)} className="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer">
                       <X size={18} />
                     </button>
                   </div>
                   <form onSubmit={handleAddPrinter} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Yazıcı Adı</label>
+                      <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Yazıcı Adı</label>
                       <input
                         type="text"
                         required
                         placeholder="Örn: Tatlı İstasyonu Yazıcısı"
                         value={newPrinterName}
                         onChange={e => setNewPrinterName(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm font-semibold"
+                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-semibold bg-white dark:bg-stone-850 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Ağ IP Adresi</label>
+                      <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">Ağ IP Adresi</label>
                       <input
                         type="text"
                         required
                         placeholder="192.168.1.205"
                         value={newPrinterIp}
                         onChange={e => setNewPrinterIp(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm font-mono"
+                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-mono bg-white dark:bg-stone-850 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold uppercase text-stone-500 mb-1">İstasyon</label>
+                      <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">İstasyon</label>
                       <select
                         value={newPrinterStation}
                         onChange={e => setNewPrinterStation(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm font-semibold bg-white"
+                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-semibold bg-white dark:bg-stone-850 text-stone-900 dark:text-stone-100"
                       >
                         <option value="Kasa">Kasa</option>
                         <option value="Mutfak">Sıcak Mutfak</option>
@@ -418,13 +418,13 @@ export default function SettingsPage() {
                       <button
                         type="button"
                         onClick={() => setIsAddPrinterOpen(false)}
-                        className="flex-1 py-2 border border-stone-200 rounded-xl text-xs font-bold"
+                        className="flex-1 py-2 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-bold text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 cursor-pointer"
                       >
                         İptal
                       </button>
                       <button
                         type="submit"
-                        className="flex-1 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold"
+                        className="flex-1 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold cursor-pointer"
                       >
                         Yazıcıyı Ekle
                       </button>
@@ -438,8 +438,8 @@ export default function SettingsPage() {
 
         {activeSection === 'payments' && (
           <div>
-            <h2 className="text-xl font-black text-stone-900 mb-1">Kabul Edilen Ödeme Yöntemleri</h2>
-            <p className="text-xs text-stone-500 mb-6">Kasada ve garson terminalinde aktif ödeme kanalları</p>
+            <h2 className="text-xl font-black text-stone-900 dark:text-stone-100 mb-1">Kabul Edilen Ödeme Yöntemleri</h2>
+            <p className="text-xs text-stone-500 dark:text-stone-400 mb-6">Kasada ve garson terminalinde aktif ödeme kanalları</p>
 
             <div className="space-y-3 max-w-xl">
               {[
@@ -451,9 +451,9 @@ export default function SettingsPage() {
                 { name: 'Metropol Card', active: true },
                 { name: 'Yetkili İkram (Yönetici Onaylı)', active: true },
               ].map((m, idx) => (
-                <div key={idx} className="flex justify-between items-center p-3.5 rounded-xl border border-stone-200 bg-white">
-                  <span className="font-bold text-sm text-stone-800">{m.name}</span>
-                  <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                <div key={idx} className="flex justify-between items-center p-3.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-950">
+                  <span className="font-bold text-sm text-stone-800 dark:text-stone-200">{m.name}</span>
+                  <span className="bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                     Aktif
                   </span>
                 </div>
@@ -464,21 +464,21 @@ export default function SettingsPage() {
 
         {activeSection === 'notifications' && (
           <div>
-            <h2 className="text-xl font-black text-stone-900 mb-1">Mutfak & Sipariş Bildirim Sesleri</h2>
-            <p className="text-xs text-stone-500 mb-6">Yeni sipariş ve servis hazır çan sesleri</p>
+            <h2 className="text-xl font-black text-stone-900 dark:text-stone-100 mb-1">Mutfak & Sipariş Bildirim Sesleri</h2>
+            <p className="text-xs text-stone-500 dark:text-stone-400 mb-6">Yeni sipariş ve servis hazır çan sesleri</p>
 
             <div className="space-y-3 max-w-xl">
-              <div className="flex justify-between items-center p-4 rounded-xl border border-stone-200 bg-stone-50">
+              <div className="flex justify-between items-center p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950">
                 <div>
-                  <h4 className="font-bold text-sm text-stone-900">Mutfak Yeni Fiş Zili</h4>
-                  <p className="text-xs text-stone-500">Yeni adisyon düştüğünde uyarı tonu çalar</p>
+                  <h4 className="font-bold text-sm text-stone-900 dark:text-stone-100">Mutfak Yeni Fiş Zili</h4>
+                  <p className="text-xs text-stone-500 dark:text-stone-400">Yeni adisyon düştüğünde uyarı tonu çalar</p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-5 h-5 accent-orange-600 rounded cursor-pointer" />
               </div>
-              <div className="flex justify-between items-center p-4 rounded-xl border border-stone-200 bg-stone-50">
+              <div className="flex justify-between items-center p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950">
                 <div>
-                  <h4 className="font-bold text-sm text-stone-900">Masa Sipariş Hazır Uyarısı</h4>
-                  <p className="text-xs text-stone-500">Mutfak fişi 'Hazır' yaptığında garson ekranına bildirim düşer</p>
+                  <h4 className="font-bold text-sm text-stone-900 dark:text-stone-100">Masa Sipariş Hazır Uyarısı</h4>
+                  <p className="text-xs text-stone-500 dark:text-stone-400">Mutfak fişi 'Hazır' yaptığında garson ekranına bildirim düşer</p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-5 h-5 accent-orange-600 rounded cursor-pointer" />
               </div>
@@ -488,18 +488,18 @@ export default function SettingsPage() {
 
         {activeSection === 'database' && (
           <div>
-            <h2 className="text-xl font-black text-stone-900 mb-1">Sistem & Veri Yönetimi</h2>
-            <p className="text-xs text-stone-500 mb-6">İşlem verileri temizliği, sıfırdan başlama ve fabrika ayarları</p>
+            <h2 className="text-xl font-black text-stone-900 dark:text-stone-100 mb-1">Sistem & Veri Yönetimi</h2>
+            <p className="text-xs text-stone-500 dark:text-stone-400 mb-6">İşlem verileri temizliği, sıfırdan başlama ve fabrika ayarları</p>
 
             <div className="max-w-xl space-y-6">
-              <div className="p-6 rounded-2xl border-2 border-red-200 bg-red-50/50 space-y-4">
+              <div className="p-6 rounded-2xl border-2 border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/20 space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="p-2.5 bg-red-100 text-red-600 rounded-xl">
+                  <div className="p-2.5 bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 rounded-xl">
                     <AlertTriangle size={24} />
                   </div>
                   <div>
-                    <h3 className="font-black text-stone-900 text-base">İşlem Verilerini Temizle (Temiz Başlangıç)</h3>
-                    <p className="text-xs text-stone-600 mt-1 leading-relaxed">
+                    <h3 className="font-black text-stone-900 dark:text-stone-100 text-base">İşlem Verilerini Temizle (Temiz Başlangıç)</h3>
+                    <p className="text-xs text-stone-600 dark:text-stone-300 mt-1 leading-relaxed">
                       Tüm test siparişlerini, mutfak fişlerini, tahsilatları ve denetim kayıtlarını temizler. Masaların durumunu sıfırlar ("Boş" duruma getirir). Menünüz, personel listeniz ve masalarınız korunur.
                     </p>
                   </div>
@@ -514,7 +514,7 @@ export default function SettingsPage() {
                     Tüm İşlem Verilerini Sıfırla
                   </button>
                   {resetSuccess && (
-                    <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1.5 rounded-xl flex items-center gap-1.5 animate-in fade-in">
+                    <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-3 py-1.5 rounded-xl flex items-center gap-1.5 animate-in fade-in">
                       <CheckCircle2 size={16} /> Veriler temizlendi, masalar boşaltıldı!
                     </span>
                   )}
