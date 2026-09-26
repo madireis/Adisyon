@@ -234,14 +234,14 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col space-y-6 dark:bg-stone-950 dark:text-stone-100">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 tracking-tight">Finans & Operasyon Raporları</h1>
           <p className="text-stone-500 text-sm mt-1">Canlı ciro, ürün satış adetleri, garson performansı ve tahsilat dökümü</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <div className="bg-white border border-stone-200 rounded-xl p-1 flex items-center shadow-xs overflow-x-auto">
+          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-1 flex items-center shadow-xs overflow-x-auto">
             {(['TODAY', 'YESTERDAY', 'WEEK', 'MONTH'] as const).map(range => (
               <button
                 key={range}
@@ -265,7 +265,7 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 flex-1 flex flex-col overflow-hidden">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 flex-1 flex flex-col overflow-hidden">
         {/* Navigation Tabs */}
         <div className="flex overflow-x-auto border-b border-stone-200 px-4 sm:px-6 pt-3 gap-4 sm:gap-6 bg-stone-50 whitespace-nowrap">
           {tabs.map(tab => (

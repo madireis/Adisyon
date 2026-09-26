@@ -101,7 +101,7 @@ export default function CustomersPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto dark:bg-stone-950 dark:text-stone-100">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 w-full">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 tracking-tight">Müşteri CRM & Sadakat</h1>
@@ -128,9 +128,9 @@ export default function CustomersPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-x-auto">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 overflow-x-auto">
         <table className="w-full text-left">
-          <thead className="bg-stone-50 text-xs uppercase tracking-wider font-bold text-stone-500 border-b border-stone-200">
+          <thead className="bg-stone-50 dark:bg-stone-900 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-400 border-b border-stone-200 dark:border-stone-800">
             <tr>
               <th className="py-3 sm:py-3.5 px-3 sm:px-6">Müşteri Adı</th>
               <th className="py-3 sm:py-3.5 px-3 sm:px-6">Telefon</th>
@@ -141,7 +141,7 @@ export default function CustomersPage() {
               <th className="py-3 sm:py-3.5 px-3 sm:px-6 text-right">İşlemler</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100 text-sm">
+          <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-sm">
             {filtered.map((customer: Customer) => (
               <tr key={customer.id} className="hover:bg-stone-50/70 transition-colors">
                 <td className="py-3 sm:py-4 px-3 sm:px-6">
@@ -194,7 +194,7 @@ export default function CustomersPage() {
       {/* Add Customer Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl p-4 sm:p-6 w-full max-w-md shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95">
+          <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-md shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95">
             <div className="flex justify-between items-center mb-5 pb-3 border-b border-stone-100">
               <h3 className="text-xl font-black text-stone-800 flex items-center gap-2">
                 <UserPlus className="text-orange-600" size={22} />
@@ -284,7 +284,7 @@ export default function CustomersPage() {
       {/* Edit Customer Modal */}
       {editingCustomer && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl p-4 sm:p-6 w-full max-w-md shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95">
+          <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-md shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95">
             <div className="flex justify-between items-center mb-5 pb-3 border-b border-stone-100">
               <h3 className="text-xl font-black text-stone-800 flex items-center gap-2">
                 <Edit2 className="text-orange-600" size={20} />

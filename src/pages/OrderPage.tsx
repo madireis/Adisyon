@@ -328,8 +328,8 @@ export default function OrderPage() {
       </div>
 
       {/* Desktop Left Panel: Categories (hidden on mobile, visible lg:flex) */}
-      <div className="hidden lg:flex w-52 bg-white border-r border-stone-200 flex-col h-full overflow-y-auto shrink-0">
-        <div className="p-3.5 border-b border-stone-200 shrink-0">
+      <div className="hidden lg:flex w-52 bg-white dark:bg-stone-900 border-r border-stone-200 dark:border-stone-800 flex-col h-full overflow-y-auto shrink-0">
+        <div className="p-3.5 border-b border-stone-200 dark:border-stone-800 shrink-0">
            <button 
              onClick={() => navigate('/tables')} 
              className="flex items-center gap-2 text-stone-700 hover:text-stone-900 font-semibold text-sm px-2 py-1.5 rounded-lg hover:bg-stone-100 transition-colors w-full cursor-pointer"
@@ -347,7 +347,7 @@ export default function OrderPage() {
                 "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left text-sm font-semibold cursor-pointer",
                 activeCategoryId === cat.id
                   ? "bg-orange-600 text-white shadow-sm"
-                  : "text-stone-600 hover:bg-stone-100"
+                  : "text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-850"
               )}
             >
               <PosIcon name={cat.icon} className="w-5 h-5 shrink-0" />
@@ -358,7 +358,7 @@ export default function OrderPage() {
       </div>
 
       {/* Center Panel: Products */}
-      <div className="flex-1 bg-stone-50 p-3 sm:p-5 overflow-y-auto pb-28 lg:pb-6">
+      <div className="flex-1 bg-stone-50 dark:bg-stone-950 p-3 sm:p-5 overflow-y-auto pb-28 lg:pb-6">
         {/* Instant Search Bar */}
         <div className="relative mb-3.5">
           <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -424,10 +424,10 @@ export default function OrderPage() {
                 onClick={() => handleProductClick(item)}
                 disabled={!item.available}
                 className={cn(
-                  "group relative flex flex-col justify-between p-3.5 sm:p-4 bg-white rounded-2xl shadow-2xs border-2 text-left min-h-[115px] sm:min-h-[135px] transition-all hover:shadow-md active:scale-[0.97] cursor-pointer",
+                  "group relative flex flex-col justify-between p-3.5 sm:p-4 bg-white dark:bg-stone-900 rounded-2xl shadow-2xs border-2 text-left min-h-[115px] sm:min-h-[135px] transition-all hover:shadow-md active:scale-[0.97] cursor-pointer",
                   item.available 
-                    ? "border-stone-200 hover:border-orange-400" 
-                    : "border-stone-200 opacity-50 cursor-not-allowed bg-stone-100"
+                    ? "border-stone-200 dark:border-stone-800 hover:border-orange-400 dark:hover:border-stone-700" 
+                    : "border-stone-200 dark:border-stone-800 opacity-50 cursor-not-allowed bg-stone-100 dark:bg-stone-950"
                 )}
               >
                 <div className="flex-1">
@@ -462,7 +462,7 @@ export default function OrderPage() {
       </div>
 
       {/* Mobile Floating Island Adisyon Bar (lg:hidden) */}
-      <div className="lg:hidden fixed bottom-3 left-3 right-3 z-30 p-2 bg-stone-900/95 backdrop-blur-xl text-white rounded-2xl shadow-[0_12px_36px_rgba(0,0,0,0.28)] border border-white/10 flex items-center justify-between gap-2 ios-spring">
+      <div className="lg:hidden fixed bottom-3 left-3 right-3 z-30 p-2 bg-stone-900/95 dark:bg-stone-900/95 backdrop-blur-xl text-white rounded-2xl shadow-[0_12px_36px_rgba(0,0,0,0.28)] border border-white/10 dark:border-stone-800 flex items-center justify-between gap-2 ios-spring">
         <button
           onClick={() => setIsMobileTicketOpen(true)}
           className="flex-1 flex items-center justify-between px-3 py-2 bg-white/10 hover:bg-white/15 rounded-xl active:scale-[0.98] transition-all text-left cursor-pointer border border-white/5"
@@ -506,7 +506,7 @@ export default function OrderPage() {
       {/* Mobile Slide-Up Ticket Sheet (lg:hidden) */}
       {isMobileTicketOpen && (
         <div className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex flex-col justify-end animate-in fade-in duration-200">
-          <div className="bg-white rounded-t-[32px] max-h-[88vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-250 border-t border-white/20">
+          <div className="bg-white dark:bg-stone-900 rounded-t-[32px] max-h-[88vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-250 border-t border-white/20 dark:border-stone-800">
             {/* Centered iOS Grab Handle Pill */}
             <div className="w-full pt-3 pb-1 flex justify-center bg-stone-900 shrink-0">
               <div className="w-12 h-1.5 bg-white/30 rounded-full" />
@@ -658,7 +658,7 @@ export default function OrderPage() {
       )}
 
       {/* Desktop Right Panel: Ticket (hidden on mobile, visible lg:flex) */}
-      <div className="hidden lg:flex w-[380px] xl:w-[420px] bg-white border-l border-stone-200 flex-col h-full shrink-0 shadow-lg">
+      <div className="hidden lg:flex w-[380px] xl:w-[420px] bg-white dark:bg-stone-900 border-l border-stone-200 dark:border-stone-800 flex-col h-full shrink-0 shadow-lg">
         {/* Table & Order header */}
         <div className="p-4 bg-stone-900 text-white flex justify-between items-center shrink-0">
           <div>
@@ -695,7 +695,7 @@ export default function OrderPage() {
                   key={item.id} 
                   className={cn(
                     "flex flex-col p-3 rounded-xl border transition-all",
-                    isSent ? "bg-stone-50 border-stone-200" : "bg-orange-50/40 border-orange-200"
+                    isSent ? "bg-stone-50 dark:bg-stone-850/40 border-stone-200 dark:border-stone-800/60 text-stone-800 dark:text-stone-200" : "bg-orange-50/40 dark:bg-stone-850/40 border-orange-200 dark:border-stone-800/60 text-stone-800 dark:text-stone-200"
                   )}
                 >
                   <div className="flex justify-between items-start">

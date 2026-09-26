@@ -125,7 +125,7 @@ export default function DashboardPage() {
   }, [todayPayments]);
 
   const StatCard = ({ title, value, icon, trend }: { title: string; value: string; icon: React.ReactNode; trend?: string }) => (
-    <div className="bg-white p-3.5 sm:p-5 rounded-2xl shadow-xs border border-stone-200">
+    <div className="bg-white dark:bg-stone-900 p-3.5 sm:p-5 rounded-2xl shadow-xs border border-stone-200 dark:border-stone-800">
       <div className="flex justify-between items-start mb-3">
         <div className="p-2.5 bg-stone-50 rounded-xl text-orange-600 border border-stone-100">
           {icon}
@@ -136,18 +136,18 @@ export default function DashboardPage() {
           </span>
         )}
       </div>
-      <h3 className="text-stone-400 text-xs font-bold uppercase tracking-wider mb-1">{title}</h3>
-      <p className="text-lg sm:text-2xl font-black text-stone-900">{value}</p>
+      <h3 className="text-stone-400 dark:text-stone-400 text-xs font-bold uppercase tracking-wider mb-1">{title}</h3>
+      <p className="text-lg sm:text-2xl font-black text-stone-900 dark:text-stone-100">{value}</p>
     </div>
   );
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-4 sm:space-y-6 lg:space-y-8">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-4 sm:space-y-6 lg:space-y-8 dark:bg-stone-950 dark:text-stone-100">
       {/* Top Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 tracking-tight">WOT'S CAFE — Yönetim Özeti</h1>
-          <p className="text-stone-500 text-sm mt-1">Silivri Sahil Şubesi Canlı Finans & Operasyon Tablosu</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 dark:text-stone-100 tracking-tight">WOT'S CAFE — Yönetim Özeti</h1>
+          <p className="text-stone-500 dark:text-stone-400 text-sm mt-1">Silivri Sahil Şubesi Canlı Finans & Operasyon Tablosu</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold flex items-center gap-1.5">
@@ -168,7 +168,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Hourly Sales Chart */}
-      <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-200">
+      <div className="bg-white dark:bg-stone-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-lg font-bold text-stone-800">Saatlik Ciro Eğrisi</h2>
@@ -198,7 +198,7 @@ export default function DashboardPage() {
       {/* 3 Bottom Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Categories Pie */}
-        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-200">
+        <div className="bg-white dark:bg-stone-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800">
           <h3 className="text-lg font-bold text-stone-800 mb-4">Kategori Bazlı Satışlar</h3>
           <div className="h-64 w-full flex items-center justify-center">
             {pieData.length > 0 ? (
@@ -231,7 +231,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Payments Bar */}
-        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-200">
+        <div className="bg-white dark:bg-stone-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800">
           <h3 className="text-lg font-bold text-stone-800 mb-4">Ödeme Yöntemi Dağılımı</h3>
           <div className="h-64 w-full flex items-center justify-center">
             {todayRevenue > 0 ? (
@@ -254,12 +254,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-200 flex flex-col">
+        <div className="bg-white dark:bg-stone-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 flex flex-col">
           <h3 className="text-lg font-bold text-stone-800 mb-4">Canlı İşlem Günlüğü (Audit)</h3>
           <div className="flex-1 overflow-y-auto pr-1 space-y-3 max-h-64">
             {auditLogs.length > 0 ? (
               auditLogs.map((log: AuditLog) => (
-                <div key={log.id} className="flex gap-3 items-start pb-3 border-b border-stone-100 last:border-0">
+                <div key={log.id} className="flex gap-3 items-start pb-3 border-b border-stone-100 dark:border-stone-800/60 last:border-0">
                   <div className="bg-orange-50 p-2 rounded-xl text-orange-600 mt-0.5 shrink-0">
                     <Utensils size={14} />
                   </div>

@@ -157,7 +157,7 @@ export default function InventoryPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col dark:bg-stone-950 dark:text-stone-100">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 tracking-tight">Hammadde Stok & Reçeteler</h1>
@@ -195,7 +195,7 @@ export default function InventoryPage() {
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 flex-1 overflow-hidden">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 flex-1 overflow-hidden">
         {activeTab === 'STOCK' ? (
           <div className="overflow-x-auto h-full">
             <table className="w-full text-left border-collapse">
@@ -347,7 +347,7 @@ export default function InventoryPage() {
       {/* Add Inventory Item Modal */}
       {isAddItemModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl p-4 sm:p-6 w-full max-w-md shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95">
+          <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-md shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95">
             <div className="flex justify-between items-center mb-5 pb-3 border-b border-stone-100">
               <h3 className="text-xl font-black text-stone-800 flex items-center gap-2">
                 <Package className="text-orange-600" size={22} />
@@ -461,7 +461,7 @@ export default function InventoryPage() {
       {/* Add Recipe Modal */}
       {isAddRecipeModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl p-4 sm:p-6 w-full max-w-lg shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95">
+          <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-lg shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95">
             <div className="flex justify-between items-center mb-5 pb-3 border-b border-stone-100">
               <h3 className="text-xl font-black text-stone-800 flex items-center gap-2">
                 <ChefHat className="text-orange-600" size={22} />

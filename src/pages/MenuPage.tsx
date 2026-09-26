@@ -154,7 +154,7 @@ export default function MenuPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col dark:bg-stone-950 dark:text-stone-100">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 tracking-tight">Menü Yönetimi</h1>
@@ -179,9 +179,9 @@ export default function MenuPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 flex flex-col flex-1 overflow-hidden">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 flex flex-col flex-1 overflow-hidden">
         {/* Toolbar */}
-        <div className="p-4 border-b border-stone-200 flex flex-col sm:flex-row gap-4 justify-between items-center bg-stone-50/50">
+        <div className="p-4 border-b border-stone-200 dark:border-stone-800 flex flex-col sm:flex-row gap-4 justify-between items-center bg-stone-50/50 dark:bg-stone-900/50">
           <div className="flex gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
             <button
               onClick={() => setActiveCategory('ALL')}
@@ -222,7 +222,7 @@ export default function MenuPage() {
         {/* Table */}
         <div className="flex-1 overflow-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-stone-50 sticky top-0 z-10 text-xs uppercase tracking-wider font-bold text-stone-500 border-b border-stone-200">
+            <thead className="bg-stone-50 dark:bg-stone-900 sticky top-0 z-10 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-400 border-b border-stone-200 dark:border-stone-800">
               <tr>
                 <th className="py-3 sm:py-3.5 px-3 sm:px-6">Ürün Adı</th>
                 <th className="py-3 sm:py-3.5 px-3 sm:px-6">Kategori</th>
@@ -232,11 +232,11 @@ export default function MenuPage() {
                 <th className="py-3 sm:py-3.5 px-3 sm:px-6 text-right">İşlemler</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100 text-sm">
+            <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-sm">
               {filteredItems.map(item => {
                 const category = categories.find(c => c.id === item.categoryId);
                 return (
-                  <tr key={item.id} className="hover:bg-stone-50/70 transition-colors">
+                  <tr key={item.id} className="hover:bg-stone-50/70 dark:hover:bg-stone-850/60 transition-colors">
                     <td className="py-3 sm:py-4 px-3 sm:px-6">
                       <div className="font-bold text-stone-800">{item.name}</div>
                       {item.description && <div className="text-xs text-stone-400 truncate max-w-xs mt-0.5">{item.description}</div>}
@@ -317,7 +317,7 @@ export default function MenuPage() {
       {/* Add Product Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl p-4 sm:p-6 w-full max-w-lg shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95">
+          <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-lg shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95">
             <div className="flex justify-between items-center mb-5 pb-3 border-b border-stone-100">
               <h3 className="text-xl font-black text-stone-800 flex items-center gap-2">
                 <Utensils className="text-orange-600" size={22} />
@@ -436,7 +436,7 @@ export default function MenuPage() {
       {/* Edit Product Modal */}
       {editingItem && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl p-4 sm:p-6 w-full max-w-lg shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95">
+          <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-lg shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95">
             <div className="flex justify-between items-center mb-5 pb-3 border-b border-stone-100">
               <h3 className="text-xl font-black text-stone-800 flex items-center gap-2">
                 <Edit2 className="text-orange-600" size={20} />

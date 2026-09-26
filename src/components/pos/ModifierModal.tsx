@@ -46,7 +46,7 @@ export default function ModifierModal({ item, onClose, onConfirm }: ModifierModa
 
   return (
     <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] shadow-2xl border border-stone-200">
+      <div className="bg-white dark:bg-stone-900 dark:border-stone-800 dark:text-stone-100 rounded-3xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] shadow-2xl border border-stone-200">
         <div className="flex justify-between items-center p-4 sm:p-5 border-b border-stone-200">
           <div>
             <h2 className="text-xl font-black text-stone-900">{item.name}</h2>
@@ -115,7 +115,7 @@ export default function ModifierModal({ item, onClose, onConfirm }: ModifierModa
                value={notes}
                onChange={e => setNotes(e.target.value)}
                placeholder="Örn: Az tuzlu, alerjen uyarısı vb."
-               className="w-full p-3 border border-stone-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
+               className="w-full p-3 border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm dark:text-stone-100"
                rows={2}
              />
           </div>

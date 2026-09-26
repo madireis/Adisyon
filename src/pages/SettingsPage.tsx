@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Printer, CreditCard, Bell, Store, CheckCircle2, Database, Trash2, Plus, X, AlertTriangle } from 'lucide-react';
+import { Settings, Printer, CreditCard, Bell, Store, CheckCircle2, Database, Trash2, Plus, X, AlertTriangle, Sun, Moon, Monitor, Wifi, QrCode, Smartphone } from 'lucide-react';
 import { cn, generateId } from '@/lib/utils';
 import { db } from '@/lib/db';
 import { resetDatabaseToCleanState } from '@/lib/mockData';
+import { useTheme } from '@/lib/theme';
+import { useLocalNetwork } from '@/lib/useLocalNetwork';
+import LocalNetworkModal from '@/components/common/LocalNetworkModal';
+import { generateQRCodeSVG } from '@/lib/qrCodeGenerator';
 
 interface PrinterConfig {
   id: string;
@@ -13,9 +17,13 @@ interface PrinterConfig {
 }
 
 export default function SettingsPage() {
-  const [activeSection, setActiveSection] = useState<'general' | 'printers' | 'payments' | 'notifications' | 'database'>('general');
+  const { theme, setTheme } = useTheme();
+  const [activeSection, setActiveSection] = useState<'general' | 'network' | 'printers' | 'payments' | 'notifications' | 'database'>('general');
   const [saved, setSaved] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false);
+
+  const { networkInfo, connectedGarsons, isWifiConnected, pingMs } = useLocalNetwork();
 
   // Business Profile states
   const [profile, setProfile] = useState({
@@ -91,7 +99,8 @@ export default function SettingsPage() {
   };
 
   const sections = [
-    { id: 'general' as const, label: 'Restoran Bilgileri', icon: <Store size={18} /> },
+    { id: 'general' as const, label: 'Restoran & Görünüm', icon: <Store size={18} /> },
+    { id: 'network' as const, label: 'Yerel WiFi & Garsonlar', icon: <Wifi size={18} /> },
     { id: 'printers' as const, label: 'Termal Yazıcılar', icon: <Printer size={18} /> },
     { id: 'payments' as const, label: 'Ödeme Metodları', icon: <CreditCard size={18} /> },
     { id: 'notifications' as const, label: 'Bildirimler & Ses', icon: <Bell size={18} /> },
@@ -102,7 +111,7 @@ export default function SettingsPage() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto flex flex-col lg:flex-row lg:h-full gap-4 lg:gap-8 select-none">
       {/* Sidebar navigation */}
       <div className="w-full lg:w-64 flex lg:flex-col gap-2 shrink-0 overflow-x-auto pb-2 lg:pb-0">
-        <h1 className="text-2xl font-black text-stone-800 lg:mb-6 flex items-center gap-2 shrink-0 pr-4 lg:pr-0">
+        <h1 className="text-2xl font-black text-stone-800 dark:text-stone-100 lg:mb-6 flex items-center gap-2 shrink-0 pr-4 lg:pr-0">
           <Settings className="text-orange-600 w-6 h-6" />
           Sistem Ayarları
         </h1>
@@ -113,8 +122,8 @@ export default function SettingsPage() {
             className={cn(
               "flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm text-left transition-all cursor-pointer shrink-0 whitespace-nowrap",
               activeSection === section.id 
-                ? "bg-stone-900 text-white shadow-sm" 
-                : "text-stone-600 hover:bg-stone-100"
+                ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-sm" 
+                : "text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800/60"
             )}
           >
             {section.icon}
@@ -124,62 +133,194 @@ export default function SettingsPage() {
       </div>
 
       {/* Main Settings Panel */}
-      <div className="flex-1 bg-white rounded-3xl shadow-sm border border-stone-200 p-4 sm:p-6 lg:p-8 overflow-y-auto min-w-0">
+      <div className="flex-1 bg-white dark:bg-stone-900 rounded-3xl shadow-sm border border-stone-200 dark:border-stone-800 p-4 sm:p-6 lg:p-8 overflow-y-auto min-w-0">
         {activeSection === 'general' && (
-          <div>
-            <h2 className="text-xl font-black text-stone-900 mb-1">WOT'S CAFE RESTAURANT İşletme Profili</h2>
-            <p className="text-xs text-stone-500 mb-6">Adisyon ve fiş üzerinde yer alacak resmi işletme bilgileri</p>
-            
-            <div className="space-y-4 max-w-xl">
-              <div>
-                <label className="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">Ticari Ünvan / Restoran Adı</label>
-                <input 
-                  type="text" 
-                  value={profile.name}
-                  onChange={e => setProfile(p => ({ ...p, name: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-orange-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">Açık Adres (Silivri Şubesi)</label>
-                <textarea 
-                  value={profile.address}
-                  onChange={e => setProfile(p => ({ ...p, address: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 outline-none resize-none h-20"
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">İşletme Telefonu</label>
-                  <input 
-                    type="text" 
-                    value={profile.phone}
-                    onChange={e => setProfile(p => ({ ...p, phone: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-orange-500 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-stone-600 uppercase tracking-wider mb-1">Vergi Dairesi / No</label>
-                  <input 
-                    type="text" 
-                    value={profile.tax}
-                    onChange={e => setProfile(p => ({ ...p, tax: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-orange-500 outline-none"
-                  />
-                </div>
-              </div>
-              <div className="pt-4 flex items-center gap-3">
-                <button 
-                  onClick={handleSaveProfile}
-                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer shadow-sm"
+          <div className="space-y-8">
+            {/* Theme Selector Section */}
+            <div>
+              <h2 className="text-xl font-black text-stone-900 dark:text-stone-100 mb-1">Uygulama Teması & Görünüm</h2>
+              <p className="text-xs text-stone-500 dark:text-stone-400 mb-4">iOS Warm Charcoal Koyu Modu veya Aydınlık Temayı seçin</p>
+              
+              <div className="grid grid-cols-3 gap-3 max-w-xl">
+                <button
+                  type="button"
+                  onClick={() => setTheme('light')}
+                  className={cn(
+                    "p-4 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all cursor-pointer font-bold text-xs",
+                    theme === 'light'
+                      ? "border-orange-600 bg-orange-50/50 dark:bg-stone-800 text-orange-600"
+                      : "border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
+                  )}
                 >
-                  Ayarları Kaydet
+                  <Sun size={24} className="text-amber-500" />
+                  <span>Açık Mod</span>
                 </button>
-                {saved && (
-                  <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                    <CheckCircle2 size={16} /> Kaydedildi!
-                  </span>
-                )}
+
+                <button
+                  type="button"
+                  onClick={() => setTheme('dark')}
+                  className={cn(
+                    "p-4 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all cursor-pointer font-bold text-xs",
+                    theme === 'dark'
+                      ? "border-orange-600 bg-orange-50/50 dark:bg-stone-800 text-orange-600"
+                      : "border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
+                  )}
+                >
+                  <Moon size={24} className="text-indigo-400" />
+                  <span>Koyu Mod</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setTheme('system')}
+                  className={cn(
+                    "p-4 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all cursor-pointer font-bold text-xs",
+                    theme === 'system'
+                      ? "border-orange-600 bg-orange-50/50 dark:bg-stone-800 text-orange-600"
+                      : "border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
+                  )}
+                >
+                  <Monitor size={24} className="text-stone-400" />
+                  <span>Sistem</span>
+                </button>
+              </div>
+            </div>
+
+            <hr className="border-stone-200 dark:border-stone-800" />
+
+            {/* Profile Section */}
+            <div>
+              <h2 className="text-xl font-black text-stone-900 dark:text-stone-100 mb-1">WOT'S CAFE RESTAURANT İşletme Profili</h2>
+              <p className="text-xs text-stone-500 dark:text-stone-400 mb-6">Adisyon ve fiş üzerinde yer alacak resmi işletme bilgileri</p>
+              
+              <div className="space-y-4 max-w-xl">
+                <div>
+                  <label className="block text-xs font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider mb-1">Ticari Ünvan / Restoran Adı</label>
+                  <input 
+                    type="text" 
+                    value={profile.name}
+                    onChange={e => setProfile(p => ({ ...p, name: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-300 dark:border-stone-800 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-orange-500 outline-none text-stone-900 dark:text-stone-100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider mb-1">Açık Adres (Silivri Şubesi)</label>
+                  <textarea 
+                    value={profile.address}
+                    onChange={e => setProfile(p => ({ ...p, address: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-300 dark:border-stone-800 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 outline-none resize-none h-20 text-stone-900 dark:text-stone-100"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider mb-1">İşletme Telefonu</label>
+                    <input 
+                      type="text" 
+                      value={profile.phone}
+                      onChange={e => setProfile(p => ({ ...p, phone: e.target.value }))}
+                      className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-300 dark:border-stone-800 rounded-xl text-sm font-mono focus:ring-2 focus:ring-orange-500 outline-none text-stone-900 dark:text-stone-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider mb-1">Vergi Dairesi / No</label>
+                    <input 
+                      type="text" 
+                      value={profile.tax}
+                      onChange={e => setProfile(p => ({ ...p, tax: e.target.value }))}
+                      className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-300 dark:border-stone-800 rounded-xl text-sm font-mono focus:ring-2 focus:ring-orange-500 outline-none text-stone-900 dark:text-stone-100"
+                    />
+                  </div>
+                </div>
+                <div className="pt-4 flex items-center gap-3">
+                  <button 
+                    onClick={handleSaveProfile}
+                    className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer shadow-sm"
+                  >
+                    Ayarları Kaydet
+                  </button>
+                  {saved && (
+                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                      <CheckCircle2 size={16} /> Kaydedildi!
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeSection === 'network' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-black text-stone-900 dark:text-stone-100 mb-1 flex items-center gap-2">
+                <Wifi className="text-emerald-600" size={22} />
+                Yerel Ağ (WiFi) & Garson Telefon Bağlantısı
+              </h2>
+              <p className="text-xs text-stone-500 dark:text-stone-400">
+                Adisyon sistemi ve garson cep telefonları aynı yerel Wi-Fi ağında (Örn: WotsCafe_WiFi) canlı olarak birbirini görür.
+              </p>
+            </div>
+
+            {/* Network Info Banner */}
+            <div className="bg-emerald-50 dark:bg-emerald-950/40 p-5 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shrink-0">
+                  <Wifi size={24} className="animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-emerald-900 dark:text-emerald-200">
+                    Yerel Ağ Sunucusu Aktif & Dinleniyor
+                  </h3>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium mt-0.5">
+                    Ana PC IP Adresi: <code className="font-bold bg-white/70 dark:bg-stone-900/70 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-700">{networkInfo?.joinUrl || `http://${window.location.hostname || '192.168.1.105'}:5173`}</code>
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsNetworkModalOpen(true)}
+                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-2 transition-all cursor-pointer shrink-0"
+              >
+                <QrCode size={16} />
+                <span>QR Kod & Cihaz Listesi</span>
+              </button>
+            </div>
+
+            {/* Active Connected Devices List */}
+            <div className="bg-stone-50 dark:bg-stone-950 p-5 rounded-2xl border border-stone-200 dark:border-stone-800">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-extrabold text-sm text-stone-800 dark:text-stone-200 flex items-center gap-2">
+                  <Smartphone size={16} className="text-orange-600" />
+                  WiFi Ağındaki Garson Telefonları ({connectedGarsons.filter(g => g.isOnline).length} Cihaz)
+                </h3>
+                <span className="text-xs text-stone-500 font-semibold">
+                  Gecikme: {pingMs} ms
+                </span>
+              </div>
+
+              <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 overflow-hidden divide-y divide-stone-100 dark:divide-stone-800">
+                {connectedGarsons.map((garson) => (
+                  <div key={garson.id} className="p-3.5 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-orange-600 text-white font-bold text-xs flex items-center justify-center">
+                        {garson.name.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div>
+                        <span className="font-bold text-xs text-stone-900 dark:text-stone-100 block">{garson.name}</span>
+                        <span className="text-[10px] text-stone-500 dark:text-stone-400 font-semibold">{garson.deviceName} • {garson.ip}</span>
+                      </div>
+                    </div>
+
+                    <span className={cn(
+                      "text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border",
+                      garson.isOnline 
+                        ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" 
+                        : "bg-stone-100 text-stone-500 border-stone-200"
+                    )}>
+                      {garson.isOnline ? 'Canlı Bağlı' : 'Koptu'}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -383,6 +524,11 @@ export default function SettingsPage() {
           </div>
         )}
       </div>
+
+      <LocalNetworkModal 
+        isOpen={isNetworkModalOpen} 
+        onClose={() => setIsNetworkModalOpen(false)} 
+      />
     </div>
   );
 }

@@ -58,7 +58,7 @@ export default function ReservationsPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col space-y-6 dark:bg-stone-950 dark:text-stone-100">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 tracking-tight">Masa Rezervasyonları</h1>
@@ -75,7 +75,7 @@ export default function ReservationsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {reservations.map((res: Reservation) => (
-          <div key={res.id} className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs flex flex-col justify-between hover:shadow-md transition-all">
+          <div key={res.id} className="bg-white dark:bg-stone-900 p-5 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-xs flex flex-col justify-between hover:shadow-md transition-all">
             <div>
               <div className="flex justify-between items-start mb-3">
                 <div>
@@ -131,7 +131,7 @@ export default function ReservationsPage() {
       {/* New Reservation Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl p-4 sm:p-6 w-full max-w-md shadow-2xl border border-stone-200">
+          <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-md shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-stone-900">Yeni Rezervasyon</h2>
               <button onClick={() => setIsModalOpen(false)} className="p-1 rounded-full text-stone-400 hover:text-stone-600">

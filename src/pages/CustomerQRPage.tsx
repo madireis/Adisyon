@@ -54,7 +54,7 @@ export default function CustomerQRPage() {
   const cartTotal = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-800 pb-28 select-none">
+    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-100 pb-28 select-none">
       {/* Brand Header */}
       <header className="bg-stone-900 text-white p-5 sticky top-0 z-30 shadow-md">
         <div className="max-w-md mx-auto flex justify-between items-center">

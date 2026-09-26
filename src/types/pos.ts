@@ -19,6 +19,7 @@ export type OnlinePlatform = 'yemeksepeti' | 'getir' | 'trendyol' | 'migros' | '
 export interface Staff {
   id: string
   name: string
+  username: string
   role: UserRole
   pin: string
   avatar?: string

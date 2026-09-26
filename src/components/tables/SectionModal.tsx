@@ -81,7 +81,7 @@ export default function SectionModal({ floor, onClose, onSuccess }: SectionModal
 
   return (
     <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 select-none">
-      <div className="bg-white rounded-3xl w-full max-w-lg p-4 sm:p-6 shadow-2xl border border-stone-200 max-h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-stone-900 dark:border-stone-800 dark:text-stone-100 rounded-3xl w-full max-w-lg p-4 sm:p-6 shadow-2xl border border-stone-200 max-h-[90vh] flex flex-col">
         <div className="flex justify-between items-center pb-4 border-b border-stone-100 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
@@ -107,7 +107,7 @@ export default function SectionModal({ floor, onClose, onSuccess }: SectionModal
               placeholder="Örn: Açık Teras, Ön Bahçe, Balkon, VIP..."
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-orange-500 outline-none"
+              className="w-full px-4 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-300 dark:border-stone-800 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-orange-500 outline-none dark:text-stone-100"
             />
           </div>
 

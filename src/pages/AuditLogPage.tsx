@@ -8,7 +8,7 @@ export default function AuditLogPage() {
   const logs = useLiveQuery(() => db.auditLogs.orderBy('timestamp').reverse().limit(100).toArray()) || [];
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto h-full flex flex-col">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto h-full flex flex-col dark:bg-stone-950 dark:text-stone-100">
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 tracking-tight">Denetim Günlüğü (Audit Log)</h1>
@@ -20,7 +20,7 @@ export default function AuditLogPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 flex-1 overflow-auto p-4 sm:p-6">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 flex-1 overflow-auto p-4 sm:p-6">
         <div className="space-y-6">
           {logs.map((log: AuditLog, idx: number) => (
             <div key={log.id} className="flex gap-4 relative">

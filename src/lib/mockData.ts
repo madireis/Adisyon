@@ -503,13 +503,13 @@ export const menuItems: MenuItem[] = [
 
 // ─── STAFF ────────────────────────────────────────────────────
 export const staffMembers: Staff[] = [
-  { id: 'staff-1', name: 'Ahmet Yılmaz', role: 'waiter', pin: '1234', active: true },
-  { id: 'staff-2', name: 'Zeynep Kaya', role: 'cashier', pin: '2345', active: true },
-  { id: 'staff-3', name: 'Mehmet Demir', role: 'kitchen', pin: '3456', active: true },
-  { id: 'staff-4', name: 'Can Aksoy', role: 'waiter', pin: '4567', active: true },
-  { id: 'staff-5', name: 'Elif Şahin', role: 'bar', pin: '5678', active: true },
-  { id: 'staff-6', name: 'Murat Bey', role: 'manager', pin: '7890', active: true },
-  { id: 'staff-7', name: 'Patron', role: 'owner', pin: '9999', active: true },
+  { id: 'staff-1', name: 'Ahmet Yılmaz', username: '1001', role: 'waiter', pin: '1234', active: true },
+  { id: 'staff-2', name: 'Zeynep Kaya', username: '1002', role: 'cashier', pin: '2345', active: true },
+  { id: 'staff-3', name: 'Mehmet Demir', username: '1003', role: 'kitchen', pin: '3456', active: true },
+  { id: 'staff-4', name: 'Can Aksoy', username: '1004', role: 'waiter', pin: '4567', active: true },
+  { id: 'staff-5', name: 'Elif Şahin', username: '1005', role: 'bar', pin: '5678', active: true },
+  { id: 'staff-6', name: 'Murat Bey', username: '1006', role: 'manager', pin: '7890', active: true },
+  { id: 'staff-7', name: 'Patron', username: '1007', role: 'owner', pin: '9999', active: true },
 ]
 
 // ─── SAMPLE ORDERS (Empty for production) ────────────────────────────
@@ -672,27 +672,15 @@ export async function seedDatabase(db: import('@/lib/db').PosDatabase) {
     }
   }
 
-  // Icon migrations for categories and floors
+  // Ensure staff members have numeric usernames assigned
   try {
-    const floorsToUpdate = await db.floors.toArray()
-    for (const f of floorsToUpdate) {
-      if (f.icon === '🌿') await db.floors.update(f.id, { icon: 'waves' })
-      else if (f.icon === '☕') await db.floors.update(f.id, { icon: 'coffee' })
-      else if (f.icon === '🍸') await db.floors.update(f.id, { icon: 'wine' })
-      else if (f.icon === '🌅') await db.floors.update(f.id, { icon: 'sunset' })
-    }
-    const catsToUpdate = await db.categories.toArray()
-    for (const c of catsToUpdate) {
-      if (c.icon === '🍳') await db.categories.update(c.id, { icon: 'egg' })
-      else if (c.icon === '🥗') await db.categories.update(c.id, { icon: 'salad' })
-      else if (c.icon === '🍔') await db.categories.update(c.id, { icon: 'sandwich' })
-      else if (c.icon === '🍕') await db.categories.update(c.id, { icon: 'pizza' })
-      else if (c.icon === '🍝') await db.categories.update(c.id, { icon: 'utensils' })
-      else if (c.icon === '🥩') await db.categories.update(c.id, { icon: 'beef' })
-      else if (c.icon === '🍰') await db.categories.update(c.id, { icon: 'cake' })
-      else if (c.icon === '☕') await db.categories.update(c.id, { icon: 'coffee' })
-      else if (c.icon === '🧊') await db.categories.update(c.id, { icon: 'glass-water' })
-      else if (c.icon === '🍹') await db.categories.update(c.id, { icon: 'martini' })
+    const staffToUpdate = await db.staff.toArray()
+    for (const s of staffToUpdate) {
+      if (!s.username) {
+        const match = staffMembers.find(sm => sm.id === s.id)
+        const fallbackUsername = match ? match.username : `100${s.id.replace(/\D/g, '') || Math.floor(Math.random() * 900 + 100)}`
+        await db.staff.update(s.id, { username: fallbackUsername })
+      }
     }
   } catch {
     // ignore

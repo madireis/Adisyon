@@ -128,7 +128,7 @@ export default function TableModal({ table, defaultFloorId, floors, onClose, onS
 
   return (
     <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 select-none animate-fadeIn">
-      <div className="bg-white rounded-3xl w-full max-w-md p-4 sm:p-6 shadow-2xl border border-stone-200">
+      <div className="bg-white dark:bg-stone-900 dark:border-stone-800 dark:text-stone-100 rounded-3xl w-full max-w-md p-4 sm:p-6 shadow-2xl border border-stone-200">
         <div className="flex justify-between items-center pb-4 border-b border-stone-100">
           <div>
             <h2 className="text-xl font-black text-stone-900">
@@ -169,7 +169,7 @@ export default function TableModal({ table, defaultFloorId, floors, onClose, onS
                 setLabel(e.target.value);
                 if (errorMsg) setErrorMsg('');
               }}
-              className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-base font-black focus:ring-2 focus:ring-orange-500 outline-none uppercase"
+              className="w-full px-4 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-300 dark:border-stone-800 rounded-xl text-base font-black focus:ring-2 focus:ring-orange-500 outline-none uppercase dark:text-stone-100"
             />
           </div>
 
@@ -180,7 +180,7 @@ export default function TableModal({ table, defaultFloorId, floors, onClose, onS
             <select
               value={floorId}
               onChange={e => setFloorId(e.target.value)}
-              className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm font-bold focus:ring-2 focus:ring-orange-500 outline-none cursor-pointer"
+              className="w-full px-4 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-300 dark:border-stone-800 rounded-xl text-sm font-bold focus:ring-2 focus:ring-orange-500 outline-none cursor-pointer dark:text-stone-100"
             >
               {floors.map(f => (
                 <option key={f.id} value={f.id}>
@@ -202,7 +202,7 @@ export default function TableModal({ table, defaultFloorId, floors, onClose, onS
                 required
                 value={seats}
                 onChange={e => setSeats(Number(e.target.value))}
-                className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm font-bold focus:ring-2 focus:ring-orange-500 outline-none"
+                className="w-full px-4 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-300 dark:border-stone-800 rounded-xl text-sm font-bold focus:ring-2 focus:ring-orange-500 outline-none dark:text-stone-100"
               />
             </div>
 
@@ -213,7 +213,7 @@ export default function TableModal({ table, defaultFloorId, floors, onClose, onS
               <select
                 value={shape}
                 onChange={e => setShape(e.target.value as any)}
-                className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm font-bold focus:ring-2 focus:ring-orange-500 outline-none cursor-pointer"
+                className="w-full px-4 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-300 dark:border-stone-800 rounded-xl text-sm font-bold focus:ring-2 focus:ring-orange-500 outline-none cursor-pointer dark:text-stone-100"
               >
                 <option value="square">Kare (Standart)</option>
                 <option value="round">Yuvarlak (Bistro/Cafe)</option>

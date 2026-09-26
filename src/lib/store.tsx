@@ -5,6 +5,7 @@ import { generateId } from '@/lib/utils'
 export const defaultUser: Staff = {
   id: 'staff-7',
   name: 'Patron (Yönetici)',
+  username: '1007',
   role: 'owner',
   pin: '9999',
   active: true,

@@ -133,7 +133,7 @@ export default function OnlineOrdersPage() {
   ];
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto h-full flex flex-col">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto h-full flex flex-col dark:bg-stone-950 dark:text-stone-100">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 tracking-tight flex items-center gap-2">
@@ -156,7 +156,7 @@ export default function OnlineOrdersPage() {
         {columns.map(col => {
           const colOrders = onlineOrders.filter(o => o.status === col.id);
           return (
-            <div key={col.id} className="w-[85vw] max-w-xs sm:w-80 shrink-0 bg-stone-100 rounded-2xl flex flex-col max-h-full border border-stone-200">
+            <div key={col.id} className="w-[85vw] max-w-xs sm:w-80 shrink-0 bg-stone-100 dark:bg-stone-900 rounded-2xl flex flex-col max-h-full border border-stone-200 dark:border-stone-800">
               {/* Header */}
               <div className="p-3.5 border-b border-stone-200 flex justify-between items-center font-bold text-stone-700 text-xs uppercase tracking-wider">
                 <div className="flex items-center gap-2">
@@ -171,7 +171,7 @@ export default function OnlineOrdersPage() {
               {/* Cards List */}
               <div className="p-3 flex-1 overflow-y-auto space-y-3">
                 {colOrders.map(order => (
-                  <div key={order.id} className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs hover:shadow-md transition-all flex flex-col justify-between">
+                  <div key={order.id} className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 shadow-xs hover:shadow-md transition-all flex flex-col justify-between">
                     <div>
                       <div className="flex justify-between items-start mb-2">
                         {platformBadge(order.platform)}
@@ -250,7 +250,7 @@ export default function OnlineOrdersPage() {
       {/* Add Online Order Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl p-4 sm:p-6 w-full max-w-lg shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95">
+          <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-lg shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95">
             <div className="flex justify-between items-center mb-5 pb-3 border-b border-stone-100">
               <h3 className="text-xl font-black text-stone-800 flex items-center gap-2">
                 <Package className="text-orange-600" size={22} />

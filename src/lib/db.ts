@@ -45,6 +45,10 @@ export class PosDatabase extends Dexie {
       syncQueue: '++id, table, synced, timestamp',
     })
 
+    this.version(2).stores({
+      staff: 'id, username, pin, role, active',
+    })
+
     // Expose posTables helper on instance for easy and safe access to restaurant tables
     Object.defineProperty(this, 'posTables', {
       get: () => this.table('tables'),

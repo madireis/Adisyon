@@ -163,21 +163,21 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex justify-center items-end sm:items-center p-0 sm:p-4 z-50 select-none overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-white w-full max-h-[96vh] sm:max-h-[92vh] max-w-4xl rounded-t-[32px] sm:rounded-[32px] flex flex-col md:flex-row overflow-y-auto sm:overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.25)] border border-stone-200/80 animate-in slide-in-from-bottom duration-250">
+      <div className="bg-white dark:bg-stone-900 dark:border-stone-800 dark:text-stone-100 w-full max-h-[96vh] sm:max-h-[92vh] max-w-4xl rounded-t-[32px] sm:rounded-[32px] flex flex-col md:flex-row overflow-y-auto sm:overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.25)] border border-stone-200/80 animate-in slide-in-from-bottom duration-250">
         
         {/* Mobile Centered Grab Handle Pill */}
-        <div className="sm:hidden w-full pt-3 pb-1 flex justify-center bg-white shrink-0">
-          <div className="w-12 h-1.5 bg-stone-300 rounded-full" />
+        <div className="sm:hidden w-full pt-3 pb-1 flex justify-center bg-white dark:bg-stone-900 shrink-0">
+          <div className="w-12 h-1.5 bg-stone-300 dark:bg-stone-700 rounded-full" />
         </div>
 
         {/* Left Side: Summary & Payments */}
-        <div className="w-full md:w-1/2 bg-stone-50/70 border-r border-stone-200/80 flex flex-col">
-          <div className="p-4 sm:p-5 bg-white border-b border-stone-100 flex justify-between items-center shrink-0">
+        <div className="w-full md:w-1/2 bg-stone-50/70 dark:bg-stone-950/60 border-r border-stone-200/80 dark:border-stone-800 flex flex-col">
+          <div className="p-4 sm:p-5 bg-white dark:bg-stone-900 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center shrink-0">
             <div>
-              <h2 className="text-lg sm:text-xl font-black text-stone-900 tracking-tight">Hesap Kapatma & Ödeme</h2>
-              <p className="text-xs text-stone-500 font-semibold mt-0.5">Masa {table.label} — {table.guestCount || 2} Misafir</p>
+              <h2 className="text-lg sm:text-xl font-black text-stone-900 dark:text-stone-100 tracking-tight">Hesap Kapatma & Ödeme</h2>
+              <p className="text-xs text-stone-500 dark:text-stone-400 font-semibold mt-0.5">Masa {table.label} — {table.guestCount || 2} Misafir</p>
             </div>
-            <button onClick={onClose} className="p-2 bg-stone-100 hover:bg-stone-200 active:scale-95 rounded-full text-stone-500 cursor-pointer transition-all ios-spring">
+            <button onClick={onClose} className="p-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 active:scale-95 rounded-full text-stone-500 dark:text-stone-400 cursor-pointer transition-all ios-spring">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -269,13 +269,13 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
         </div>
 
         {/* Right Side: Keypad & Methods */}
-        <div className="w-full md:w-1/2 p-4 sm:p-5 bg-white flex flex-col justify-between">
+        <div className="w-full md:w-1/2 p-4 sm:p-5 bg-white dark:bg-stone-900 flex flex-col justify-between">
           <div>
             <div className="mb-3">
-              <label className="text-xs font-bold text-stone-500 uppercase tracking-wider block mb-1.5">
+              <label className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider block mb-1.5">
                 Girilecek Tutar (Boş ise kalan tutar ₺{remaining})
               </label>
-              <div className="w-full h-13 bg-stone-100/90 rounded-2xl px-4 flex items-center justify-end text-2xl sm:text-3xl font-mono font-black text-stone-900 border border-stone-200/70">
+              <div className="w-full h-13 bg-stone-100/90 dark:bg-stone-800 rounded-2xl px-4 flex items-center justify-end text-2xl sm:text-3xl font-mono font-black text-stone-900 dark:text-stone-100 border border-stone-200/70 dark:border-stone-700">
                 {currentInput ? `₺${currentInput}` : `₺${remaining}`}
               </div>
             </div>
@@ -286,7 +286,7 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
                 <button
                   key={amt}
                   onClick={() => handleQuickAmount(amt)}
-                  className="py-2.5 bg-stone-100/90 hover:bg-stone-200 active:scale-95 rounded-xl text-xs font-bold text-stone-700 cursor-pointer transition-all ios-spring border border-stone-200/40"
+                  className="py-2.5 bg-stone-100/90 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 active:scale-95 rounded-xl text-xs font-bold text-stone-700 dark:text-stone-100 cursor-pointer transition-all ios-spring border border-stone-200/40 dark:border-stone-700"
                 >
                   +{amt}
                 </button>
@@ -299,7 +299,7 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
                 <button
                   key={val}
                   onClick={() => handleKeypad(val)}
-                  className="h-13 bg-stone-100/80 hover:bg-stone-200 active:bg-stone-300 active:scale-[0.93] border border-stone-200/60 rounded-2xl font-bold text-xl text-stone-800 cursor-pointer transition-all flex items-center justify-center shadow-2xs ios-spring"
+                  className="h-13 bg-stone-100/80 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 active:bg-stone-300 active:scale-[0.93] border border-stone-200/60 dark:border-stone-700 rounded-2xl font-bold text-xl text-stone-800 dark:text-stone-100 cursor-pointer transition-all flex items-center justify-center shadow-2xs ios-spring"
                 >
                   {val === 'DEL' ? <Delete size={20} className="mx-auto" /> : val}
                 </button>
@@ -308,8 +308,8 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
           </div>
 
           {/* Payment Methods buttons */}
-          <div className="space-y-1.5 pt-2 border-t border-stone-100">
-            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
+          <div className="space-y-1.5 pt-2 border-t border-stone-100 dark:border-stone-800">
+            <span className="text-[11px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider block mb-1">
               Ödeme Tipini Seçerek Tahsil Et:
             </span>
             <div className="grid grid-cols-2 gap-2">

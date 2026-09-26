@@ -50,23 +50,23 @@ export default function TablesPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'available': return 'bg-white border-emerald-300 hover:border-emerald-500 shadow-2xs hover:shadow-md text-emerald-950';
-      case 'occupied': return 'bg-orange-50/70 border-orange-400 hover:border-orange-500 shadow-2xs hover:shadow-md text-orange-950';
-      case 'payment_waiting': return 'bg-red-50/70 border-red-400 hover:border-red-500 shadow-2xs hover:shadow-md text-red-950';
-      case 'reserved': return 'bg-purple-50/70 border-purple-300 hover:border-purple-400 shadow-2xs text-purple-950';
-      case 'cleaning': return 'bg-stone-100 border-stone-300 text-stone-600';
-      default: return 'bg-white border-stone-200 text-stone-800';
+      case 'available': return 'bg-white dark:bg-stone-900/90 border-emerald-300 dark:border-emerald-500/40 hover:border-emerald-500 dark:hover:border-emerald-400 shadow-2xs hover:shadow-md text-emerald-950 dark:text-stone-100';
+      case 'occupied': return 'bg-orange-50/70 dark:bg-stone-900/90 border-orange-400 dark:border-orange-500/60 hover:border-orange-500 dark:hover:border-orange-400 shadow-2xs hover:shadow-md text-orange-950 dark:text-stone-100';
+      case 'payment_waiting': return 'bg-red-50/70 dark:bg-stone-900/90 border-red-400 dark:border-red-500/80 hover:border-red-500 dark:hover:border-red-400 shadow-2xs hover:shadow-md text-red-950 dark:text-stone-100';
+      case 'reserved': return 'bg-purple-50/70 dark:bg-stone-900 border-purple-300 dark:border-stone-800 hover:border-purple-400 dark:hover:border-stone-700 shadow-2xs text-purple-950 dark:text-stone-100';
+      case 'cleaning': return 'bg-stone-100 dark:bg-stone-900 border-stone-300 dark:border-stone-800 text-stone-600 dark:text-stone-400';
+      default: return 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-100';
     }
   };
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
-      case 'available': return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
-      case 'occupied': return 'bg-orange-100 text-orange-800 border border-orange-300';
-      case 'payment_waiting': return 'bg-red-100 text-red-700 border border-red-300 animate-pulse';
-      case 'reserved': return 'bg-purple-100 text-purple-800 border border-purple-200';
-      case 'cleaning': return 'bg-stone-200 text-stone-700 border border-stone-300';
-      default: return 'bg-stone-100 text-stone-700 border border-stone-200';
+      case 'available': return 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800';
+      case 'occupied': return 'bg-orange-100 dark:bg-orange-950/80 text-orange-800 dark:text-orange-300 border border-orange-300 dark:border-orange-800';
+      case 'payment_waiting': return 'bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-800 animate-pulse';
+      case 'reserved': return 'bg-purple-100 dark:bg-purple-950/80 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800';
+      case 'cleaning': return 'bg-stone-200 dark:bg-stone-900 text-stone-700 dark:text-stone-400 border border-stone-300 dark:border-stone-800';
+      default: return 'bg-stone-100 dark:bg-stone-900 text-stone-700 dark:text-stone-400 border border-stone-200 dark:border-stone-800';
     }
   };
 
@@ -100,7 +100,7 @@ export default function TablesPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-stone-50 select-none">
+    <div className="flex flex-col h-full bg-stone-50 dark:bg-stone-950 dark:text-stone-100 select-none">
       {/* Blended Toolbar: Floors & Live Indicators */}
       <div className="px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2.5 shrink-0 bg-[#f8f7f5]/80 backdrop-blur-md border-b border-stone-200/50">
         {/* Floor Switcher */}
@@ -112,8 +112,8 @@ export default function TablesPage() {
               className={cn(
                 "px-3 py-1.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shrink-0",
                 currentFloorId === floor.id
-                  ? "bg-stone-900 text-white shadow-xs"
-                  : "bg-white/90 text-stone-600 hover:bg-white hover:text-stone-900 border border-stone-200/60"
+                  ? "bg-stone-900 dark:bg-orange-600 text-white shadow-xs"
+                  : "bg-white/90 dark:bg-stone-900 text-stone-600 dark:text-stone-400 hover:bg-white dark:hover:text-stone-200 hover:text-stone-900 border border-stone-200/60 dark:border-stone-800"
               )}
             >
               <PosIcon name={floor.icon} className="w-3.5 h-3.5 shrink-0" />
