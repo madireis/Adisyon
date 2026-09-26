@@ -223,13 +223,13 @@ export default function TableModal({ table, defaultFloorId, floors, onClose, onS
           </div>
 
           {/* Visual Preview */}
-          <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200 flex flex-col items-center justify-center">
-            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Masa Önizlemesi</span>
-            <div className={`border-2 border-orange-500 bg-orange-50/70 flex flex-col items-center justify-center shadow-xs transition-all ${
+          <div className="bg-stone-50 dark:bg-stone-950 p-4 rounded-2xl border border-stone-200 dark:border-stone-800 flex flex-col items-center justify-center">
+            <span className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-2">Masa Önizlemesi</span>
+            <div className={`border-2 border-orange-500 bg-orange-50/70 dark:bg-orange-950/40 flex flex-col items-center justify-center shadow-xs transition-all ${
               shape === 'round' ? 'w-24 h-24 rounded-full' : shape === 'rectangle' ? 'w-32 h-20 rounded-2xl' : 'w-24 h-24 rounded-2xl'
             }`}>
-              <span className="font-black text-xl text-stone-900">{label.trim().toUpperCase() || 'M?'}</span>
-              <span className="text-[10px] text-stone-500 font-bold">{seats} Kişilik</span>
+              <span className="font-black text-xl text-stone-900 dark:text-stone-100">{label.trim().toUpperCase() || 'M?'}</span>
+              <span className="text-[10px] text-stone-500 dark:text-stone-400 font-bold">{seats} Kişilik</span>
             </div>
           </div>
 
@@ -239,7 +239,7 @@ export default function TableModal({ table, defaultFloorId, floors, onClose, onS
                 type="button"
                 onClick={handleDelete}
                 disabled={isSubmitting}
-                className="px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                className="px-4 py-3 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
               >
                 <Trash2 size={16} />
                 <span>Masayı Sil</span>

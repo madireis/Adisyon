@@ -271,7 +271,7 @@ export default function OnlineOrdersPage() {
                   <select
                     value={platform}
                     onChange={e => setPlatform(e.target.value as OnlinePlatform)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-semibold bg-white dark:bg-stone-850 text-stone-900 dark:text-stone-100"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-semibold bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100"
                   >
                     <option value="direct">Telefon / Paket Servis</option>
                     <option value="yemeksepeti">Yemeksepeti</option>
@@ -288,7 +288,7 @@ export default function OnlineOrdersPage() {
                     placeholder="Örn: Burak Kaya"
                     value={customerName}
                     onChange={e => setCustomerName(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-semibold bg-white dark:bg-stone-850 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500"
+                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-semibold bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500"
                   />
                 </div>
               </div>
@@ -301,7 +301,7 @@ export default function OnlineOrdersPage() {
                   placeholder="Örn: 0532 999 8877"
                   value={customerPhone}
                   onChange={e => setCustomerPhone(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-mono bg-white dark:bg-stone-850 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-mono bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500"
                 />
               </div>
 
@@ -313,7 +313,7 @@ export default function OnlineOrdersPage() {
                   placeholder="Cadde, sokak, bina no, daire..."
                   value={address}
                   onChange={e => setAddress(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-sm resize-none bg-white dark:bg-stone-850 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500"
+                  className="w-full px-4 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-sm resize-none bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500"
                 />
               </div>
 
@@ -324,7 +324,7 @@ export default function OnlineOrdersPage() {
                   <select
                     value={selectedItemId}
                     onChange={e => setSelectedItemId(e.target.value)}
-                    className="flex-1 px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-xs font-semibold bg-white dark:bg-stone-850 text-stone-900 dark:text-stone-100"
+                    className="flex-1 px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-xs font-semibold bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100"
                   >
                     {menuItems.map(m => (
                       <option key={m.id} value={m.id}>{m.name} - {formatCurrency(m.price)}</option>
@@ -335,7 +335,7 @@ export default function OnlineOrdersPage() {
                     min={1}
                     value={selectedQuantity}
                     onChange={e => setSelectedQuantity(Number(e.target.value))}
-                    className="w-16 px-2 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-xs text-center font-bold font-mono bg-white dark:bg-stone-850 text-stone-900 dark:text-stone-100"
+                    className="w-16 px-2 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-xs text-center font-bold font-mono bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100"
                   />
                   <button
                     type="button"

@@ -387,7 +387,7 @@ export default function SettingsPage() {
                         placeholder="Örn: Tatlı İstasyonu Yazıcısı"
                         value={newPrinterName}
                         onChange={e => setNewPrinterName(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-semibold bg-white dark:bg-stone-850 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500"
+                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-semibold bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500"
                       />
                     </div>
                     <div>
@@ -398,7 +398,7 @@ export default function SettingsPage() {
                         placeholder="192.168.1.205"
                         value={newPrinterIp}
                         onChange={e => setNewPrinterIp(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-mono bg-white dark:bg-stone-850 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500"
+                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-mono bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500"
                       />
                     </div>
                     <div>
@@ -406,7 +406,7 @@ export default function SettingsPage() {
                       <select
                         value={newPrinterStation}
                         onChange={e => setNewPrinterStation(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-semibold bg-white dark:bg-stone-850 text-stone-900 dark:text-stone-100"
+                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-semibold bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100"
                       >
                         <option value="Kasa">Kasa</option>
                         <option value="Mutfak">Sıcak Mutfak</option>

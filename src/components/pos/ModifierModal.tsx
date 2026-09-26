@@ -80,7 +80,7 @@ export default function ModifierModal({ item, onClose, onConfirm }: ModifierModa
                         "flex items-center justify-between p-3.5 rounded-xl border-2 transition-all w-full text-left cursor-pointer",
                         isSelected 
                           ? "border-orange-600 bg-orange-50/70 dark:bg-orange-950/40" 
-                          : "border-stone-200 dark:border-stone-750 bg-white dark:bg-stone-850 hover:border-orange-300 dark:hover:border-stone-600"
+                          : "border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 hover:border-orange-300 dark:hover:border-stone-600"
                       )}
                     >
                       <div className="flex items-center gap-3">

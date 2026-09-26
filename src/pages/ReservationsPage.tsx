@@ -146,7 +146,7 @@ export default function ReservationsPage() {
                   required
                   value={customerName}
                   onChange={e => setCustomerName(e.target.value)}
-                  className="w-full p-2.5 bg-white dark:bg-stone-850 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full p-2.5 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                   placeholder="Örn: Mehmet Bey"
                 />
               </div>
@@ -157,7 +157,7 @@ export default function ReservationsPage() {
                   required
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  className="w-full p-2.5 bg-white dark:bg-stone-850 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full p-2.5 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                   placeholder="0532 ..."
                 />
               </div>
@@ -170,7 +170,7 @@ export default function ReservationsPage() {
                     max="20"
                     value={guestCount}
                     onChange={e => setGuestCount(Number(e.target.value))}
-                    className="w-full p-2.5 bg-white dark:bg-stone-850 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full p-2.5 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
                 <div>
@@ -179,7 +179,7 @@ export default function ReservationsPage() {
                     type="time"
                     value={time}
                     onChange={e => setTime(e.target.value)}
-                    className="w-full p-2.5 bg-white dark:bg-stone-850 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full p-2.5 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
               </div>
@@ -189,7 +189,7 @@ export default function ReservationsPage() {
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                   placeholder="Örn: Teras ön masa, bebek sandalyesi..."
-                  className="w-full p-2.5 bg-white dark:bg-stone-850 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full p-2.5 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
                   rows={2}
                 />
               </div>

@@ -291,7 +291,7 @@ export default function KitchenPage() {
 
         {/* SERVİS EDİLDİ */}
         <div className="flex flex-col bg-stone-950/60 rounded-2xl border border-stone-800 overflow-hidden opacity-75">
-          <div className="bg-stone-850 p-3.5 border-b border-stone-800 flex justify-between items-center">
+          <div className="bg-stone-900 p-3.5 border-b border-stone-800 flex justify-between items-center">
             <h2 className="font-bold text-base text-stone-400">SERVİS EDİLDİ</h2>
             <span className="bg-stone-700 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">{servedTickets.length}</span>
           </div>

@@ -262,7 +262,7 @@ export default function Layout() {
                         "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 min-h-[44px]",
                         user.role === 'waiter'
                           ? "bg-orange-600 text-white border-orange-600 shadow-xs"
-                          : "bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850"
+                          : "bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800"
                       )}
                     >
                       <UtensilsCrossed size={14} />
@@ -274,7 +274,7 @@ export default function Layout() {
                         "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 min-h-[44px]",
                         user.role === 'kitchen'
                           ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                          : "bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850"
+                          : "bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800"
                       )}
                     >
                       <ChefHat size={14} />
@@ -286,7 +286,7 @@ export default function Layout() {
                         "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 min-h-[44px]",
                         user.role === 'owner'
                           ? "bg-stone-900 dark:bg-stone-800 text-white border-stone-900 dark:border-stone-700 shadow-xs"
-                          : "bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850"
+                          : "bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800"
                       )}
                     >
                       <ShieldCheck size={14} />

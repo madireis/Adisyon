@@ -176,26 +176,26 @@ export default function InventoryPage() {
         <button
           onClick={() => setActiveTab('STOCK')}
           className={cn(
-            "px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors cursor-pointer",
+            "px-5 py-2.5 rounded-xl font-extrabold text-sm flex items-center gap-2 transition-colors cursor-pointer shadow-xs",
             activeTab === 'STOCK' 
-              ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-sm" 
-              : "bg-white dark:bg-stone-850 text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-700"
+              ? "bg-orange-600 text-white shadow-sm" 
+              : "bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300"
           )}
         >
-          <Package size={18} />
-          Depo & Stok Takibi ({inventoryItems.length})
+          <Package size={18} className={activeTab === 'STOCK' ? "text-white" : "text-stone-950 dark:text-stone-950"} />
+          <span>Depo & Stok Takibi ({inventoryItems.length})</span>
         </button>
         <button
           onClick={() => setActiveTab('RECIPES')}
           className={cn(
-            "px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors cursor-pointer",
+            "px-5 py-2.5 rounded-xl font-extrabold text-sm flex items-center gap-2 transition-colors cursor-pointer shadow-xs",
             activeTab === 'RECIPES' 
-              ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-sm" 
-              : "bg-white dark:bg-stone-850 text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-700"
+              ? "bg-orange-600 text-white shadow-sm" 
+              : "bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300"
           )}
         >
-          <BookOpen size={18} />
-          Ürün Reçeteleri ({recipes.length})
+          <BookOpen size={18} className={activeTab === 'RECIPES' ? "text-white" : "text-stone-950 dark:text-stone-950"} />
+          <span>Ürün Reçeteleri ({recipes.length})</span>
         </button>
       </div>
 
@@ -515,7 +515,7 @@ export default function InventoryPage() {
                         <select
                           value={row.inventoryItemId}
                           onChange={e => handleIngredientChange(idx, 'inventoryItemId', e.target.value)}
-                          className="flex-1 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-xs font-semibold bg-white dark:bg-stone-850 text-stone-800 dark:text-stone-100"
+                          className="flex-1 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 text-xs font-semibold bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100"
                         >
                           {inventoryItems.map(inv => (
                             <option key={inv.id} value={inv.id}>
@@ -531,7 +531,7 @@ export default function InventoryPage() {
                             required
                             value={row.quantity}
                             onChange={e => handleIngredientChange(idx, 'quantity', Number(e.target.value))}
-                            className="w-full px-2 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-850 text-stone-800 dark:text-stone-100 text-xs font-mono font-bold text-right"
+                            className="w-full px-2 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 text-xs font-mono font-bold text-right"
                           />
                           <span className="text-xs text-stone-500 dark:text-stone-400 font-bold">{selectedInv?.unit}</span>
                         </div>

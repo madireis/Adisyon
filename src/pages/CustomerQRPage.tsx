@@ -86,24 +86,24 @@ export default function CustomerQRPage() {
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => handleCall('Garson Çağrıldı')}
-            className="p-3 bg-white dark:bg-stone-900 hover:bg-orange-50 dark:hover:bg-stone-850 active:bg-orange-100 border border-stone-200 dark:border-stone-800 rounded-2xl flex flex-col items-center gap-1 shadow-xs transition-colors cursor-pointer"
+            className="p-3 bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300 rounded-2xl flex flex-col items-center gap-1 shadow-xs transition-colors cursor-pointer"
           >
-            <Bell size={20} className="text-orange-600 dark:text-orange-400" />
-            <span className="text-[11px] font-bold text-stone-700 dark:text-stone-300">Garson Çağır</span>
+            <Bell size={20} className="text-orange-600 dark:text-orange-600" />
+            <span className="text-[11px] font-extrabold text-stone-950 dark:text-stone-950">Garson Çağır</span>
           </button>
           <button
             onClick={() => handleCall('Hesap İstendi')}
-            className="p-3 bg-white dark:bg-stone-900 hover:bg-emerald-50 dark:hover:bg-stone-850 active:bg-emerald-100 border border-stone-200 dark:border-stone-800 rounded-2xl flex flex-col items-center gap-1 shadow-xs transition-colors cursor-pointer"
+            className="p-3 bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300 rounded-2xl flex flex-col items-center gap-1 shadow-xs transition-colors cursor-pointer"
           >
-            <Receipt size={20} className="text-emerald-600 dark:text-emerald-400" />
-            <span className="text-[11px] font-bold text-stone-700 dark:text-stone-300">Hesap İste</span>
+            <Receipt size={20} className="text-emerald-600 dark:text-emerald-600" />
+            <span className="text-[11px] font-extrabold text-stone-950 dark:text-stone-950">Hesap İste</span>
           </button>
           <button
             onClick={() => handleCall('Su İstendi')}
-            className="p-3 bg-white dark:bg-stone-900 hover:bg-sky-50 dark:hover:bg-stone-850 active:bg-sky-100 border border-stone-200 dark:border-stone-800 rounded-2xl flex flex-col items-center gap-1 shadow-xs transition-colors cursor-pointer"
+            className="p-3 bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300 rounded-2xl flex flex-col items-center gap-1 shadow-xs transition-colors cursor-pointer"
           >
-            <Droplets size={20} className="text-sky-600 dark:text-sky-400" />
-            <span className="text-[11px] font-bold text-stone-700 dark:text-stone-300">Su İste</span>
+            <Droplets size={20} className="text-sky-600 dark:text-sky-600" />
+            <span className="text-[11px] font-extrabold text-stone-950 dark:text-stone-950">Su İste</span>
           </button>
         </div>
 
@@ -115,7 +115,7 @@ export default function CustomerQRPage() {
             placeholder="Lezzet ara (örn: burger, latte, cheesecake)..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 text-xs bg-white dark:bg-stone-850 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-2xs"
+            className="w-full pl-9 pr-4 py-2.5 text-xs bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-2xs font-medium"
           />
         </div>
 
@@ -124,10 +124,10 @@ export default function CustomerQRPage() {
           <button
             onClick={() => setActiveCategoryId('')}
             className={cn(
-              "px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer",
+              "px-3.5 py-1.5 rounded-full text-xs font-extrabold whitespace-nowrap transition-all cursor-pointer shadow-xs",
               !activeCategoryId 
-                ? "bg-orange-600 text-white shadow-xs" 
-                : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800"
+                ? "bg-orange-600 text-white shadow-sm" 
+                : "bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300"
             )}
           >
             Tümü
@@ -137,13 +137,13 @@ export default function CustomerQRPage() {
               key={cat.id}
               onClick={() => setActiveCategoryId(cat.id)}
               className={cn(
-                "px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer",
+                "px-3.5 py-1.5 rounded-full text-xs font-extrabold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shadow-xs",
                 activeCategoryId === cat.id 
-                  ? "bg-orange-600 text-white shadow-xs" 
-                  : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800"
+                  ? "bg-orange-600 text-white shadow-sm" 
+                  : "bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300"
               )}
             >
-              <PosIcon name={cat.icon} className="w-3.5 h-3.5 shrink-0" />
+              <PosIcon name={cat.icon} className={cn("w-3.5 h-3.5 shrink-0", activeCategoryId === cat.id ? "text-white" : "text-stone-950 dark:text-stone-950")} />
               <span>{cat.name}</span>
             </button>
           ))}

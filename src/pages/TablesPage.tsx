@@ -110,13 +110,13 @@ export default function TablesPage() {
               key={floor.id}
               onClick={() => dispatch({ type: 'SET_FLOOR', floorId: floor.id })}
               className={cn(
-                "px-3 py-1.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shrink-0",
+                "px-3.5 py-1.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shrink-0 shadow-xs",
                 currentFloorId === floor.id
-                  ? "bg-stone-900 dark:bg-orange-600 text-white shadow-xs"
-                  : "bg-white/90 dark:bg-stone-850 text-stone-600 dark:text-stone-300 hover:bg-white dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-white border border-stone-200/60 dark:border-stone-700"
+                  ? "bg-orange-600 text-white shadow-sm font-black"
+                  : "bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300 font-extrabold shadow-xs"
               )}
             >
-              <PosIcon name={floor.icon} className="w-3.5 h-3.5 shrink-0" />
+              <PosIcon name={floor.icon} className={cn("w-3.5 h-3.5 shrink-0", currentFloorId === floor.id ? "text-white" : "text-stone-950 dark:text-stone-950")} />
               <span>{floor.name}</span>
             </button>
           ))}
@@ -128,10 +128,10 @@ export default function TablesPage() {
                 setEditingFloor(null);
                 setIsSectionModalOpen(true);
               }}
-              className="p-1.5 rounded-xl bg-white/80 dark:bg-stone-850 hover:bg-white dark:hover:bg-stone-800 text-stone-500 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white border border-stone-200/60 dark:border-stone-700 transition-colors cursor-pointer shrink-0 active:scale-95"
+              className="p-1.5 rounded-xl bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300 shadow-xs transition-colors cursor-pointer shrink-0 active:scale-95 font-bold"
               title="Yeni Bölüm Ekle"
             >
-              <Plus size={15} />
+              <Plus size={15} className="text-stone-950 dark:text-stone-950 stroke-[2.5]" />
             </button>
           )}
         </div>
@@ -186,14 +186,14 @@ export default function TablesPage() {
               <button
                 onClick={() => setIsEditMode(!isEditMode)}
                 className={cn(
-                  "px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer border active:scale-95",
+                  "px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer border active:scale-95 shadow-xs",
                   activeEditMode
                     ? "bg-amber-500 text-white border-amber-600 shadow-xs"
-                    : "bg-white/80 dark:bg-stone-850 text-stone-600 dark:text-stone-300 hover:bg-white dark:hover:bg-stone-800 border-stone-200/60 dark:border-stone-700"
+                    : "bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black border-stone-300 dark:border-stone-300 font-extrabold"
                 )}
                 title={activeEditMode ? 'Düzenlemeyi Bitir' : 'Masa Planını Düzenle'}
               >
-                <Settings2 size={14} />
+                <Settings2 size={14} className={activeEditMode ? "text-white" : "text-stone-950 dark:text-stone-950"} />
                 <span className="hidden sm:inline">{activeEditMode ? 'Bitir' : 'Düzenle'}</span>
               </button>
 
@@ -477,7 +477,7 @@ export default function TablesPage() {
               }}
               className="border-2 border-dashed border-stone-300 dark:border-stone-800 hover:border-orange-500 rounded-2xl flex flex-col items-center justify-center p-4 sm:p-6 text-stone-400 hover:text-orange-600 hover:bg-orange-50/40 dark:hover:bg-stone-900 transition-all cursor-pointer min-h-[140px]"
             >
-              <div className="w-10 h-10 rounded-full bg-stone-100 dark:bg-stone-850 flex items-center justify-center mb-2">
+              <div className="w-10 h-10 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center mb-2">
                 <Plus size={20} />
               </div>
               <span className="text-xs font-bold">Yeni Masa Ekle</span>

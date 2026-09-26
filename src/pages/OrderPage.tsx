@@ -315,13 +315,13 @@ export default function OrderPage() {
             key={cat.id}
             onClick={() => setActiveCategoryId(cat.id)}
             className={cn(
-              "flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 active:scale-95 cursor-pointer ios-spring",
+              "flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-extrabold whitespace-nowrap transition-all shrink-0 active:scale-95 cursor-pointer ios-spring shadow-xs",
               activeCategoryId === cat.id
-                ? "bg-orange-600 text-white shadow-xs"
-                : "bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700 border border-stone-200/50 dark:border-stone-700/60"
+                ? "bg-orange-600 text-white shadow-sm"
+                : "bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300"
             )}
           >
-            <PosIcon name={cat.icon} className="w-3.5 h-3.5 shrink-0" />
+            <PosIcon name={cat.icon} className={cn("w-3.5 h-3.5 shrink-0", activeCategoryId === cat.id ? "text-white" : "text-stone-950 dark:text-stone-950")} />
             <span>{cat.name}</span>
           </button>
         ))}
@@ -332,25 +332,25 @@ export default function OrderPage() {
         <div className="p-3.5 border-b border-stone-200 dark:border-stone-800 shrink-0">
            <button 
              onClick={() => navigate('/tables')} 
-             className="flex items-center gap-2 text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white font-semibold text-sm px-2 py-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors w-full cursor-pointer"
+             className="flex items-center gap-2 text-stone-900 dark:text-stone-100 hover:text-orange-600 dark:hover:text-orange-400 font-bold text-sm px-2 py-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors w-full cursor-pointer"
            >
              <ChevronLeft className="w-5 h-5 text-orange-600 dark:text-orange-400" />
              <span>Masalara Dön</span>
            </button>
         </div>
-        <div className="flex-1 py-2 space-y-1 px-2">
+        <div className="flex-1 py-2 space-y-1.5 px-2">
           {categories.map(cat => (
             <button
               key={cat.id}
               onClick={() => setActiveCategoryId(cat.id)}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left text-sm font-semibold cursor-pointer",
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left text-sm font-bold cursor-pointer",
                 activeCategoryId === cat.id
-                  ? "bg-orange-600 text-white shadow-sm"
-                  : "text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
+                  ? "bg-orange-600 text-white shadow-sm font-extrabold"
+                  : "bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-200 dark:border-stone-300 shadow-2xs"
               )}
             >
-              <PosIcon name={cat.icon} className="w-5 h-5 shrink-0" />
+              <PosIcon name={cat.icon} className={cn("w-5 h-5 shrink-0", activeCategoryId === cat.id ? "text-white" : "text-stone-950 dark:text-stone-950")} />
               <span className="truncate">{cat.name}</span>
             </button>
           ))}
@@ -549,8 +549,8 @@ export default function OrderPage() {
                       className={cn(
                         "flex flex-col p-3 rounded-2xl border transition-all",
                         isSent 
-                          ? "bg-stone-50 dark:bg-stone-850/60 border-stone-200 dark:border-stone-800" 
-                          : "bg-orange-50/40 dark:bg-stone-850/80 border-orange-200 dark:border-stone-750"
+                          ? "bg-stone-50 dark:bg-stone-900/60 border-stone-200 dark:border-stone-800" 
+                          : "bg-orange-50/40 dark:bg-stone-900/80 border-orange-200 dark:border-stone-700"
                       )}
                     >
                       <div className="flex justify-between items-start">
@@ -558,7 +558,7 @@ export default function OrderPage() {
                           <div className="flex items-center gap-1.5">
                             <span className="font-bold text-stone-900 dark:text-stone-100 text-sm">{item.name}</span>
                             {isSent && (
-                              <span className="text-[10px] bg-stone-200 dark:bg-stone-750 text-stone-700 dark:text-stone-300 px-1.5 py-0.5 rounded-full font-semibold">
+                              <span className="text-[10px] bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 px-1.5 py-0.5 rounded-full font-semibold">
                                 İletildi
                               </span>
                             )}
@@ -612,7 +612,7 @@ export default function OrderPage() {
                 placeholder="Mutfak için sipariş notu..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full text-xs p-3 bg-white dark:bg-stone-850 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full text-xs p-3 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
 
               <div className="flex justify-between items-center py-1">
@@ -626,10 +626,10 @@ export default function OrderPage() {
                     handleSave();
                     setIsMobileTicketOpen(false);
                   }}
-                  className="py-3 px-2 rounded-2xl font-bold text-xs bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-750 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer ios-spring"
+                  className="py-3 px-2 rounded-2xl font-extrabold text-xs bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black border border-stone-300 dark:border-stone-300 shadow-xs active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer ios-spring"
                 >
-                  <Save className="w-4 h-4" />
-                  KAYDET
+                  <Save className="w-4 h-4 text-stone-950 dark:text-stone-950" />
+                  <span>KAYDET</span>
                 </button>
                 <button
                   onClick={() => {
@@ -697,7 +697,7 @@ export default function OrderPage() {
                   key={item.id} 
                   className={cn(
                     "flex flex-col p-3 rounded-xl border transition-all",
-                    isSent ? "bg-stone-50 dark:bg-stone-850/40 border-stone-200 dark:border-stone-800/60 text-stone-800 dark:text-stone-200" : "bg-orange-50/40 dark:bg-stone-850/40 border-orange-200 dark:border-stone-800/60 text-stone-800 dark:text-stone-200"
+                    isSent ? "bg-stone-50 dark:bg-stone-900/40 border-stone-200 dark:border-stone-800/60 text-stone-800 dark:text-stone-200" : "bg-orange-50/40 dark:bg-stone-900/40 border-orange-200 dark:border-stone-800/60 text-stone-800 dark:text-stone-200"
                   )}
                 >
                   <div className="flex justify-between items-start">
@@ -759,7 +759,7 @@ export default function OrderPage() {
             placeholder="Mutfak için sipariş notu..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full text-xs p-2.5 bg-white dark:bg-stone-850 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full text-xs p-2.5 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
           
           <div className="flex justify-between items-center py-1">
@@ -770,10 +770,10 @@ export default function OrderPage() {
           <div className="grid grid-cols-2 gap-2">
             <button 
               onClick={handleSave} 
-              className="py-3 px-2 rounded-xl font-bold text-xs bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700 active:bg-stone-400 flex items-center justify-center gap-1.5 cursor-pointer"
+              className="py-3 px-2 rounded-xl font-extrabold text-xs bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black border border-stone-300 dark:border-stone-300 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              <Save className="w-4 h-4" />
-              KAYDET
+              <Save className="w-4 h-4 text-stone-950 dark:text-stone-950" />
+              <span>KAYDET</span>
             </button>
             <button 
               onClick={handleSendToKitchen} 

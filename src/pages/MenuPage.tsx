@@ -163,11 +163,11 @@ export default function MenuPage() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
           <button 
             onClick={handleLoadDefaultMenu}
-            className="bg-white dark:bg-stone-850 hover:bg-stone-50 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 border border-stone-200 dark:border-stone-700 shadow-xs transition-colors cursor-pointer"
+            className="bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black px-4 py-2.5 rounded-xl font-extrabold text-sm flex items-center gap-2 border border-stone-300 dark:border-stone-300 shadow-xs transition-colors cursor-pointer"
             title="Wot's Cafe 85 kalem standart restoran menüsünü yükle"
           >
-            <Sparkles size={16} className="text-orange-500" />
-            Standart Menüyü Yükle
+            <Sparkles size={16} className="text-orange-600" />
+            <span>Standart Menüyü Yükle</span>
           </button>
           <button 
             onClick={openAddModal}
@@ -186,10 +186,10 @@ export default function MenuPage() {
             <button
               onClick={() => setActiveCategory('ALL')}
               className={cn(
-                "px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer",
+                "px-4 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-colors cursor-pointer shadow-xs",
                 activeCategory === 'ALL' 
-                  ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-sm" 
-                  : "bg-white dark:bg-stone-850 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-700"
+                  ? "bg-orange-600 text-white shadow-sm" 
+                  : "bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300"
               )}
             >
               Tümü ({menuItems.length})
@@ -199,13 +199,13 @@ export default function MenuPage() {
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
                 className={cn(
-                  "px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer",
+                  "px-4 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs",
                   activeCategory === cat.id 
-                    ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-sm" 
-                    : "bg-white dark:bg-stone-850 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-700"
+                    ? "bg-orange-600 text-white shadow-sm" 
+                    : "bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300"
                 )}
               >
-                <PosIcon name={cat.icon} className="w-4 h-4 shrink-0" />
+                <PosIcon name={cat.icon} className={cn("w-4 h-4 shrink-0", activeCategory === cat.id ? "text-white" : "text-stone-950 dark:text-stone-950")} />
                 <span>{cat.name}</span>
               </button>
             ))}
@@ -218,7 +218,7 @@ export default function MenuPage() {
               placeholder="Ürün adı ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm bg-white dark:bg-stone-850 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full pl-9 pr-4 py-2 text-sm bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent font-medium"
             />
           </div>
         </div>
@@ -240,7 +240,7 @@ export default function MenuPage() {
               {filteredItems.map(item => {
                 const category = categories.find(c => c.id === item.categoryId);
                 return (
-                  <tr key={item.id} className="hover:bg-stone-50/70 dark:hover:bg-stone-850/60 transition-colors">
+                  <tr key={item.id} className="hover:bg-stone-50/70 dark:hover:bg-stone-800/60 transition-colors">
                     <td className="py-3 sm:py-4 px-3 sm:px-6">
                       <div className="font-bold text-stone-800 dark:text-stone-100">{item.name}</div>
                       {item.description && <div className="text-xs text-stone-400 truncate max-w-xs mt-0.5">{item.description}</div>}

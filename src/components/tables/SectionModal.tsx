@@ -82,23 +82,23 @@ export default function SectionModal({ floor, onClose, onSuccess }: SectionModal
   return (
     <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 select-none">
       <div className="bg-white dark:bg-stone-900 dark:border-stone-800 dark:text-stone-100 rounded-3xl w-full max-w-lg p-4 sm:p-6 shadow-2xl border border-stone-200 max-h-[90vh] flex flex-col">
-        <div className="flex justify-between items-center pb-4 border-b border-stone-100 shrink-0">
+        <div className="flex justify-between items-center pb-4 border-b border-stone-100 dark:border-stone-800 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-orange-100 dark:bg-stone-800 text-orange-600 dark:text-orange-400 flex items-center justify-center">
               <PosIcon name={icon} className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-black text-stone-900">
+            <h2 className="text-xl font-black text-stone-900 dark:text-stone-100">
               {floor ? 'Bölümü Düzenle' : 'Yeni Bölüm / Alan Ekle'}
             </h2>
           </div>
-          <button onClick={onClose} className="p-1 rounded-full text-stone-400 hover:text-stone-600 cursor-pointer">
+          <button onClick={onClose} className="p-1 rounded-full text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer">
             <X size={20} />
           </button>
         </div>
 
         <form onSubmit={handleSave} className="space-y-5 pt-4 overflow-y-auto flex-1 pr-1">
           <div>
-            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1.5">
               Bölüm / Alan Adı
             </label>
             <input
@@ -112,7 +112,7 @@ export default function SectionModal({ floor, onClose, onSuccess }: SectionModal
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-2">
               Bölüm Vektör İkonu
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -122,25 +122,25 @@ export default function SectionModal({ floor, onClose, onSuccess }: SectionModal
                   type="button"
                   onClick={() => setIcon(item.id)}
                   className={cn(
-                    "px-3 py-2.5 rounded-xl border flex items-center gap-2.5 text-xs font-bold transition-all cursor-pointer text-left",
+                    "px-3 py-2.5 rounded-xl border flex items-center gap-2.5 text-xs font-bold transition-all cursor-pointer text-left shadow-2xs",
                     icon === item.id
                       ? "bg-orange-600 text-white border-orange-600 shadow-sm"
-                      : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100 hover:border-stone-300"
+                      : "bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700"
                   )}
                 >
-                  <PosIcon name={item.id} className={cn("w-4 h-4 shrink-0", icon === item.id ? "text-white" : "text-stone-500")} />
+                  <PosIcon name={item.id} className={cn("w-4 h-4 shrink-0", icon === item.id ? "text-white" : "text-stone-600 dark:text-stone-300")} />
                   <span className="truncate">{item.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="pt-3 flex gap-2 border-t border-stone-100 mt-4">
+          <div className="pt-3 flex gap-2 border-t border-stone-100 dark:border-stone-800 mt-4">
             {floor && (
               <button
                 type="button"
                 onClick={handleDelete}
-                className="px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-4 py-3 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Trash2 size={16} />
                 <span>Bölümü Sil</span>
