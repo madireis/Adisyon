@@ -2,6 +2,7 @@ import React, { useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { db } from '@/lib/db';
 import { seedDatabase } from '@/lib/mockData';
+import { initSyncEngine } from '@/lib/syncEngine';
 import Layout from '@/components/layout/Layout';
 import LoginPage from '@/pages/LoginPage';
 
@@ -29,7 +30,10 @@ const SuspenseFallback = () => (
 
 export default function App() {
   useEffect(() => {
-    // Seed database on app mount
+    // 1. Initialize real-time cross-device & cross-tab synchronization
+    initSyncEngine(db);
+
+    // 2. Seed database on app mount if necessary
     seedDatabase(db).catch(console.error);
   }, []);
 

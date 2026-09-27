@@ -45,15 +45,30 @@ export default function KitchenPage() {
         status: 'preparing',
         startedAt: nowIso,
       });
+      if (ticket.orderId) {
+        try {
+          await db.orders.update(ticket.orderId, { status: 'preparing' });
+        } catch {}
+      }
     } else if (ticket.status === 'preparing') {
       await db.kitchenTickets.update(ticket.id, {
         status: 'ready',
         completedAt: nowIso,
       });
+      if (ticket.orderId) {
+        try {
+          await db.orders.update(ticket.orderId, { status: 'ready' });
+        } catch {}
+      }
     } else if (ticket.status === 'ready') {
       await db.kitchenTickets.update(ticket.id, {
         status: 'completed',
       });
+      if (ticket.orderId) {
+        try {
+          await db.orders.update(ticket.orderId, { status: 'served' });
+        } catch {}
+      }
     }
   };
 

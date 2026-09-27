@@ -258,6 +258,11 @@ export default function TablesPage() {
                         >
                           <Edit2 size={12} />
                         </button>
+                      ) : order?.status === 'ready' ? (
+                        <span className="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider flex items-center gap-1 max-w-[90%] truncate bg-emerald-600 text-white shadow-xs animate-pulse">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0"></span>
+                          <span className="truncate">Mutfak Hazır!</span>
+                        </span>
                       ) : (
                         <span className={cn(
                           "text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1 max-w-[90%] truncate",
@@ -338,6 +343,11 @@ export default function TablesPage() {
                         >
                           <Edit2 size={13} />
                         </button>
+                      ) : order?.status === 'ready' ? (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider flex items-center gap-1 bg-emerald-600 text-white shadow-xs animate-pulse">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                          Mutfak Hazır!
+                        </span>
                       ) : (
                         <span className={cn(
                           "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1",
