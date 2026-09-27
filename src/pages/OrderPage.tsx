@@ -4,7 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { useApp } from '@/lib/store';
 import { cn, formatCurrency, generateId } from '@/lib/utils';
-import { ChevronLeft, ChevronRight, Plus, Minus, Trash2, CheckCircle2, Send, CreditCard, Save, Utensils, Sparkles, X, Receipt, Search, Printer, Clock, Users, ChefHat, Timer } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Minus, Trash2, CheckCircle2, Send, CreditCard, Utensils, Sparkles, X, Receipt, Search, Printer, Clock, Users, ChefHat, Timer } from 'lucide-react';
 import ModifierModal from '@/components/pos/ModifierModal';
 import PaymentModal from '@/components/pos/PaymentModal';
 import ThermalSlipModal from '@/components/pos/ThermalSlipModal';
@@ -711,20 +711,8 @@ export default function OrderPage() {
                 <span>MUTFAĞA GÖNDER</span>
               </button>
 
-              {/* Secondary Actions: 3 Clean Grid Buttons */}
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleSave();
-                    setIsMobileTicketOpen(false);
-                  }}
-                  className="py-2.5 px-2 bg-white text-stone-950 font-black text-xs rounded-xl shadow-xs hover:bg-stone-100 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 border border-stone-300"
-                >
-                  <Save className="w-3.5 h-3.5 text-stone-950" />
-                  <span>Kaydet</span>
-                </button>
-
+              {/* Secondary Actions: 2 Clean Grid Buttons */}
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => {
@@ -732,7 +720,7 @@ export default function OrderPage() {
                     setIsSlipModalOpen(true);
                   }}
                   disabled={!order && localItems.length === 0}
-                  className="py-2.5 px-2 bg-white text-stone-950 font-black text-xs rounded-xl shadow-xs hover:bg-stone-100 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 border border-stone-300 disabled:opacity-50"
+                  className="py-3 px-2 bg-white text-stone-950 font-black text-xs rounded-xl shadow-xs hover:bg-stone-100 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 border border-stone-300 disabled:opacity-50"
                 >
                   <Printer className="w-3.5 h-3.5 text-stone-950" />
                   <span>Fiş Yazdır</span>
@@ -745,7 +733,7 @@ export default function OrderPage() {
                     setIsPaymentModalOpen(true);
                   }}
                   disabled={!order && localItems.length === 0}
-                  className="py-2.5 px-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
+                  className="py-3 px-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
                 >
                   <CreditCard className="w-3.5 h-3.5" />
                   <span>Hesabı Al</span>
@@ -924,20 +912,12 @@ export default function OrderPage() {
             <span className="text-2xl font-black font-mono text-orange-400">{formatCurrency(total)}</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <button 
-              type="button"
-              onClick={handleSave} 
-              className="py-3 px-2 rounded-xl font-black text-xs bg-white text-stone-950 hover:bg-stone-100 border border-stone-300 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
-            >
-              <Save className="w-4 h-4 text-stone-950" />
-              <span>KAYDET</span>
-            </button>
+          <div className="flex flex-col gap-2">
             <button 
               type="button"
               onClick={handleSendToKitchen} 
               disabled={localItems.length === 0}
-              className="py-3 px-2 rounded-xl font-black text-xs bg-orange-600 text-white hover:bg-orange-500 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition-all"
+              className="w-full py-3.5 px-4 rounded-xl font-black text-sm bg-orange-600 text-white hover:bg-orange-500 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all"
             >
               <Send className="w-4 h-4" />
               <span>MUTFAĞA GÖNDER</span>
@@ -949,7 +929,7 @@ export default function OrderPage() {
                 setIsSlipModalOpen(true);
               }} 
               disabled={!order && localItems.length === 0}
-              className="py-3 px-2 rounded-xl font-black text-xs bg-white text-stone-950 hover:bg-stone-100 border border-stone-300 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer col-span-2 active:scale-95 disabled:opacity-50"
+              className="w-full py-3 px-3 rounded-xl font-black text-xs bg-white text-stone-950 hover:bg-stone-100 border border-stone-300 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
             >
               <Printer className="w-4 h-4 text-stone-950" />
               <span>HESAP / ADİSYON FİŞİ YAZDIR</span>
@@ -958,7 +938,7 @@ export default function OrderPage() {
               type="button"
               onClick={() => setIsPaymentModalOpen(true)} 
               disabled={!order && localItems.length === 0}
-              className="py-3.5 px-4 rounded-xl font-black text-sm bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 disabled:opacity-50 col-span-2 flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all"
+              className="w-full py-3.5 px-4 rounded-xl font-black text-sm bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all"
             >
               <CreditCard className="w-5 h-5" />
               <span>HESABI AL & ÖDEME</span>
