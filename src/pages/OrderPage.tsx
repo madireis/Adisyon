@@ -465,82 +465,87 @@ export default function OrderPage() {
       </div>
 
       {/* Mobile Floating Island Adisyon Bar (lg:hidden) */}
-      <div className="lg:hidden fixed bottom-3 left-3 right-3 z-30 p-2 bg-stone-900/95 dark:bg-stone-900/95 backdrop-blur-xl text-white rounded-2xl shadow-[0_12px_36px_rgba(0,0,0,0.28)] border border-white/10 dark:border-stone-800 flex items-center justify-between gap-2 ios-spring">
-        <button
-          onClick={() => setIsMobileTicketOpen(true)}
-          className="flex-1 flex items-center justify-between px-3 py-2 bg-white/10 hover:bg-white/15 rounded-xl active:scale-[0.98] transition-all text-left cursor-pointer border border-white/5"
-        >
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-orange-500 text-white flex items-center justify-center font-black text-xs shadow-xs">
-              {localItems.reduce((acc, i) => acc + i.quantity, 0)}
+      {(localItems.length > 0 || order) && (
+        <div className="lg:hidden fixed bottom-3 left-3 right-3 z-30 p-2.5 bg-stone-950 text-white rounded-2xl shadow-2xl border border-stone-800 flex items-center justify-between gap-2.5 animate-in slide-in-from-bottom duration-200">
+          <button
+            type="button"
+            onClick={() => setIsMobileTicketOpen(true)}
+            className="flex-1 flex items-center gap-3 px-2 py-1 text-left cursor-pointer active:scale-98 transition-transform"
+          >
+            <div className="w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center font-black text-sm shadow-md shrink-0">
+              {localItems.reduce((acc, i) => acc + i.quantity, 0)}x
             </div>
-            <div>
-              <span className="text-[10px] font-bold text-stone-300 block uppercase tracking-wider leading-none mb-0.5">Adisyon</span>
-              <span className="text-sm font-black text-white font-mono">{formatCurrency(total)}</span>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-black text-orange-400 uppercase tracking-wider">Adisyon</span>
+                <span className="text-[10px] text-stone-400 font-bold">• Masa {table?.label}</span>
+              </div>
+              <div className="text-base font-black font-mono text-white leading-tight">
+                {formatCurrency(total)}
+              </div>
             </div>
+          </button>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            {localItems.length > 0 && (
+              <button
+                type="button"
+                onClick={handleSendToKitchen}
+                className="py-2.5 px-3.5 bg-orange-600 hover:bg-orange-500 active:scale-95 text-white font-black text-xs rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer transition-all"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Mutfak</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setIsMobileTicketOpen(true)}
+              className="py-2.5 px-3 bg-white text-stone-950 font-black text-xs rounded-xl shadow-xs hover:bg-stone-100 active:scale-95 flex items-center gap-1 cursor-pointer transition-all border border-stone-300"
+            >
+              <span>Aç</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
-          <span className="text-xs font-bold text-orange-400 flex items-center">
-            İncele
-            <ChevronRight className="w-4 h-4 ml-0.5" />
-          </span>
-        </button>
-
-        {localItems.length > 0 && (
-          <button
-            onClick={handleSendToKitchen}
-            className="py-2.5 px-3.5 bg-orange-600 hover:bg-orange-500 active:scale-95 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition-all ios-spring"
-          >
-            <Send className="w-4 h-4" />
-            <span>Mutfağa İlet</span>
-          </button>
-        )}
-
-        {(order || localItems.length > 0) && (
-          <button
-            onClick={() => setIsPaymentModalOpen(true)}
-            className="py-2.5 px-3.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-1 whitespace-nowrap cursor-pointer transition-all ios-spring"
-          >
-            <CreditCard className="w-4 h-4" />
-            <span>Öde</span>
-          </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Mobile Slide-Up Ticket Sheet (lg:hidden) */}
       {isMobileTicketOpen && (
-        <div className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex flex-col justify-end animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-stone-900 rounded-t-[32px] max-h-[88vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-250 border-t border-white/20 dark:border-stone-800">
-            {/* Centered iOS Grab Handle Pill */}
-            <div className="w-full pt-3 pb-1 flex justify-center bg-stone-900 shrink-0">
-              <div className="w-12 h-1.5 bg-white/30 rounded-full" />
+        <div className="lg:hidden fixed inset-0 bg-stone-950/80 backdrop-blur-sm z-50 flex flex-col justify-end animate-in fade-in duration-200">
+          <div className="bg-stone-900 text-stone-100 rounded-t-[32px] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-250 border-t border-stone-700">
+            {/* Handle */}
+            <div className="w-full pt-3 pb-1 flex justify-center bg-stone-950 shrink-0">
+              <div className="w-12 h-1.5 bg-stone-700 rounded-full" />
             </div>
 
-            {/* Sheet Header */}
-            <div className="px-4 pb-3.5 pt-1 bg-stone-900 text-white flex justify-between items-center shrink-0">
+            {/* Header */}
+            <div className="px-4 py-3 bg-stone-950 border-b border-stone-800 flex justify-between items-center shrink-0">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-black text-orange-400 tracking-tight">Masa {table?.label}</span>
-                  <span className="text-xs bg-stone-800 text-stone-300 px-2.5 py-0.5 rounded-full font-medium border border-white/5">
-                    {table?.guestCount || 2} Kişi
+                  <span className="text-xl font-black text-orange-400">Masa {table?.label}</span>
+                  <span className="text-[11px] bg-stone-800 text-stone-200 px-2.5 py-0.5 rounded-full font-bold border border-stone-700">
+                    {localItems.reduce((acc, i) => acc + i.quantity, 0)} Ürün
                   </span>
                 </div>
-                <p className="text-xs text-stone-400 mt-0.5">Garson: {state.currentUser?.name || 'Garson'}</p>
+                <p className="text-xs text-stone-400 font-medium mt-0.5">Garson: {state.currentUser?.name || 'Garson'}</p>
               </div>
               <button
+                type="button"
                 onClick={() => setIsMobileTicketOpen(false)}
-                className="p-2 bg-stone-800/80 hover:bg-stone-700 rounded-full text-stone-300 active:scale-95 transition-all"
+                className="p-2 bg-stone-800 hover:bg-stone-700 rounded-full text-white active:scale-95 transition-all cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Items List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-2.5 min-h-[160px]">
+            <div className="flex-1 overflow-y-auto p-3.5 space-y-2.5 min-h-[160px] bg-stone-900">
               {localItems.length === 0 ? (
                 <div className="py-12 text-center text-stone-400">
-                  <CheckCircle2 className="w-10 h-10 mx-auto mb-2 text-stone-300" />
-                  <p className="font-bold text-sm">Adisyon boş</p>
-                  <p className="text-xs text-stone-400 mt-0.5">Menüden ürün seçerek adisyona ekleyin.</p>
+                  <CheckCircle2 className="w-12 h-12 mx-auto mb-2 text-stone-500" />
+                  <p className="font-black text-base text-white">Adisyon henüz boş</p>
+                  <p className="text-xs text-stone-400 mt-1">Menüden ürün ekleyin.</p>
                 </div>
               ) : (
                 localItems.map(item => {
@@ -550,53 +555,80 @@ export default function OrderPage() {
                     <div
                       key={item.id}
                       className={cn(
-                        "flex flex-col p-3 rounded-2xl border transition-all",
-                        isSent 
-                          ? "bg-stone-50 dark:bg-stone-900/60 border-stone-200 dark:border-stone-800" 
-                          : "bg-orange-50/40 dark:bg-stone-900/80 border-orange-200 dark:border-stone-700"
+                        "p-3 rounded-2xl border transition-all flex flex-col gap-2",
+                        isSent
+                          ? "bg-stone-950/70 border-stone-800"
+                          : "bg-stone-800 border-stone-700 shadow-xs"
                       )}
                     >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1 pr-2">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-stone-900 dark:text-stone-100 text-sm">{item.name}</span>
-                            {isSent && (
-                              <span className="text-[10px] bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 px-1.5 py-0.5 rounded-full font-semibold">
-                                İletildi
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-black text-sm text-white">{item.name}</span>
+                            {isSent ? (
+                              <span className="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded-md font-bold">
+                                ✓ İletildi
+                              </span>
+                            ) : (
+                              <span className="text-[10px] bg-orange-950 text-orange-300 border border-orange-800 px-2 py-0.5 rounded-md font-bold">
+                                ● Yeni
                               </span>
                             )}
                           </div>
                           {item.modifiers && item.modifiers.length > 0 && (
-                            <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-                              {item.modifiers.map(m => `+${m.name}`).join(', ')}
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {item.modifiers.map((m, mIdx) => (
+                                <span key={mIdx} className="text-[10px] font-bold bg-stone-700 text-amber-300 px-2 py-0.5 rounded-md border border-amber-400/20">
+                                  +{m.name}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {item.notes && (
+                            <p className="text-xs text-amber-400 font-medium italic mt-1">
+                              Not: {item.notes}
                             </p>
                           )}
                         </div>
-                        <span className="font-extrabold text-stone-900 dark:text-stone-100 text-sm whitespace-nowrap">
-                          {formatCurrency(lineTotal)}
-                        </span>
+                        <div className="text-right shrink-0">
+                          <span className="font-mono font-black text-sm text-white">
+                            {formatCurrency(lineTotal)}
+                          </span>
+                          <div className="text-[10px] text-stone-400">
+                            {item.quantity} x {formatCurrency(item.unitPrice)}
+                          </div>
+                        </div>
                       </div>
 
                       {!isSent && (
-                        <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-orange-100 dark:border-stone-800">
-                          <div className="flex items-center bg-white dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 shadow-2xs">
+                        <div className="flex items-center justify-between pt-2 border-t border-stone-700/60 mt-1">
+                          {/* Large Touch Stepper */}
+                          <div className="flex items-center bg-stone-950 rounded-xl border border-stone-700 p-0.5 shadow-2xs">
                             <button
+                              type="button"
                               onClick={() => updateItemQuantity(item.id, -1)}
-                              className="p-2 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white active:bg-stone-100 dark:active:bg-stone-700 rounded-l-xl cursor-pointer"
+                              className="w-9 h-9 flex items-center justify-center text-white hover:bg-stone-800 active:bg-stone-700 rounded-lg cursor-pointer transition-colors active:scale-90"
                             >
                               <Minus className="w-4 h-4" />
                             </button>
-                            <span className="w-8 text-center font-bold text-sm text-stone-800 dark:text-stone-100">{item.quantity}</span>
+                            <span className="w-8 text-center font-mono font-black text-sm text-white">
+                              {item.quantity}
+                            </span>
                             <button
+                              type="button"
                               onClick={() => updateItemQuantity(item.id, 1)}
-                              className="p-2 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white active:bg-stone-100 dark:active:bg-stone-700 rounded-r-xl cursor-pointer"
+                              className="w-9 h-9 flex items-center justify-center text-white hover:bg-stone-800 active:bg-stone-700 rounded-lg cursor-pointer transition-colors active:scale-90"
                             >
                               <Plus className="w-4 h-4" />
                             </button>
                           </div>
+
+                          {/* Delete button */}
                           <button
+                            type="button"
                             onClick={() => removeItem(item.id)}
-                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 active:bg-red-100 rounded-xl transition-colors cursor-pointer"
+                            className="w-9 h-9 flex items-center justify-center bg-red-950/70 hover:bg-red-900 text-red-400 rounded-xl border border-red-800/60 transition-all cursor-pointer active:scale-90"
+                            title="Sil"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -609,63 +641,78 @@ export default function OrderPage() {
             </div>
 
             {/* Sheet Footer */}
-            <div className="p-4 bg-stone-50 dark:bg-stone-950 border-t border-stone-200 dark:border-stone-800 flex flex-col gap-3 shrink-0">
+            <div className="p-4 bg-stone-950 border-t border-stone-800 flex flex-col gap-3 shrink-0">
               <input
                 type="text"
                 placeholder="Mutfak için sipariş notu..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full text-xs p-3 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full text-xs p-3 bg-stone-900 border border-stone-800 text-white placeholder-stone-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"
               />
 
-              <div className="flex justify-between items-center py-1">
-                <span className="text-sm font-semibold text-stone-500 dark:text-stone-400">Toplam Tutar</span>
-                <span className="text-2xl font-black text-stone-900 dark:text-stone-100">{formatCurrency(total)}</span>
+              {/* Total Row */}
+              <div className="flex justify-between items-center bg-stone-900/60 p-3 rounded-xl border border-stone-800/80">
+                <div>
+                  <span className="text-[11px] font-bold text-stone-400 block uppercase tracking-wider">Adisyon Toplamı</span>
+                  <span className="text-[10px] text-stone-500">KDV Dahil</span>
+                </div>
+                <span className="text-2xl font-black font-mono text-orange-400">
+                  {formatCurrency(total)}
+                </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
+              {/* Primary Full-Width Action: Mutfağa Gönder */}
+              <button
+                type="button"
+                onClick={() => {
+                  handleSendToKitchen();
+                  setIsMobileTicketOpen(false);
+                }}
+                disabled={localItems.length === 0}
+                className="w-full py-3.5 bg-orange-600 hover:bg-orange-500 text-white font-black text-sm rounded-2xl shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 cursor-pointer active:scale-98 disabled:opacity-50 transition-all"
+              >
+                <Send className="w-4 h-4" />
+                <span>MUTFAĞA GÖNDER</span>
+              </button>
+
+              {/* Secondary Actions: 3 Clean Grid Buttons */}
+              <div className="grid grid-cols-3 gap-2">
                 <button
+                  type="button"
                   onClick={() => {
                     handleSave();
                     setIsMobileTicketOpen(false);
                   }}
-                  className="py-3 px-2 rounded-2xl font-extrabold text-xs bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black border border-stone-300 dark:border-stone-300 shadow-xs active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer ios-spring"
+                  className="py-2.5 px-2 bg-white text-stone-950 font-black text-xs rounded-xl shadow-xs hover:bg-stone-100 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 border border-stone-300"
                 >
-                  <Save className="w-4 h-4 text-stone-950 dark:text-stone-950" />
-                  <span>KAYDET</span>
+                  <Save className="w-3.5 h-3.5 text-stone-950" />
+                  <span>Kaydet</span>
                 </button>
+
                 <button
-                  onClick={() => {
-                    handleSendToKitchen();
-                    setIsMobileTicketOpen(false);
-                  }}
-                  disabled={localItems.length === 0}
-                  className="py-3 px-2 rounded-2xl font-bold text-xs bg-orange-600 text-white active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-md cursor-pointer ios-spring"
-                >
-                  <Send className="w-4 h-4" />
-                  MUTFAĞA GÖNDER
-                </button>
-                <button
+                  type="button"
                   onClick={() => {
                     setSlipModalType('receipt');
                     setIsSlipModalOpen(true);
                   }}
                   disabled={!order && localItems.length === 0}
-                  className="py-3 px-2 rounded-2xl font-black text-xs bg-white text-stone-950 hover:bg-stone-100 border border-stone-300 shadow-xs active:scale-95 disabled:opacity-50 col-span-2 flex items-center justify-center gap-2 cursor-pointer ios-spring"
+                  className="py-2.5 px-2 bg-white text-stone-950 font-black text-xs rounded-xl shadow-xs hover:bg-stone-100 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 border border-stone-300 disabled:opacity-50"
                 >
-                  <Printer className="w-4 h-4 text-stone-950" />
-                  <span>HESAP / ADİSYON FİŞİ YAZDIR</span>
+                  <Printer className="w-3.5 h-3.5 text-stone-950" />
+                  <span>Fiş Yazdır</span>
                 </button>
+
                 <button
+                  type="button"
                   onClick={() => {
                     setIsMobileTicketOpen(false);
                     setIsPaymentModalOpen(true);
                   }}
                   disabled={!order && localItems.length === 0}
-                  className="py-3.5 px-4 rounded-2xl font-bold text-sm bg-emerald-600 text-white active:scale-95 disabled:opacity-50 col-span-2 flex items-center justify-center gap-2 shadow-md cursor-pointer ios-spring"
+                  className="py-2.5 px-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
                 >
-                  <CreditCard className="w-5 h-5" />
-                  HESABI AL & ÖDEME
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Hesabı Al</span>
                 </button>
               </div>
             </div>
@@ -674,32 +721,32 @@ export default function OrderPage() {
       )}
 
       {/* Desktop Right Panel: Ticket (hidden on mobile, visible lg:flex) */}
-      <div className="hidden lg:flex w-[380px] xl:w-[420px] bg-white dark:bg-stone-900 border-l border-stone-200 dark:border-stone-800 flex-col h-full shrink-0 shadow-lg">
+      <div className="hidden lg:flex w-[380px] xl:w-[420px] bg-stone-900 border-l border-stone-800 flex-col h-full shrink-0 shadow-xl text-stone-100">
         {/* Table & Order header */}
-        <div className="p-4 bg-stone-900 text-white flex justify-between items-center shrink-0">
+        <div className="p-4 bg-stone-950 text-white flex justify-between items-center border-b border-stone-800 shrink-0">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-2xl font-black text-orange-400">Masa {table?.label}</span>
-              <span className="text-xs bg-stone-800 text-stone-300 px-2 py-0.5 rounded-full font-medium">
+              <span className="text-xs bg-stone-800 text-stone-200 px-2.5 py-0.5 rounded-full font-bold border border-stone-700">
                 {table?.guestCount || 2} Kişi
               </span>
             </div>
-            <p className="text-xs text-stone-400 mt-0.5">Garson: {state.currentUser?.name || 'Ahmet Yılmaz'}</p>
+            <p className="text-xs text-stone-400 font-medium mt-0.5">Garson: {state.currentUser?.name || 'Garson'}</p>
           </div>
           <div className="text-right">
-            <span className="text-xs text-stone-400 block">Adisyon</span>
-            <span className="font-mono font-bold text-sm text-stone-200">
+            <span className="text-[10px] text-stone-400 uppercase tracking-wider block font-bold">Adisyon</span>
+            <span className="font-mono font-black text-sm text-stone-200">
               #{order?.id?.slice(0, 6).toUpperCase() || 'YENİ'}
             </span>
           </div>
         </div>
 
         {/* Order items list */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+        <div className="flex-1 overflow-y-auto p-3.5 space-y-2.5 bg-stone-900">
           {localItems.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-stone-400 py-12">
-              <CheckCircle2 className="w-12 h-12 mb-3 text-stone-300" />
-              <p className="font-medium text-sm">Sipariş henüz boş</p>
+              <CheckCircle2 className="w-12 h-12 mb-3 text-stone-600" />
+              <p className="font-black text-base text-white">Sipariş henüz boş</p>
               <p className="text-xs text-stone-400 mt-1">Ürün eklemek için soldan seçim yapın</p>
             </div>
           ) : (
@@ -710,51 +757,75 @@ export default function OrderPage() {
                 <div 
                   key={item.id} 
                   className={cn(
-                    "flex flex-col p-3 rounded-xl border transition-all",
-                    isSent ? "bg-stone-50 dark:bg-stone-900/40 border-stone-200 dark:border-stone-800/60 text-stone-800 dark:text-stone-200" : "bg-orange-50/40 dark:bg-stone-900/40 border-orange-200 dark:border-stone-800/60 text-stone-800 dark:text-stone-200"
+                    "p-3 rounded-2xl border transition-all flex flex-col gap-2",
+                    isSent 
+                      ? "bg-stone-950/70 border-stone-800" 
+                      : "bg-stone-800/90 border-stone-700 shadow-xs"
                   )}
                 >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1 pr-2">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-stone-900 dark:text-stone-100 text-sm">{item.name}</span>
-                        {isSent && (
-                          <span className="text-[10px] bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 px-1.5 py-0.5 rounded font-semibold">
-                            İletildi
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-black text-sm text-white">{item.name}</span>
+                        {isSent ? (
+                          <span className="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded-md font-bold">
+                            ✓ İletildi
+                          </span>
+                        ) : (
+                          <span className="text-[10px] bg-orange-950 text-orange-300 border border-orange-800 px-2 py-0.5 rounded-md font-bold">
+                            ● Yeni
                           </span>
                         )}
                       </div>
                       {item.modifiers && item.modifiers.length > 0 && (
-                        <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-                          {item.modifiers.map(m => `+${m.name}`).join(', ')}
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {item.modifiers.map((m, mIdx) => (
+                            <span key={mIdx} className="text-[10px] font-bold bg-stone-700 text-amber-300 px-2 py-0.5 rounded-md border border-amber-400/20">
+                              +{m.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {item.notes && (
+                        <p className="text-xs text-amber-400 font-medium italic mt-1">
+                          Not: {item.notes}
                         </p>
                       )}
                     </div>
-                    <span className="font-bold text-stone-900 dark:text-stone-100 text-sm whitespace-nowrap">
-                      {formatCurrency(lineTotal)}
-                    </span>
+                    <div className="text-right shrink-0">
+                      <span className="font-mono font-black text-sm text-white">
+                        {formatCurrency(lineTotal)}
+                      </span>
+                      <div className="text-[10px] text-stone-400">
+                        {item.quantity} x {formatCurrency(item.unitPrice)}
+                      </div>
+                    </div>
                   </div>
                   
                   {!isSent && (
-                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-orange-100 dark:border-stone-800">
-                      <div className="flex items-center bg-white dark:bg-stone-800 rounded-lg border border-stone-200 dark:border-stone-700 shadow-2xs">
+                    <div className="flex items-center justify-between pt-2 border-t border-stone-700/60 mt-1">
+                      <div className="flex items-center bg-stone-950 rounded-xl border border-stone-700 p-0.5 shadow-2xs">
                         <button 
+                          type="button"
                           onClick={() => updateItemQuantity(item.id, -1)} 
-                          className="p-1.5 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 active:bg-stone-100 dark:active:bg-stone-700 rounded-l-lg cursor-pointer"
+                          className="w-8 h-8 flex items-center justify-center text-white hover:bg-stone-800 active:bg-stone-700 rounded-lg cursor-pointer transition-colors active:scale-90"
                         >
                           <Minus className="w-3.5 h-3.5" />
                         </button>
-                        <span className="w-7 text-center font-bold text-sm text-stone-800 dark:text-stone-100">{item.quantity}</span>
+                        <span className="w-7 text-center font-mono font-black text-sm text-white">{item.quantity}</span>
                         <button 
+                          type="button"
                           onClick={() => updateItemQuantity(item.id, 1)} 
-                          className="p-1.5 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 active:bg-stone-100 dark:active:bg-stone-700 rounded-r-lg cursor-pointer"
+                          className="w-8 h-8 flex items-center justify-center text-white hover:bg-stone-800 active:bg-stone-700 rounded-lg cursor-pointer transition-colors active:scale-90"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
                       </div>
                       <button 
+                        type="button"
                         onClick={() => removeItem(item.id)} 
-                        className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors cursor-pointer"
+                        className="w-8 h-8 flex items-center justify-center bg-red-950/70 hover:bg-red-900 text-red-400 rounded-xl border border-red-800/60 transition-all cursor-pointer active:scale-90"
+                        title="Sil"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -767,37 +838,43 @@ export default function OrderPage() {
         </div>
 
         {/* Action / Checkout footer */}
-        <div className="p-4 bg-stone-50 dark:bg-stone-950 border-t border-stone-200 dark:border-stone-800 flex flex-col gap-3 shrink-0">
+        <div className="p-4 bg-stone-950 border-t border-stone-800 flex flex-col gap-3 shrink-0">
           <input
             type="text"
             placeholder="Mutfak için sipariş notu..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full text-xs p-2.5 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full text-xs p-2.5 bg-stone-900 border border-stone-800 text-white placeholder-stone-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"
           />
           
-          <div className="flex justify-between items-center py-1">
-            <span className="text-sm font-semibold text-stone-500 dark:text-stone-400">Toplam Tutar</span>
-            <span className="text-2xl font-black text-stone-900 dark:text-stone-100">{formatCurrency(total)}</span>
+          <div className="flex justify-between items-center bg-stone-900/60 p-3 rounded-xl border border-stone-800/80">
+            <div>
+              <span className="text-[11px] font-bold text-stone-400 block uppercase tracking-wider">Adisyon Toplamı</span>
+              <span className="text-[10px] text-stone-500">KDV Dahil</span>
+            </div>
+            <span className="text-2xl font-black font-mono text-orange-400">{formatCurrency(total)}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <button 
+              type="button"
               onClick={handleSave} 
-              className="py-3 px-2 rounded-xl font-extrabold text-xs bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black border border-stone-300 dark:border-stone-300 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+              className="py-3 px-2 rounded-xl font-black text-xs bg-white text-stone-950 hover:bg-stone-100 border border-stone-300 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
             >
-              <Save className="w-4 h-4 text-stone-950 dark:text-stone-950" />
+              <Save className="w-4 h-4 text-stone-950" />
               <span>KAYDET</span>
             </button>
             <button 
+              type="button"
               onClick={handleSendToKitchen} 
               disabled={localItems.length === 0}
-              className="py-3 px-2 rounded-xl font-bold text-xs bg-orange-600 text-white hover:bg-orange-700 active:bg-orange-800 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
+              className="py-3 px-2 rounded-xl font-black text-xs bg-orange-600 text-white hover:bg-orange-500 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition-all"
             >
               <Send className="w-4 h-4" />
-              MUTFAĞA GÖNDER
+              <span>MUTFAĞA GÖNDER</span>
             </button>
             <button 
+              type="button"
               onClick={() => {
                 setSlipModalType('receipt');
                 setIsSlipModalOpen(true);
@@ -809,12 +886,13 @@ export default function OrderPage() {
               <span>HESAP / ADİSYON FİŞİ YAZDIR</span>
             </button>
             <button 
+              type="button"
               onClick={() => setIsPaymentModalOpen(true)} 
               disabled={!order && localItems.length === 0}
-              className="py-3.5 px-4 rounded-xl font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-50 col-span-2 flex items-center justify-center gap-2 shadow-md cursor-pointer"
+              className="py-3.5 px-4 rounded-xl font-black text-sm bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 disabled:opacity-50 col-span-2 flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all"
             >
               <CreditCard className="w-5 h-5" />
-              HESABI AL & ÖDEME
+              <span>HESABI AL & ÖDEME</span>
             </button>
           </div>
         </div>
