@@ -47,7 +47,10 @@ export default function KitchenPage() {
       });
       if (ticket.orderId) {
         try {
-          await db.orders.update(ticket.orderId, { status: 'preparing' });
+          const currentOrder = await db.orders.get(ticket.orderId);
+          if (currentOrder && currentOrder.status !== 'paid' && currentOrder.status !== 'cancelled') {
+            await db.orders.update(ticket.orderId, { status: 'preparing' });
+          }
         } catch {}
       }
     } else if (ticket.status === 'preparing') {
@@ -59,11 +62,15 @@ export default function KitchenPage() {
       });
       if (ticket.orderId) {
         try {
-          await db.orders.update(ticket.orderId, {
-            status: 'ready',
+          const currentOrder = await db.orders.get(ticket.orderId);
+          const updateData: any = {
             kitchenReadyAt: nowIso,
             kitchenDurationMinutes,
-          });
+          };
+          if (currentOrder && currentOrder.status !== 'paid' && currentOrder.status !== 'cancelled') {
+            updateData.status = 'ready';
+          }
+          await db.orders.update(ticket.orderId, updateData);
         } catch {}
       }
     } else if (ticket.status === 'ready') {
@@ -72,7 +79,10 @@ export default function KitchenPage() {
       });
       if (ticket.orderId) {
         try {
-          await db.orders.update(ticket.orderId, { status: 'served' });
+          const currentOrder = await db.orders.get(ticket.orderId);
+          if (currentOrder && currentOrder.status !== 'paid' && currentOrder.status !== 'cancelled') {
+            await db.orders.update(ticket.orderId, { status: 'served' });
+          }
         } catch {}
       }
     }

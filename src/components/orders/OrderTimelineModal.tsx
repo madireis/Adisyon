@@ -48,9 +48,19 @@ export default function OrderTimelineModal({ order, isOpen, onClose }: OrderTime
     }
   };
 
-  // Calculate live elapsed minutes if not yet paid
+  const isPaid = order.status === 'paid' || !!order.paidAt;
+
+  // Calculate elapsed minutes (frozen at payment time if paid)
   const getElapsedMinutes = () => {
     if (order.durationMinutes) return order.durationMinutes;
+    if (order.paidAt && order.createdAt) {
+      try {
+        const diff = new Date(order.paidAt).getTime() - new Date(order.createdAt).getTime();
+        return Math.max(1, Math.round(diff / 60000));
+      } catch {
+        return 1;
+      }
+    }
     if (!order.createdAt) return 0;
     try {
       const diff = Date.now() - new Date(order.createdAt).getTime();
@@ -78,13 +88,13 @@ export default function OrderTimelineModal({ order, isOpen, onClose }: OrderTime
                     Masa {order.tableLabel} Detaylı Adisyon
                   </h2>
                   <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase border ${
-                    order.status === 'paid'
+                    isPaid
                       ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
                       : order.status === 'ready'
                       ? 'bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-800'
                       : 'bg-orange-100 dark:bg-orange-950/80 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-800'
                   }`}>
-                    {order.status === 'paid' ? 'Ödendi' : order.status === 'ready' ? 'Mutfakta Hazır' : order.status === 'sent' ? 'Mutfakta Hazırlanıyor' : 'Açık'}
+                    {isPaid ? 'Ödendi' : order.status === 'ready' ? 'Mutfakta Hazır' : order.status === 'sent' ? 'Mutfakta Hazırlanıyor' : 'Açık'}
                   </span>
                 </div>
                 <span className="text-xs text-stone-400 font-mono">
@@ -209,7 +219,7 @@ export default function OrderTimelineModal({ order, isOpen, onClose }: OrderTime
                 {/* 3. Mutfakta Hazırlandı */}
                 <div className="relative">
                   <div className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow-xs ${
-                    order.kitchenReadyAt ? 'bg-blue-600 text-white' : 'bg-stone-300 text-stone-600 dark:bg-stone-800'
+                    order.kitchenReadyAt || isPaid ? 'bg-blue-600 text-white' : 'bg-stone-300 text-stone-600 dark:bg-stone-800'
                   }`}>
                     3
                   </div>
@@ -221,6 +231,8 @@ export default function OrderTimelineModal({ order, isOpen, onClose }: OrderTime
                       <p className="text-[11px] text-stone-500">
                         {order.kitchenReadyAt ? (
                           <>Mutfak şefi siparişi 'Hazır' yaptı. <strong>Hazırlık süresi: {order.kitchenDurationMinutes || 1} dk</strong></>
+                        ) : isPaid ? (
+                          <>Mutfak hazırlığı tamamlandı ve servis edildi. <strong>Hazırlık süresi: {order.kitchenDurationMinutes || 1} dk</strong></>
                         ) : order.sentToKitchenAt ? (
                           'Mutfakta hazırlanıyor...'
                         ) : (
@@ -229,7 +241,7 @@ export default function OrderTimelineModal({ order, isOpen, onClose }: OrderTime
                       </p>
                     </div>
                     <span className="text-xs font-mono font-bold text-stone-600 dark:text-stone-400 bg-white dark:bg-stone-900 px-2 py-0.5 rounded-lg border border-stone-200 dark:border-stone-800 self-start sm:self-auto">
-                      {order.kitchenReadyAt ? formatDateTime(order.kitchenReadyAt) : '-'}
+                      {order.kitchenReadyAt ? formatDateTime(order.kitchenReadyAt) : isPaid ? formatDateTime(order.paidAt) : '-'}
                     </span>
                   </div>
                 </div>
@@ -237,7 +249,7 @@ export default function OrderTimelineModal({ order, isOpen, onClose }: OrderTime
                 {/* 4. Ödeme Alındı */}
                 <div className="relative">
                   <div className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow-xs ${
-                    order.paidAt ? 'bg-emerald-600 text-white' : 'bg-stone-300 text-stone-600 dark:bg-stone-800'
+                    isPaid ? 'bg-emerald-600 text-white' : 'bg-stone-300 text-stone-600 dark:bg-stone-800'
                   }`}>
                     4
                   </div>
@@ -247,15 +259,15 @@ export default function OrderTimelineModal({ order, isOpen, onClose }: OrderTime
                         Ödeme Tahsil Edildi & Masa Kapatıldı
                       </span>
                       <p className="text-[11px] text-stone-500">
-                        {order.paidAt ? (
-                          <>Tahsil Eden: <strong>{order.paidBy || 'Kasiyer'}</strong> ({order.paymentMethod || 'Nakit'}) • <strong>Masa Toplam Süresi: {order.durationMinutes || elapsedMins} dk</strong></>
+                        {isPaid ? (
+                          <>Tahsil Eden: <strong>{order.paidBy || 'Kasiyer'}</strong> ({order.paymentMethod || 'Nakit TL'}) • <strong>Masa Toplam Süresi: {elapsedMins} dk</strong></>
                         ) : (
                           'Hesap henüz alınmadı (Masa aktif kullanımda)'
                         )}
                       </p>
                     </div>
                     <span className="text-xs font-mono font-bold text-stone-600 dark:text-stone-400 bg-white dark:bg-stone-900 px-2 py-0.5 rounded-lg border border-stone-200 dark:border-stone-800 self-start sm:self-auto">
-                      {order.paidAt ? formatDateTime(order.paidAt) : 'Açık Masa'}
+                      {isPaid ? formatDateTime(order.paidAt) : 'Açık Masa'}
                     </span>
                   </div>
                 </div>

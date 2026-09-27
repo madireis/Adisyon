@@ -177,6 +177,21 @@ async function flushPendingChanges() {
 }
 
 // ─────────────────────────────────────────────────────────────
+function sanitizeSyncItems(tableName: string, items: any[]) {
+  if (tableName !== 'tables') return items;
+  return items.map((it) => {
+    if (it && it.status === 'available') {
+      const copy = { ...it };
+      delete copy.currentOrderId;
+      delete copy.occupiedAt;
+      copy.guestCount = 0;
+      return copy;
+    }
+    return it;
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
 // APPLY REMOTE CHANGES (FROM SSE OR BROADCAST)
 // ─────────────────────────────────────────────────────────────
 
@@ -195,7 +210,7 @@ export async function applyRemoteSync(
       if (!Array.isArray(items) || items.length === 0) continue;
       const table = db.table(tableName);
       if (table) {
-        await table.bulkPut(items);
+        await table.bulkPut(sanitizeSyncItems(tableName, items));
       }
     }
 
@@ -366,7 +381,7 @@ async function syncInitialMasterState(db: PosDatabase) {
           if (Array.isArray(items) && items.length > 0) {
             const table = db.table(tableName);
             if (table) {
-              await table.bulkPut(items);
+              await table.bulkPut(sanitizeSyncItems(tableName, items));
             }
           }
         }
@@ -421,7 +436,7 @@ async function checkServerDrift(db: PosDatabase) {
           if (Array.isArray(items) && items.length > 0) {
             const table = db.table(tableName);
             if (table) {
-              await table.bulkPut(items);
+              await table.bulkPut(sanitizeSyncItems(tableName, items));
             }
           }
         }
