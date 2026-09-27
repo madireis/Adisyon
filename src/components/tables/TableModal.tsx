@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Trash2, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { X, Trash2, Check, AlertCircle, Loader2, QrCode, ExternalLink, Copy } from 'lucide-react';
 import { db } from '@/lib/db';
 import { generateId } from '@/lib/utils';
+import { generateQRCodeSVG } from '@/lib/qrCodeGenerator';
+import { useLocalNetwork } from '@/lib/useLocalNetwork';
 import type { Table, Floor } from '@/types/pos';
 
 interface TableModalProps {
@@ -26,6 +28,16 @@ export default function TableModal({ table, defaultFloorId, floors, onClose, onS
   const [floorId, setFloorId] = useState<string>(getInitialFloorId());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showQr, setShowQr] = useState(false);
+  const [copiedQr, setCopiedQr] = useState(false);
+
+  const { networkInfo } = useLocalNetwork();
+  const effectiveIp = networkInfo?.localIp && networkInfo.localIp !== '127.0.0.1' && networkInfo.localIp !== 'localhost'
+    ? networkInfo.localIp
+    : (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+        ? window.location.hostname
+        : '192.168.1.33');
+  const tableQrUrl = table ? `http://${effectiveIp}:3001/qr/${table.id}` : '';
 
   // Sync state when props change
   useEffect(() => {
@@ -232,6 +244,58 @@ export default function TableModal({ table, defaultFloorId, floors, onClose, onS
               <span className="text-[10px] text-stone-500 dark:text-stone-400 font-bold">{seats} Kişilik</span>
             </div>
           </div>
+
+          {/* Table Customer QR Code Section */}
+          {table && (
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => setShowQr(!showQr)}
+                className="w-full py-2 px-3 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer"
+              >
+                <span className="flex items-center gap-2">
+                  <QrCode size={16} className="text-orange-600" />
+                  <span>Müşteri Menü QR Kodu (Masa {table.label})</span>
+                </span>
+                <span className="text-[11px] text-stone-500 font-bold">{showQr ? 'Kapat' : 'QR Göster'}</span>
+              </button>
+
+              {showQr && (
+                <div className="mt-2.5 p-3.5 bg-stone-50 dark:bg-stone-950 rounded-2xl border border-stone-200 dark:border-stone-800 flex flex-col items-center gap-2.5 text-center animate-in fade-in">
+                  <div 
+                    className="p-2.5 bg-white rounded-xl shadow-xs border border-stone-200"
+                    dangerouslySetInnerHTML={{ __html: generateQRCodeSVG(tableQrUrl, 160) }}
+                  />
+                  <code className="text-[11px] font-mono text-orange-600 font-bold truncate max-w-full px-2">
+                    {tableQrUrl}
+                  </code>
+                  <div className="flex gap-2 w-full pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(tableQrUrl);
+                        setCopiedQr(true);
+                        setTimeout(() => setCopiedQr(false), 2000);
+                      }}
+                      className="flex-1 py-1.5 bg-white hover:bg-stone-100 text-stone-950 font-black text-xs rounded-lg border border-stone-300 shadow-2xs flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                    >
+                      {copiedQr ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                      <span>{copiedQr ? 'Kopyalandı' : 'Kopyala'}</span>
+                    </button>
+                    <a
+                      href={tableQrUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 py-1.5 bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 text-white dark:text-stone-900 font-bold text-xs rounded-lg shadow-2xs flex items-center justify-center gap-1 transition-colors"
+                    >
+                      <ExternalLink size={14} />
+                      <span>Test Et</span>
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="pt-2 flex gap-2">
             {table && (

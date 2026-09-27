@@ -40,7 +40,7 @@ export function getLocalServerBaseUrl(): string {
  */
 export async function fetchLocalNetworkInfo(): Promise<LocalNetworkInfo> {
   const hostname = window.location.hostname || '127.0.0.1';
-  const defaultAppPort = window.location.port ? parseInt(window.location.port, 10) : 5173;
+  const defaultAppPort = window.location.port ? parseInt(window.location.port, 10) : 3001;
 
   try {
     const baseUrl = getLocalServerBaseUrl();
@@ -61,15 +61,16 @@ export async function fetchLocalNetworkInfo(): Promise<LocalNetworkInfo> {
     // Fallback if local backend server is not running directly on 3001
   }
 
-  // Fallback info derived from current browser URL
-  const fallbackIp = hostname === 'localhost' || hostname === '127.0.0.1' ? '192.168.1.105' : hostname;
+  // Fallback info derived from current browser URL or machine IP
+  const fallbackIp = hostname === 'localhost' || hostname === '127.0.0.1' ? '192.168.1.33' : hostname;
+  const fallbackPort = window.location.port ? parseInt(window.location.port, 10) : 3001;
   const fallbackInfo: LocalNetworkInfo = {
     status: 'online',
     serverName: 'Adisyon Main PC',
     localIp: fallbackIp,
     port: 3001,
-    appPort: defaultAppPort,
-    joinUrl: `http://${fallbackIp}:${defaultAppPort}`,
+    appPort: fallbackPort,
+    joinUrl: `http://${fallbackIp}:${fallbackPort}`,
     activeCount: 1,
   };
   cachedNetworkInfo = fallbackInfo;

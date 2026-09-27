@@ -272,7 +272,7 @@ export default function SettingsPage() {
                     Yerel Ağ Sunucusu Aktif & Dinleniyor
                   </h3>
                   <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium mt-0.5">
-                    Ana PC IP Adresi: <code className="font-bold bg-white/70 dark:bg-stone-900/70 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-700">{networkInfo?.joinUrl || `http://${window.location.hostname || '192.168.1.105'}:5173`}</code>
+                    Ana PC IP Adresi: <code className="font-bold bg-white/70 dark:bg-stone-900/70 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-700">{networkInfo?.joinUrl || `http://${window.location.hostname && window.location.hostname !== 'localhost' ? window.location.hostname : '192.168.1.33'}:3001`}</code>
                   </p>
                 </div>
               </div>

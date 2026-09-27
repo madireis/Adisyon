@@ -15,7 +15,18 @@ export default function CustomerQRPage() {
   const [cart, setCart] = useState<{ item: MenuItem; quantity: number }[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const table = useLiveQuery(() => db.table<Table>('tables').get(tableId || ''), [tableId]);
+  const table = useLiveQuery(async () => {
+    if (!tableId) return null;
+    const byId = await db.table<Table>('tables').get(tableId);
+    if (byId) return byId;
+    const byLabel = await db.table<Table>('tables').where('label').equalsIgnoreCase(tableId).first();
+    if (byLabel) return byLabel;
+    const num = parseInt(tableId, 10);
+    if (!isNaN(num)) {
+      return await db.table<Table>('tables').where('number').equals(num).first();
+    }
+    return null;
+  }, [tableId]);
   const categories = useLiveQuery(() => db.categories.orderBy('order').toArray(), []) || [];
   const menuItems = useLiveQuery(() => db.menuItems.toArray(), []) || [];
 
