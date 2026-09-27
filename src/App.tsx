@@ -49,16 +49,18 @@ export default function App() {
           <Route path="/tables" element={<TablesPage />} />
           <Route path="/order/:tableId" element={<OrderPage />} />
           <Route path="/kitchen" element={<KitchenPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/menu" element={<MenuPage />} />
-          <Route path="/inventory" element={<InventoryPage />} />
-          <Route path="/staff" element={<StaffPage />} />
-          <Route path="/customers" element={<CustomersPage />} />
-          <Route path="/reservations" element={<ReservationsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/audit" element={<AuditLogPage />} />
-          <Route path="/online-orders" element={<OnlineOrdersPage />} />
+          <Route path="/menu" element={<MenuPage />} />
+          <Route path="/staff" element={<StaffPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+
+          {/* Clean redirects for removed bloated routes */}
+          <Route path="/dashboard" element={<Navigate to="/reports" replace />} />
+          <Route path="/inventory" element={<Navigate to="/tables" replace />} />
+          <Route path="/customers" element={<Navigate to="/tables" replace />} />
+          <Route path="/reservations" element={<Navigate to="/tables" replace />} />
+          <Route path="/online-orders" element={<Navigate to="/tables" replace />} />
+          <Route path="/audit" element={<Navigate to="/reports" replace />} />
         </Route>
         
         {/* Catch all redirect to role selection */}

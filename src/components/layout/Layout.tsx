@@ -25,12 +25,15 @@ import {
   Sun,
   Moon,
   Wifi,
-  QrCode
+  Banknote,
+  QrCode,
+  ArrowLeftRight
 } from 'lucide-react';
 import type { UserRole } from '@/types/pos';
 import { useTheme } from '@/lib/theme';
 import { useLocalNetwork } from '@/lib/useLocalNetwork';
 import LocalNetworkModal from '@/components/common/LocalNetworkModal';
+import AccountSwitcherModal from '@/components/common/AccountSwitcherModal';
 
 interface NavItem {
   path: string;
@@ -52,6 +55,9 @@ export default function Layout() {
   
   const user = state.currentUser || defaultUser;
   const isManager = user.role === 'owner' || user.role === 'manager';
+  const hasManagerSession = Boolean(state.originalManager || isManager);
+  const isSwitchedToAnotherUser = Boolean(state.originalManager && state.currentUser.id !== state.originalManager.id);
+  const [isAccountSwitcherOpen, setIsAccountSwitcherOpen] = useState(false);
 
   // Close mobile drawer on route change
   useEffect(() => {
@@ -60,47 +66,42 @@ export default function Layout() {
 
   const allNavItems: NavItem[] = [
     // Garson, Kasiyer & Yetkili
-    { path: '/tables', label: 'Masa Planı', icon: Grid2X2, roles: ['waiter', 'cashier', 'owner', 'manager'] },
+    { path: '/tables', label: 'Masa & Sipariş', icon: Grid2X2, roles: ['waiter', 'cashier', 'owner', 'manager'] },
     
     // Mutfak, Bar & Yetkili
     { path: '/kitchen', label: 'Mutfak Ekranı (KDS)', icon: ChefHat, roles: ['kitchen', 'bar', 'owner', 'manager'] },
 
-    // Yalnızca Yetkili / Patron
-    { path: '/dashboard', label: 'Yönetim Dashboard', icon: LayoutDashboard, roles: ['owner', 'manager'] },
-    { path: '/reports', label: 'Finansal Raporlar', icon: BarChart3, roles: ['owner', 'manager'] },
-    { path: '/menu', label: 'Menü Yönetimi', icon: MenuSquare, roles: ['owner', 'manager'] },
-    { path: '/inventory', label: 'Stok & Reçeteler', icon: PackageSearch, roles: ['kitchen', 'bar', 'owner', 'manager'] },
-    { path: '/staff', label: 'Personel & PIN', icon: Users, roles: ['owner', 'manager'] },
-    { path: '/customers', label: 'Müşteri CRM', icon: UserCircle, roles: ['owner', 'manager'] },
-    { path: '/reservations', label: 'Rezervasyonlar', icon: CalendarClock, roles: ['waiter', 'cashier', 'owner', 'manager'] },
-    { path: '/online-orders', label: 'Online Paket Sipariş', icon: Globe, roles: ['owner', 'manager'] },
-    { path: '/audit', label: 'Denetim Günlüğü', icon: History, roles: ['owner', 'manager'] },
-    { path: '/settings', label: 'Sistem Ayarları', icon: Settings, roles: ['owner', 'manager'] },
+    // Kasa & Gün Sonu Ciro
+    { path: '/reports', label: 'Kasa & Gün Sonu Ciro', icon: Banknote, roles: ['cashier', 'owner', 'manager'] },
 
-    // Ortak Yardımcı
-    { path: '/qr/t-2', label: 'Müşteri QR Menü', icon: Smartphone, roles: ['waiter', 'cashier', 'kitchen', 'bar', 'owner', 'manager'] },
+    // Menü Yönetimi
+    { path: '/menu', label: 'Menü & Fiyatlar', icon: MenuSquare, roles: ['owner', 'manager'] },
+
+    // Garson & Personel
+    { path: '/staff', label: 'Garsonlar & Personel', icon: Users, roles: ['owner', 'manager'] },
+
+    // Sistem Ayarları & Yazıcı
+    { path: '/settings', label: 'Ayarlar & Yazıcı', icon: Settings, roles: ['owner', 'manager'] },
   ];
 
   // Mobile Bottom Navigation Shortcuts
   const getMobileBottomNav = () => {
-    if (user.role === 'waiter' || user.role === 'cashier') {
+    if (user.role === 'waiter') {
       return [
         { path: '/tables', label: 'Masalar', icon: Grid2X2 },
-        { path: '/reservations', label: 'Rezervasyon', icon: CalendarClock },
-        { path: '/qr/t-2', label: 'QR Menü', icon: Smartphone },
+        { path: '/kitchen', label: 'Mutfak', icon: ChefHat },
       ];
     }
     if (user.role === 'kitchen' || user.role === 'bar') {
       return [
         { path: '/kitchen', label: 'Mutfak', icon: ChefHat },
-        { path: '/inventory', label: 'Stok', icon: PackageSearch },
       ];
     }
     return [
       { path: '/tables', label: 'Masalar', icon: Grid2X2 },
       { path: '/kitchen', label: 'Mutfak', icon: ChefHat },
-      { path: '/dashboard', label: 'Panel', icon: LayoutDashboard },
-      { path: '/reports', label: 'Raporlar', icon: BarChart3 },
+      { path: '/reports', label: 'Kasa & Ciro', icon: Banknote },
+      { path: '/staff', label: 'Garsonlar', icon: Users },
     ];
   };
 
@@ -127,28 +128,20 @@ export default function Layout() {
   // Redirect if unauthorized for current role
   useEffect(() => {
     if (!isAuthorized()) {
-      if (user.role === 'waiter' || user.role === 'cashier') navigate('/tables', { replace: true });
+      if (user.role === 'waiter') navigate('/tables', { replace: true });
       else if (user.role === 'kitchen' || user.role === 'bar') navigate('/kitchen', { replace: true });
-      else navigate('/dashboard', { replace: true });
+      else navigate('/tables', { replace: true });
     }
   }, [user.role, location.pathname]);
 
-  const handleRoleChange = (newRole: UserRole) => {
-    const updatedUser = {
-      ...user,
-      role: newRole,
-      name: newRole === 'owner' 
-        ? 'Patron (Yetkili)' 
-        : newRole === 'waiter' 
-          ? 'Ahmet Yılmaz (Garson)' 
-          : 'Mehmet Demir (Mutfak Şefi)'
-    };
-    dispatch({ type: 'LOGIN', user: updatedUser });
+  const handleRestoreManager = () => {
+    dispatch({ type: 'RESTORE_MANAGER' });
+    navigate('/reports');
+  };
 
-    // Navigate to respective hero screen immediately
-    if (newRole === 'waiter') navigate('/tables');
-    else if (newRole === 'kitchen') navigate('/kitchen');
-    else navigate('/dashboard');
+  const handleLogout = () => {
+    dispatch({ type: 'LOGOUT' });
+    navigate('/');
   };
 
   const getRoleHeaderInfo = () => {
@@ -246,70 +239,57 @@ export default function Layout() {
           ))}
         </div>
 
-        {/* Mode Switcher Footer */}
+        {/* Account Switcher & Logout Footer */}
         <div className="p-3 border-t border-stone-200 dark:border-stone-800 shrink-0 bg-stone-50 dark:bg-stone-950">
           {sidebarOpen ? (
             <div className="space-y-2">
-              {isManager && (
-                <>
+              {hasManagerSession && (
+                <div className="space-y-1.5">
                   <span className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider block">
-                    Yetki / Mod Değiştir:
+                    Yönetici Hızlı Geçiş:
                   </span>
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <button
+                    onClick={() => setIsAccountSwitcherOpen(true)}
+                    className="w-full py-2.5 px-3 bg-orange-600 hover:bg-orange-700 text-white text-xs font-extrabold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs min-h-[40px]"
+                  >
+                    <ArrowLeftRight size={15} />
+                    <span>Hesaplar Arası Geçiş</span>
+                  </button>
+                  {isSwitchedToAnotherUser && state.originalManager && (
                     <button
-                      onClick={() => handleRoleChange('waiter')}
-                      className={cn(
-                        "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 min-h-[44px]",
-                        user.role === 'waiter'
-                          ? "bg-orange-600 text-white border-orange-600 shadow-xs"
-                          : "bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800"
-                      )}
-                    >
-                      <UtensilsCrossed size={14} />
-                      <span>Garson</span>
-                    </button>
-                    <button
-                      onClick={() => handleRoleChange('kitchen')}
-                      className={cn(
-                        "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 min-h-[44px]",
-                        user.role === 'kitchen'
-                          ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                          : "bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800"
-                      )}
-                    >
-                      <ChefHat size={14} />
-                      <span>Mutfak</span>
-                    </button>
-                    <button
-                      onClick={() => handleRoleChange('owner')}
-                      className={cn(
-                        "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 min-h-[44px]",
-                        user.role === 'owner'
-                          ? "bg-stone-900 dark:bg-stone-800 text-white border-stone-900 dark:border-stone-700 shadow-xs"
-                          : "bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800"
-                      )}
+                      onClick={handleRestoreManager}
+                      className="w-full py-2 px-2 bg-stone-900 dark:bg-stone-800 hover:bg-stone-800 dark:hover:bg-stone-700 text-amber-400 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 border border-amber-400/30"
                     >
                       <ShieldCheck size={14} />
-                      <span>Yetkili</span>
+                      <span>{state.originalManager.name} Dön</span>
                     </button>
-                  </div>
-                </>
+                  )}
+                </div>
               )}
 
               <button
-                onClick={() => navigate('/')}
+                onClick={handleLogout}
                 className="w-full mt-1 py-2.5 bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 min-h-[40px]"
               >
                 <LogOut size={14} />
-                <span>Giriş Ekranına Dön</span>
+                <span>Çıkış Yap</span>
               </button>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2">
+              {hasManagerSession && (
+                <button
+                  onClick={() => setIsAccountSwitcherOpen(true)}
+                  className="p-2.5 text-orange-600 hover:text-white hover:bg-orange-600 rounded-xl min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors cursor-pointer"
+                  title="Hesaplar Arası Geçiş Yap"
+                >
+                  <ArrowLeftRight size={18} />
+                </button>
+              )}
               <button 
-                onClick={() => navigate('/')}
-                className="p-2.5 text-stone-500 hover:text-stone-800 rounded-xl hover:bg-stone-200 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                title="Çıkış Yap / Giriş Ekranı"
+                onClick={handleLogout}
+                className="p-2.5 text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 rounded-xl hover:bg-stone-200 dark:hover:bg-stone-800 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors cursor-pointer"
+                title="Çıkış Yap"
               >
                 <LogOut size={18} />
               </button>
@@ -373,72 +353,47 @@ export default function Layout() {
               ))}
             </div>
 
-            {/* Mode Switcher inside mobile drawer */}
+            {/* Account Switcher inside mobile drawer */}
             <div className="p-3 border-t border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 space-y-2">
-              {isManager && (
-                <>
+              {hasManagerSession && (
+                <div className="space-y-1.5">
                   <span className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider block">
-                    Mod Değiştir:
+                    Yönetici Hızlı Geçiş:
                   </span>
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <button
+                    onClick={() => {
+                      setIsMobileDrawerOpen(false);
+                      setIsAccountSwitcherOpen(true);
+                    }}
+                    className="w-full py-2.5 px-3 bg-orange-600 hover:bg-orange-700 text-white text-xs font-extrabold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs min-h-[44px]"
+                  >
+                    <ArrowLeftRight size={16} />
+                    <span>Hesaplar Arası Geçiş</span>
+                  </button>
+                  {isSwitchedToAnotherUser && state.originalManager && (
                     <button
                       onClick={() => {
-                        handleRoleChange('waiter');
                         setIsMobileDrawerOpen(false);
+                        handleRestoreManager();
                       }}
-                      className={cn(
-                        "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[48px]",
-                        user.role === 'waiter'
-                          ? "bg-orange-600 text-white border-orange-600 shadow-xs"
-                          : "bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800"
-                      )}
+                      className="w-full py-2 px-2 bg-stone-900 text-amber-400 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 border border-amber-400/30 min-h-[40px]"
                     >
-                      <UtensilsCrossed size={16} />
-                      <span>Garson</span>
+                      <ShieldCheck size={14} />
+                      <span>{state.originalManager.name} Dön</span>
                     </button>
-                    <button
-                      onClick={() => {
-                        handleRoleChange('kitchen');
-                        setIsMobileDrawerOpen(false);
-                      }}
-                      className={cn(
-                        "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[48px]",
-                        user.role === 'kitchen'
-                          ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                          : "bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800"
-                      )}
-                    >
-                      <ChefHat size={16} />
-                      <span>Mutfak</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleRoleChange('owner');
-                        setIsMobileDrawerOpen(false);
-                      }}
-                      className={cn(
-                        "py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[48px]",
-                        user.role === 'owner'
-                          ? "bg-stone-900 text-white border-stone-900 shadow-xs"
-                          : "bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800"
-                      )}
-                    >
-                      <ShieldCheck size={16} />
-                      <span>Yetkili</span>
-                    </button>
-                  </div>
-                </>
+                  )}
+                </div>
               )}
 
               <button
                 onClick={() => {
-                  navigate('/');
                   setIsMobileDrawerOpen(false);
+                  handleLogout();
                 }}
                 className="w-full mt-1 py-2.5 bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 min-h-[44px]"
               >
                 <LogOut size={16} />
-                <span>Giriş Ekranına Dön</span>
+                <span>Çıkış Yap</span>
               </button>
             </div>
           </div>
@@ -513,6 +468,18 @@ export default function Layout() {
               </span>
             </div>
 
+            {/* Account Switcher trigger for Manager */}
+            {hasManagerSession && (
+              <button
+                onClick={() => setIsAccountSwitcherOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer border shadow-2xs active:scale-95 bg-orange-600 hover:bg-orange-700 text-white border-orange-700"
+                title="Yönetici Yetkisi: Hesaplar Arası Geçiş Yap"
+              >
+                <ArrowLeftRight size={13} />
+                <span className="hidden sm:inline">Hesap Değiştir</span>
+              </button>
+            )}
+
             {/* Current user avatar (compact, tooltip instead of wordy text) */}
             <div 
               className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs cursor-default select-none border border-orange-500/40"
@@ -522,6 +489,34 @@ export default function Layout() {
             </div>
           </div>
         </header>
+
+        {/* Manager impersonation / switched session notification banner */}
+        {isSwitchedToAnotherUser && state.originalManager && (
+          <div className="bg-amber-500 dark:bg-amber-600 text-stone-950 px-3 sm:px-6 py-2 text-xs font-black flex items-center justify-between shrink-0 shadow-xs z-10 border-b border-amber-600">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-2.5 h-2.5 rounded-full bg-stone-950 animate-ping shrink-0" />
+              <span className="truncate">
+                Yönetici Oturumu Aktif: <u>{user.name}</u> ({user.role}) olarak görüntülüyorsunuz.
+              </span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0 ml-2">
+              <button
+                onClick={() => setIsAccountSwitcherOpen(true)}
+                className="px-2.5 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+              >
+                <ArrowLeftRight size={12} />
+                <span className="hidden sm:inline">Hesap</span> Değiştir
+              </button>
+              <button
+                onClick={handleRestoreManager}
+                className="px-2.5 py-1 bg-white hover:bg-stone-100 text-stone-950 rounded-lg text-[11px] font-black transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
+              >
+                <ShieldCheck size={13} className="text-orange-600" />
+                <span>Yöneticiye Dön</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Page Content */}
         <main className={cn("flex-1 overflow-auto bg-[#f8f7f5] dark:bg-stone-950 relative text-stone-800 dark:text-stone-100", !isOrderPage && "pb-24 md:pb-0")}>
@@ -568,6 +563,12 @@ export default function Layout() {
       <LocalNetworkModal 
         isOpen={isNetworkModalOpen} 
         onClose={() => setIsNetworkModalOpen(false)} 
+      />
+
+      {/* Hesaplar Arası Hızlı Geçiş Modalı */}
+      <AccountSwitcherModal 
+        isOpen={isAccountSwitcherOpen}
+        onClose={() => setIsAccountSwitcherOpen(false)}
       />
     </div>
   );

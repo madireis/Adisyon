@@ -1,7 +1,7 @@
 import Dexie, { type Table } from 'dexie'
 import type {
   Table as PosTable, Floor, Category, MenuItem, Order, Payment,
-  KitchenTicket, Staff, InventoryItem, Recipe, Customer,
+  CashTransaction, KitchenTicket, Staff, InventoryItem, Recipe, Customer,
   Reservation, AuditLog, OnlineOrder, SyncQueueItem
 } from '@/types/pos'
 
@@ -14,6 +14,7 @@ export class PosDatabase extends Dexie {
   menuItems!: Table<MenuItem>
   orders!: Table<Order>
   payments!: Table<Payment>
+  cashTransactions!: Table<CashTransaction>
   kitchenTickets!: Table<KitchenTicket>
   staff!: Table<Staff>
   inventoryItems!: Table<InventoryItem>
@@ -47,6 +48,10 @@ export class PosDatabase extends Dexie {
 
     this.version(2).stores({
       staff: 'id, username, pin, role, active',
+    })
+
+    this.version(3).stores({
+      cashTransactions: 'id, type, createdAt',
     })
 
     // Expose posTables helper on instance for easy and safe access to restaurant tables

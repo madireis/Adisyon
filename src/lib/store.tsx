@@ -13,6 +13,7 @@ export const defaultUser: Staff = {
 
 interface AppState {
   currentUser: Staff
+  originalManager: Staff | null
   currentFloor: string
   isOnline: boolean
   isSyncing: boolean
@@ -21,7 +22,9 @@ interface AppState {
 }
 
 type Action =
-  | { type: 'LOGIN'; user: Staff }
+  | { type: 'LOGIN'; user: Staff; managerSession?: Staff | null }
+  | { type: 'SWITCH_ACCOUNT'; user: Staff }
+  | { type: 'RESTORE_MANAGER' }
   | { type: 'LOGOUT' }
   | { type: 'SET_FLOOR'; floorId: string }
   | { type: 'SET_ONLINE'; online: boolean }
@@ -31,8 +34,25 @@ type Action =
   | { type: 'CLEAR_NOTIFICATIONS' }
   | { type: 'TOGGLE_SIDEBAR' }
 
+const getInitialUser = (): Staff => {
+  try {
+    const raw = sessionStorage.getItem('pos_current_user');
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return defaultUser;
+};
+
+const getInitialManager = (): Staff | null => {
+  try {
+    const raw = sessionStorage.getItem('pos_original_manager');
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return defaultUser; // default start has manager power
+};
+
 const initialState: AppState = {
-  currentUser: defaultUser,
+  currentUser: getInitialUser(),
+  originalManager: getInitialManager(),
   currentFloor: 'floor-1',
   isOnline: navigator.onLine,
   isSyncing: false,
@@ -42,10 +62,47 @@ const initialState: AppState = {
 
 function appReducer(state: AppState, action: Action): AppState {
   switch (action.type) {
-    case 'LOGIN':
+    case 'LOGIN': {
+      const isManager = action.user.role === 'owner' || action.user.role === 'manager';
+      const origManager = action.managerSession !== undefined 
+        ? action.managerSession 
+        : (isManager ? action.user : null);
+
+      try {
+        sessionStorage.setItem('pos_current_user', JSON.stringify(action.user));
+        if (origManager) {
+          sessionStorage.setItem('pos_original_manager', JSON.stringify(origManager));
+        } else {
+          sessionStorage.removeItem('pos_original_manager');
+        }
+      } catch {}
+
+      return { 
+        ...state, 
+        currentUser: action.user,
+        originalManager: origManager
+      }
+    }
+    case 'SWITCH_ACCOUNT': {
+      try {
+        sessionStorage.setItem('pos_current_user', JSON.stringify(action.user));
+      } catch {}
       return { ...state, currentUser: action.user }
-    case 'LOGOUT':
-      return { ...state, currentUser: defaultUser }
+    }
+    case 'RESTORE_MANAGER': {
+      const targetManager = state.originalManager || defaultUser;
+      try {
+        sessionStorage.setItem('pos_current_user', JSON.stringify(targetManager));
+      } catch {}
+      return { ...state, currentUser: targetManager }
+    }
+    case 'LOGOUT': {
+      try {
+        sessionStorage.removeItem('pos_current_user');
+        sessionStorage.removeItem('pos_original_manager');
+      } catch {}
+      return { ...state, currentUser: defaultUser, originalManager: null }
+    }
     case 'SET_FLOOR':
       return { ...state, currentFloor: action.floorId }
     case 'SET_ONLINE':

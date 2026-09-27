@@ -1,30 +1,49 @@
 import React, { useState, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
-import { Calendar, Download, PieChart as PieChartIcon, TrendingUp, Users, CreditCard, Award, AlertCircle } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { 
+  Banknote, 
+  ArrowDownRight, 
+  ArrowUpRight, 
+  Receipt, 
+  TrendingUp, 
+  CreditCard, 
+  Users, 
+  FileText, 
+  Download, 
+  Trash2, 
+  Plus, 
+  Calendar,
+  PieChart as PieChartIcon,
+  CheckCircle2,
+  AlertCircle
+} from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
-import type { Staff, MenuItem, Order, Payment } from '@/types/pos';
+import { useApp } from '@/lib/store';
+import CashTransactionModal from '@/components/pos/CashTransactionModal';
+import ThermalSlipModal, { type ZReportData } from '@/components/pos/ThermalSlipModal';
+import type { Staff, MenuItem, Order, Payment, CashTransaction } from '@/types/pos';
 
 export default function ReportsPage() {
-  const [activeTab, setActiveTab] = useState<'SALES' | 'PRODUCTS' | 'STAFF' | 'PAYMENTS'>('SALES');
+  const { state } = useApp();
+  const [activeTab, setActiveTab] = useState<'CASH_REGISTER' | 'STAFF' | 'PAYMENTS' | 'PRODUCTS'>('CASH_REGISTER');
   const [dateRange, setDateRange] = useState<'TODAY' | 'YESTERDAY' | 'WEEK' | 'MONTH'>('TODAY');
 
+  // Modal States
+  const [isCashModalOpen, setIsCashModalOpen] = useState(false);
+  const [cashModalType, setCashModalType] = useState<'in' | 'out'>('out');
+  const [isZReportOpen, setIsZReportOpen] = useState(false);
+
+  // Live queries
   const orders = useLiveQuery(() => db.orders.toArray()) || [];
   const payments = useLiveQuery(() => db.payments.toArray()) || [];
+  const cashTransactions = useLiveQuery(() => db.cashTransactions.toArray()) || [];
   const staff = useLiveQuery(() => db.staff.toArray()) || [];
   const menuItems = useLiveQuery(() => db.menuItems.toArray()) || [];
   const categories = useLiveQuery(() => db.categories.toArray()) || [];
 
-  const tabs = [
-    { id: 'SALES' as const, label: 'Satışlar & Ciro', icon: <TrendingUp size={18} /> },
-    { id: 'PRODUCTS' as const, label: 'En Çok Satan Ürünler', icon: <PieChartIcon size={18} /> },
-    { id: 'STAFF' as const, label: 'Garson Performansı', icon: <Users size={18} /> },
-    { id: 'PAYMENTS' as const, label: 'Ödeme Dağılımı', icon: <CreditCard size={18} /> },
-  ];
-
   // Date Filtering logic
-  const { filteredOrders, filteredPayments, dateRangeLabel } = useMemo(() => {
+  const { filteredOrders, filteredPayments, filteredCash, dateRangeLabel } = useMemo(() => {
     const now = new Date();
     let startDate = new Date();
     let endDate = new Date();
@@ -54,93 +73,74 @@ export default function ReportsPage() {
       return d >= startDate && (dateRange === 'YESTERDAY' ? d <= endDate : true);
     });
 
+    const fCash = cashTransactions.filter(t => {
+      const d = new Date(t.createdAt);
+      return d >= startDate && (dateRange === 'YESTERDAY' ? d <= endDate : true);
+    });
+
     const label = dateRange === 'TODAY' ? 'Bugün' : dateRange === 'YESTERDAY' ? 'Dün' : dateRange === 'WEEK' ? 'Son 7 Gün' : 'Son 30 Gün';
 
-    return { filteredOrders: fOrders, filteredPayments: fPayments, dateRangeLabel: label };
-  }, [orders, payments, dateRange]);
+    return { 
+      filteredOrders: fOrders, 
+      filteredPayments: fPayments, 
+      filteredCash: fCash,
+      dateRangeLabel: label 
+    };
+  }, [orders, payments, cashTransactions, dateRange]);
 
-  // Total Metrics
-  const totalRevenue = useMemo(() => {
-    return filteredPayments.reduce((sum, p) => sum + (p.total || 0), 0);
-  }, [filteredPayments]);
-
-  const closedOrdersCount = useMemo(() => {
-    return filteredOrders.filter(o => o.status === 'paid').length;
-  }, [filteredOrders]);
-
-  const avgCheck = closedOrdersCount > 0 ? totalRevenue / closedOrdersCount : 0;
-
-  // Dynamic Sales Trend Chart
-  const salesTrend = useMemo(() => {
-    if (dateRange === 'TODAY' || dateRange === 'YESTERDAY') {
-      const hours = ['09:00', '11:00', '13:00', '15:00', '17:00', '19:00', '21:00', '23:00'];
-      const buckets: Record<string, number> = {};
-      hours.forEach(h => { buckets[h] = 0; });
-
-      filteredPayments.forEach(p => {
-        const d = new Date(p.paidAt);
-        const hour = d.getHours();
-        const bucketHour = Math.floor(hour / 2) * 2 + 1;
-        const key = `${bucketHour < 10 ? '0' + bucketHour : bucketHour}:00`;
-        if (buckets[key] !== undefined) buckets[key] += p.total;
-        else buckets['13:00'] += p.total;
-      });
-
-      return hours.map(name => ({ name, total: Math.round(buckets[name] || 0) }));
-    }
-
-    // Weekly / Monthly Trend
-    const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
-    const days: { name: string; total: number; dateStr: string }[] = [];
-    const numDays = dateRange === 'WEEK' ? 7 : 14;
-
-    for (let i = numDays - 1; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
-      const name = `${dayNames[d.getDay()]} ${d.getDate()}`;
-      days.push({ name, total: 0, dateStr });
-    }
+  // Financial Metric Calculations
+  const metrics = useMemo(() => {
+    let totalRevenue = 0;
+    let cashRevenue = 0;
+    let posRevenue = 0;
+    let mealCardRevenue = 0;
+    let otherRevenue = 0;
 
     filteredPayments.forEach(p => {
-      const pDate = p.paidAt ? p.paidAt.split('T')[0] : '';
-      const match = days.find(d => d.dateStr === pDate);
-      if (match) match.total += p.total;
-    });
-
-    return days;
-  }, [filteredPayments, dateRange]);
-
-  // Dynamic Top Products
-  const topProducts = useMemo(() => {
-    const catMap = new Map<string, string>();
-    categories.forEach(c => catMap.set(c.id, c.name));
-    const itemCatMap = new Map<string, string>();
-    menuItems.forEach(m => itemCatMap.set(m.id, catMap.get(m.categoryId) || 'Genel'));
-
-    const agg: Record<string, { name: string; count: number; revenue: number; category: string }> = {};
-
-    filteredOrders.forEach(o => {
-      if (o.status === 'cancelled') return;
-      o.items?.forEach(it => {
-        if (!agg[it.name]) {
-          agg[it.name] = {
-            name: it.name,
-            count: 0,
-            revenue: 0,
-            category: itemCatMap.get(it.menuItemId) || 'Menü'
-          };
+      totalRevenue += (p.total || 0);
+      p.parts?.forEach(part => {
+        if (part.method === 'cash') {
+          cashRevenue += part.amount;
+        } else if (part.method === 'credit_card' || part.method === 'debit_card') {
+          posRevenue += part.amount;
+        } else if (['sodexo', 'multinet', 'ticket', 'metropol'].includes(part.method)) {
+          mealCardRevenue += part.amount;
+        } else {
+          otherRevenue += part.amount;
         }
-        agg[it.name].count += it.quantity;
-        agg[it.name].revenue += (it.unitPrice * it.quantity);
       });
     });
 
-    return Object.values(agg).sort((a, b) => b.revenue - a.revenue);
-  }, [filteredOrders, categories, menuItems]);
+    const cashInTotal = filteredCash
+      .filter(t => t.type === 'in')
+      .reduce((sum, t) => sum + t.amount, 0);
 
-  // Dynamic Staff Performance
-  const staffPerformance = useMemo(() => {
+    const cashOutTotal = filteredCash
+      .filter(t => t.type === 'out')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    // Physical Drawer Balance
+    const expectedDrawerCash = cashRevenue + cashInTotal - cashOutTotal;
+
+    const closedOrdersCount = filteredOrders.filter(o => o.status === 'paid').length;
+    const avgCheck = closedOrdersCount > 0 ? totalRevenue / closedOrdersCount : 0;
+
+    return {
+      totalRevenue,
+      cashRevenue,
+      posRevenue,
+      mealCardRevenue,
+      otherRevenue,
+      cashInTotal,
+      cashOutTotal,
+      expectedDrawerCash,
+      closedOrdersCount,
+      avgCheck,
+    };
+  }, [filteredPayments, filteredCash, filteredOrders]);
+
+  // Dynamic Staff Breakdown
+  const staffBreakdown = useMemo(() => {
     const staffMap = new Map<string, Staff>();
     staff.forEach(s => staffMap.set(s.id, s));
 
@@ -161,7 +161,7 @@ export default function ReportsPage() {
         };
       }
       agg[waiterName].orderCount += 1;
-      agg[waiterName].totalRevenue += o.total || 0;
+      agg[waiterName].totalRevenue += (o.total || 0);
     });
 
     return Object.values(agg).map(item => ({
@@ -170,7 +170,7 @@ export default function ReportsPage() {
     })).sort((a, b) => b.totalRevenue - a.totalRevenue);
   }, [filteredOrders, staff]);
 
-  // Dynamic Payment Breakdown
+  // Payment Breakdown
   const paymentBreakdown = useMemo(() => {
     const methodNames: Record<string, string> = {
       cash: 'Nakit TL',
@@ -204,233 +204,703 @@ export default function ReportsPage() {
     })).sort((a, b) => b.total - a.total);
   }, [filteredPayments]);
 
-  // Export to CSV
-  const handleExportCSV = () => {
-    let rows: string[][] = [];
-    let filename = `wots_rapor_${activeTab.toLowerCase()}_${dateRange.toLowerCase()}.csv`;
+  // Dynamic Top Products
+  const topProducts = useMemo(() => {
+    const catMap = new Map<string, string>();
+    categories.forEach(c => catMap.set(c.id, c.name));
+    const itemCatMap = new Map<string, string>();
+    menuItems.forEach(m => itemCatMap.set(m.id, catMap.get(m.categoryId) || 'Genel'));
 
-    if (activeTab === 'SALES') {
-      rows.push(['Zaman', 'Ciro']);
-      salesTrend.forEach(s => rows.push([s.name, s.total.toString()]));
-    } else if (activeTab === 'PRODUCTS') {
-      rows.push(['Urun Adi', 'Kategori', 'Satis Adedi', 'Toplam Ciro']);
-      topProducts.forEach(p => rows.push([p.name, p.category, p.count.toString(), p.revenue.toString()]));
-    } else if (activeTab === 'STAFF') {
-      rows.push(['Personel', 'Gorevi', 'Siparis Sayisi', 'Ortalama Hesap', 'Toplam Ciro']);
-      staffPerformance.forEach(s => rows.push([s.name, s.role, s.orderCount.toString(), s.avgCheck.toString(), s.totalRevenue.toString()]));
-    } else if (activeTab === 'PAYMENTS') {
-      rows.push(['Odeme Metodu', 'Islem Sayisi', 'Yuzde', 'Toplam Tutar']);
-      paymentBreakdown.forEach(p => rows.push([p.method, p.count.toString(), `%${p.percent}`, p.total.toString()]));
+    const agg: Record<string, { name: string; count: number; revenue: number; category: string }> = {};
+
+    filteredOrders.forEach(o => {
+      if (o.status === 'cancelled') return;
+      o.items?.forEach(it => {
+        if (!agg[it.name]) {
+          agg[it.name] = {
+            name: it.name,
+            count: 0,
+            revenue: 0,
+            category: itemCatMap.get(it.menuItemId) || 'Menü'
+          };
+        }
+        agg[it.name].count += it.quantity;
+        agg[it.name].revenue += (it.unitPrice * it.quantity);
+      });
+    });
+
+    return Object.values(agg).sort((a, b) => b.revenue - a.revenue);
+  }, [filteredOrders, categories, menuItems]);
+
+  // Prepare Z-Report Payload
+  const zReportPayload: ZReportData = useMemo(() => {
+    const expenses = filteredCash
+      .filter(t => t.type === 'out')
+      .map(t => ({
+        description: t.description,
+        amount: t.amount,
+        category: t.category,
+      }));
+
+    const staffList = staffBreakdown.map(s => ({
+      name: s.name,
+      orderCount: s.orderCount,
+      total: s.totalRevenue,
+    }));
+
+    return {
+      reportDate: `${new Date().toLocaleDateString('tr-TR')} ${new Date().toLocaleTimeString('tr-TR')}`,
+      totalRevenue: metrics.totalRevenue,
+      orderCount: metrics.closedOrdersCount,
+      cashRevenue: metrics.cashRevenue,
+      posRevenue: metrics.posRevenue,
+      mealCardRevenue: metrics.mealCardRevenue,
+      otherRevenue: metrics.otherRevenue,
+      cashInTotal: metrics.cashInTotal,
+      cashOutTotal: metrics.cashOutTotal,
+      expectedDrawerCash: metrics.expectedDrawerCash,
+      expenses,
+      staffBreakdown: staffList,
+      authorizedPerson: state.currentUser?.name || 'Yönetici',
+    };
+  }, [metrics, filteredCash, staffBreakdown, state.currentUser]);
+
+  // Handle Cash Transaction Delete
+  const handleDeleteCashTransaction = async (id: string) => {
+    if (confirm('Bu kasa hareket kaydını silmek istediğinize emin misiniz?')) {
+      await db.cashTransactions.delete(id);
     }
+  };
 
-    const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+  // Export CSV
+  const handleExportCSV = () => {
+    const rows: string[][] = [
+      ['Rapor Türü', 'Kasa & Gün Sonu Ciro Raporu'],
+      ['Tarih Aralığı', dateRangeLabel],
+      ['Toplam Ciro', metrics.totalRevenue.toString()],
+      ['Nakit Satışlar', metrics.cashRevenue.toString()],
+      ['POS / Kredi Kartı', metrics.posRevenue.toString()],
+      ['Kasaya Giren Ek Para', metrics.cashInTotal.toString()],
+      ['Kasadan Çıkan Masraflar', metrics.cashOutTotal.toString()],
+      ['Kasadaki Net Nakit', metrics.expectedDrawerCash.toString()],
+      [],
+      ['Kasa Hareketleri'],
+      ['İşlem Türü', 'Kategori', 'Açıklama', 'İşlemi Yapan', 'Tarih', 'Tutar'],
+    ];
+
+    filteredCash.forEach(t => {
+      rows.push([
+        t.type === 'in' ? 'Giriş' : 'Çıkış',
+        t.category,
+        t.description,
+        t.processedBy,
+        new Date(t.createdAt).toLocaleString('tr-TR'),
+        (t.type === 'in' ? '+' : '-') + t.amount.toString()
+      ]);
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + rows.map(e => e.join(";")).join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", filename);
+    link.setAttribute("download", `kasa_ciro_raporu_${dateRange.toLowerCase()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col space-y-6 dark:bg-stone-950 dark:text-stone-100">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto flex flex-col space-y-6 bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 select-none">
+      
+      {/* Top Header & Date Filter */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 tracking-tight">Finans & Operasyon Raporları</h1>
-          <p className="text-stone-500 text-sm mt-1">Canlı ciro, ürün satış adetleri, garson performansı ve tahsilat dökümü</p>
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-orange-600/20 text-orange-600 flex items-center justify-center">
+              <Banknote size={24} />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
+                Kasa & Gün Sonu Ciro
+              </h1>
+              <p className="text-stone-500 text-xs sm:text-sm font-medium mt-0.5">
+                Kasa giriş/çıkış hareketleri, net nakit hesabı, ciro ve Z-Raporu
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-1 flex items-center shadow-xs overflow-x-auto">
+
+        {/* Date Filter & Quick Actions */}
+        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+          {/* Date Selector */}
+          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-1 flex items-center shadow-xs">
             {(['TODAY', 'YESTERDAY', 'WEEK', 'MONTH'] as const).map(range => (
               <button
                 key={range}
+                type="button"
                 onClick={() => setDateRange(range)}
                 className={cn(
-                  "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer",
-                  dateRange === range 
-                    ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-xs" 
-                    : "text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200"
+                  "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
+                  dateRange === range
+                    ? "bg-orange-600 text-white shadow-xs"
+                    : "text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200"
                 )}
               >
-                {range === 'TODAY' ? 'Bugün' : range === 'YESTERDAY' ? 'Dün' : range === 'WEEK' ? 'Bu Hafta' : 'Bu Ay'}
+                {range === 'TODAY' ? 'Bugün' : range === 'YESTERDAY' ? 'Dün' : range === 'WEEK' ? 'Hafta' : 'Ay'}
               </button>
             ))}
           </div>
-          <button 
-            onClick={handleExportCSV}
-            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+
+          {/* Action Buttons */}
+          <button
+            type="button"
+            onClick={() => {
+              setCashModalType('in');
+              setIsCashModalOpen(true);
+            }}
+            className="py-2.5 px-3.5 bg-white text-stone-950 font-black text-xs rounded-2xl border border-stone-300 dark:border-stone-700 shadow-xs hover:bg-stone-100 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+            title="Kasaya para girişi / bozukluk ekle"
           >
-            <Download size={15} />
-            CSV / Excel İndir
+            <ArrowDownRight size={16} className="text-emerald-600" />
+            <span>+ Para Girişi</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setCashModalType('out');
+              setIsCashModalOpen(true);
+            }}
+            className="py-2.5 px-3.5 bg-white text-stone-950 font-black text-xs rounded-2xl border border-stone-300 dark:border-stone-700 shadow-xs hover:bg-stone-100 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+            title="Kasadan masraf veya gider çıkışı yap"
+          >
+            <ArrowUpRight size={16} className="text-red-600" />
+            <span>- Masraf / Çıkış</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsZReportOpen(true)}
+            className="py-2.5 px-4 bg-orange-600 hover:bg-orange-700 text-white font-black text-xs rounded-2xl shadow-md transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+            title="Günü kapat ve termal Z-Raporu al"
+          >
+            <Receipt size={16} />
+            <span>Z-Raporu Al & Kapat</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="p-2.5 bg-white text-stone-800 dark:bg-stone-900 dark:text-stone-200 border border-stone-200 dark:border-stone-800 rounded-2xl hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+            title="CSV Dışa Aktar"
+          >
+            <Download size={16} />
           </button>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 flex-1 flex flex-col overflow-hidden">
-        {/* Navigation Tabs */}
-        <div className="flex overflow-x-auto border-b border-stone-200 dark:border-stone-800 px-4 sm:px-6 pt-3 gap-4 sm:gap-6 bg-stone-50 dark:bg-stone-950/60 whitespace-nowrap">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "pb-3 font-bold text-xs flex items-center gap-2 border-b-2 transition-colors cursor-pointer",
-                activeTab === tab.id 
-                  ? "border-orange-600 text-orange-600" 
-                  : "border-transparent text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200"
-              )}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
+      {/* TOP 4 CORE FINANCIAL CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+        
+        {/* 1. TOPLAM CİRO */}
+        <div className="bg-white dark:bg-stone-900 rounded-3xl p-5 border border-stone-200 dark:border-stone-800 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+              {dateRangeLabel} Toplam Ciro
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-orange-100 dark:bg-orange-950/50 text-orange-600 flex items-center justify-center">
+              <TrendingUp size={18} />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="text-2xl sm:text-3xl font-mono font-black text-stone-950 dark:text-white">
+              {formatCurrency(metrics.totalRevenue)}
+            </div>
+            <div className="text-xs text-stone-500 mt-1 flex items-center gap-1">
+              <span>{metrics.closedOrdersCount} Kapalı Masa / Adisyon</span>
+              <span>• Ort. {formatCurrency(metrics.avgCheck)}</span>
+            </div>
+          </div>
         </div>
 
-        {/* Content Tabs */}
-        <div className="p-6 flex-1 overflow-auto">
-          {activeTab === 'SALES' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
-                <div className="p-5 bg-stone-50 dark:bg-stone-950/60 rounded-2xl border border-stone-200 dark:border-stone-800">
-                  <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">Dönem Cirosu ({dateRangeLabel})</p>
-                  <p className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 dark:text-stone-100">{formatCurrency(totalRevenue)}</p>
-                  <span className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-1 inline-block">Toplam tahsilat</span>
-                </div>
-                <div className="p-5 bg-stone-50 dark:bg-stone-950/60 rounded-2xl border border-stone-200 dark:border-stone-800">
-                  <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">Kapanan Adisyon</p>
-                  <p className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 dark:text-stone-100">{closedOrdersCount}</p>
-                  <span className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-1 inline-block">Ödenen masa sayısı</span>
-                </div>
-                <div className="p-5 bg-stone-50 dark:bg-stone-950/60 rounded-2xl border border-stone-200 dark:border-stone-800">
-                  <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">Ortalama Masa Hesabı</p>
-                  <p className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 dark:text-stone-100">{formatCurrency(Math.round(avgCheck))}</p>
-                  <span className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-1 inline-block">Adisyon başına ortalama</span>
-                </div>
-              </div>
-
-              <div className="bg-stone-50 dark:bg-stone-950/60 p-4 sm:p-6 rounded-2xl border border-stone-200 dark:border-stone-800">
-                <h3 className="text-sm font-bold text-stone-800 dark:text-stone-100 uppercase tracking-wider mb-4">Ciro Dağılım Grafiği ({dateRangeLabel})</h3>
-                <div className="h-48 sm:h-64 lg:h-72 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={salesTrend}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e7e5e4" />
-                      <XAxis dataKey="name" stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} />
-                      <YAxis stroke="#a8a29e" fontSize={12} tickLine={false} axisLine={false} tickFormatter={val => `₺${val}`} />
-                      <Tooltip cursor={{fill: '#e7e5e4/40'}} formatter={(value: any) => [`₺${value}`, 'Ciro']} />
-                      <Bar dataKey="total" fill="#ea580c" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+        {/* 2. KASADAKİ NET NAKİT (DRAWER BALANCE) */}
+        <div className="bg-emerald-50/60 dark:bg-emerald-950/20 rounded-3xl p-5 border border-emerald-200 dark:border-emerald-900/50 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black text-emerald-800 dark:text-emerald-400 uppercase tracking-wider">
+              Kasadaki Net Nakit
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+              <Banknote size={18} />
             </div>
-          )}
-
-          {activeTab === 'PRODUCTS' && (
-            <div className="space-y-4 overflow-x-auto">
-              {topProducts.length > 0 ? (
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-stone-50 dark:bg-stone-950/80 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-400 border-b border-stone-200 dark:border-stone-800">
-                    <tr>
-                      <th className="py-3 px-4">Sıra</th>
-                      <th className="py-3 px-4">Ürün Adı</th>
-                      <th className="py-3 px-4">Kategori</th>
-                      <th className="py-3 px-4 text-center">Satış Adedi</th>
-                      <th className="py-3 px-4 text-right">Toplam Ciro</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-sm">
-                    {topProducts.map((prod, idx) => (
-                      <tr key={idx} className="hover:bg-stone-50/70 dark:hover:bg-stone-800/50 transition-colors">
-                        <td className="py-3 px-4 font-bold text-stone-400">
-                          {idx === 0 ? <Award className="w-5 h-5 text-amber-500 inline" /> : `#${idx + 1}`}
-                        </td>
-                        <td className="py-3 px-4 font-bold text-stone-800 dark:text-stone-100">{prod.name}</td>
-                        <td className="py-3 px-4 text-stone-500 dark:text-stone-400">{prod.category}</td>
-                        <td className="py-3 px-4 text-center font-bold font-mono text-orange-600 dark:text-orange-400">{prod.count} adet</td>
-                        <td className="py-3 px-4 text-right font-black text-stone-900 dark:text-stone-100">{formatCurrency(prod.revenue)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="py-16 text-center text-stone-400">
-                  <AlertCircle className="w-10 h-10 mx-auto text-stone-300 dark:text-stone-600 mb-2" />
-                  <p className="font-semibold text-sm">Seçili dönemde ürün satışı bulunamadı.</p>
-                </div>
-              )}
+          </div>
+          <div className="mt-3">
+            <div className="text-2xl sm:text-3xl font-mono font-black text-emerald-900 dark:text-emerald-300">
+              {formatCurrency(metrics.expectedDrawerCash)}
             </div>
-          )}
-
-          {activeTab === 'STAFF' && (
-            <div className="space-y-4 overflow-x-auto">
-              {staffPerformance.length > 0 ? (
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-stone-50 dark:bg-stone-950/80 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-400 border-b border-stone-200 dark:border-stone-800">
-                    <tr>
-                      <th className="py-3 px-4">Personel</th>
-                      <th className="py-3 px-4">Görevi</th>
-                      <th className="py-3 px-4 text-center">Açılan Masa Sayısı</th>
-                      <th className="py-3 px-4 text-center">Ortalama Hesap</th>
-                      <th className="py-3 px-4 text-right">Toplam Ciro</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-sm">
-                    {staffPerformance.map((st, idx) => (
-                      <tr key={idx} className="hover:bg-stone-50/70 dark:hover:bg-stone-800/50 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-stone-800 dark:text-stone-100">{st.name}</td>
-                        <td className="py-3.5 px-4 text-xs font-semibold text-stone-500 dark:text-stone-400">{st.role}</td>
-                        <td className="py-3.5 px-4 text-center font-bold font-mono text-stone-700 dark:text-stone-300">{st.orderCount} masa</td>
-                        <td className="py-3.5 px-4 text-center font-semibold text-stone-700 dark:text-stone-300">{formatCurrency(st.avgCheck)}</td>
-                        <td className="py-3.5 px-4 text-right font-black text-emerald-600 dark:text-emerald-400">{formatCurrency(st.totalRevenue)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="py-16 text-center text-stone-400">
-                  <AlertCircle className="w-10 h-10 mx-auto text-stone-300 dark:text-stone-600 mb-2" />
-                  <p className="font-semibold text-sm">Seçili dönemde personel sipariş aktivitesi bulunamadı.</p>
-                </div>
-              )}
+            <div className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 mt-1 truncate">
+              Nakit: {formatCurrency(metrics.cashRevenue)} | Masraf: -{formatCurrency(metrics.cashOutTotal)}
             </div>
-          )}
-
-          {activeTab === 'PAYMENTS' && (
-            <div className="space-y-4 overflow-x-auto">
-              {paymentBreakdown.length > 0 ? (
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-stone-50 dark:bg-stone-950/80 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-400 border-b border-stone-200 dark:border-stone-800">
-                    <tr>
-                      <th className="py-3 px-4">Ödeme Metodu</th>
-                      <th className="py-3 px-4 text-center">İşlem Sayısı</th>
-                      <th className="py-3 px-4 text-center">Payı (%)</th>
-                      <th className="py-3 px-4 text-right">Tahsil Edilen Tutar</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-sm">
-                    {paymentBreakdown.map((pay, idx) => (
-                      <tr key={idx} className="hover:bg-stone-50/70 dark:hover:bg-stone-800/50 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-stone-800 dark:text-stone-100">{pay.method}</td>
-                        <td className="py-3.5 px-4 text-center font-mono text-stone-600 dark:text-stone-400">{pay.count} işlem</td>
-                        <td className="py-3.5 px-4 text-center">
-                          <span className="font-bold text-xs bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 px-2 py-0.5 rounded-md">%{pay.percent}</span>
-                        </td>
-                        <td className="py-3.5 px-4 text-right font-black text-stone-900 dark:text-stone-100">{formatCurrency(pay.total)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="py-16 text-center text-stone-400">
-                  <AlertCircle className="w-10 h-10 mx-auto text-stone-300 dark:text-stone-600 mb-2" />
-                  <p className="font-semibold text-sm">Seçili dönemde tahsilat işlemi bulunamadı.</p>
-                </div>
-              )}
-            </div>
-          )}
+          </div>
         </div>
+
+        {/* 3. POS / KREDİ KARTI */}
+        <div className="bg-white dark:bg-stone-900 rounded-3xl p-5 border border-stone-200 dark:border-stone-800 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+              POS / Kredi Kartı
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950/50 text-blue-600 flex items-center justify-center">
+              <CreditCard size={18} />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="text-2xl sm:text-3xl font-mono font-black text-stone-950 dark:text-white">
+              {formatCurrency(metrics.posRevenue)}
+            </div>
+            <div className="text-xs text-stone-500 mt-1">
+              Banka hesabına geçen toplam tahsilat
+            </div>
+          </div>
+        </div>
+
+        {/* 4. KASADAN ÇIKAN MASRAFLAR */}
+        <div className="bg-red-50/50 dark:bg-red-950/20 rounded-3xl p-5 border border-red-200 dark:border-red-900/50 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black text-red-800 dark:text-red-400 uppercase tracking-wider">
+              Masraflar & Çıkışlar
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-red-600/20 text-red-600 flex items-center justify-center">
+              <ArrowUpRight size={18} />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="text-2xl sm:text-3xl font-mono font-black text-red-900 dark:text-red-300">
+              {formatCurrency(metrics.cashOutTotal)}
+            </div>
+            <div className="text-xs text-red-700/80 dark:text-red-400/80 mt-1">
+              {filteredCash.filter(t => t.type === 'out').length} kalem gider / masraf kaydı
+            </div>
+          </div>
+        </div>
+
       </div>
+
+      {/* Tabs Navigation */}
+      <div className="flex border-b border-stone-200 dark:border-stone-800 overflow-x-auto gap-2">
+        <button
+          type="button"
+          onClick={() => setActiveTab('CASH_REGISTER')}
+          className={cn(
+            "pb-3 px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer",
+            activeTab === 'CASH_REGISTER'
+              ? "border-orange-600 text-orange-600 dark:text-orange-400"
+              : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
+          )}
+        >
+          <Banknote size={17} />
+          <span>Kasa Defteri (Giren / Çıkan Para)</span>
+          <span className="text-[10px] bg-stone-200 dark:bg-stone-800 px-2 py-0.5 rounded-full font-mono">
+            {filteredCash.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('STAFF')}
+          className={cn(
+            "pb-3 px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer",
+            activeTab === 'STAFF'
+              ? "border-orange-600 text-orange-600 dark:text-orange-400"
+              : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
+          )}
+        >
+          <Users size={17} />
+          <span>Garson Satış Dağılımı</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('PAYMENTS')}
+          className={cn(
+            "pb-3 px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer",
+            activeTab === 'PAYMENTS'
+              ? "border-orange-600 text-orange-600 dark:text-orange-400"
+              : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
+          )}
+        >
+          <CreditCard size={17} />
+          <span>Tahsilat & Ödeme Türleri</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('PRODUCTS')}
+          className={cn(
+            "pb-3 px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer",
+            activeTab === 'PRODUCTS'
+              ? "border-orange-600 text-orange-600 dark:text-orange-400"
+              : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
+          )}
+        >
+          <PieChartIcon size={17} />
+          <span>En Çok Satan Ürünler</span>
+        </button>
+      </div>
+
+      {/* TAB CONTENT 1: KASA DEFTERİ (GİREN & ÇIKAN PARA) */}
+      {activeTab === 'CASH_REGISTER' && (
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white dark:bg-stone-900 p-4 rounded-3xl border border-stone-200 dark:border-stone-800">
+            <div>
+              <h2 className="text-base font-black text-stone-900 dark:text-stone-100">
+                {dateRangeLabel} Kasa Giriş & Çıkış Hareketleri
+              </h2>
+              <p className="text-xs text-stone-500 mt-0.5">
+                Kasaya eklenen açılış parası, bozukluklar, tedarikçi ve market masrafları
+              </p>
+            </div>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  setCashModalType('in');
+                  setIsCashModalOpen(true);
+                }}
+                className="flex-1 sm:flex-none py-2 px-3 bg-white text-stone-950 font-black text-xs rounded-xl border border-stone-300 dark:border-stone-700 hover:bg-stone-100 transition-all cursor-pointer flex items-center justify-center gap-1 shadow-xs"
+              >
+                <Plus size={15} className="text-emerald-600" />
+                <span>Para Girişi</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCashModalType('out');
+                  setIsCashModalOpen(true);
+                }}
+                className="flex-1 sm:flex-none py-2 px-3 bg-white text-stone-950 font-black text-xs rounded-xl border border-stone-300 dark:border-stone-700 hover:bg-stone-100 transition-all cursor-pointer flex items-center justify-center gap-1 shadow-xs"
+              >
+                <Plus size={15} className="text-red-600" />
+                <span>Masraf / Gider Ekle</span>
+              </button>
+            </div>
+          </div>
+
+          {filteredCash.length === 0 ? (
+            <div className="bg-white dark:bg-stone-900 rounded-3xl p-10 border border-stone-200 dark:border-stone-800 text-center flex flex-col items-center justify-center space-y-3">
+              <div className="w-14 h-14 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-400 flex items-center justify-center">
+                <Banknote size={28} />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-stone-900 dark:text-stone-100">
+                  Henüz kasa hareketi bulunmuyor
+                </h3>
+                <p className="text-xs text-stone-500 mt-1 max-w-sm">
+                  Kasaya sabah açılış parası eklemek veya market/tedarikçi masrafı kaydetmek için yukarıdaki butonları kullanabilirsiniz.
+                </p>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCashModalType('in');
+                    setIsCashModalOpen(true);
+                  }}
+                  className="py-2.5 px-4 bg-white text-stone-950 font-black text-xs rounded-xl border border-stone-300 shadow-xs hover:bg-stone-100 transition-all cursor-pointer"
+                >
+                  + Kasa Açılış Parası Ekle
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCashModalType('out');
+                    setIsCashModalOpen(true);
+                  }}
+                  className="py-2.5 px-4 bg-white text-stone-950 font-black text-xs rounded-xl border border-stone-300 shadow-xs hover:bg-stone-100 transition-all cursor-pointer"
+                >
+                  - Masraf / Gider Kaydet
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-stone-900 rounded-3xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-xs">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-500 font-bold uppercase tracking-wider">
+                      <th className="py-3.5 px-4">Tür</th>
+                      <th className="py-3.5 px-4">Kategori</th>
+                      <th className="py-3.5 px-4">Açıklama</th>
+                      <th className="py-3.5 px-4">İşlemi Yapan</th>
+                      <th className="py-3.5 px-4">Tarih & Saat</th>
+                      <th className="py-3.5 px-4 text-right">Tutar</th>
+                      <th className="py-3.5 px-4 text-center">İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800 font-medium">
+                    {filteredCash.slice().reverse().map(t => (
+                      <tr key={t.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/40 transition-colors">
+                        <td className="py-3 px-4">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase ${
+                            t.type === 'in' 
+                              ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800' 
+                              : 'bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border border-red-300 dark:border-red-800'
+                          }`}>
+                            {t.type === 'in' ? <ArrowDownRight size={12} /> : <ArrowUpRight size={12} />}
+                            <span>{t.type === 'in' ? 'KASAYA GİRİŞ' : 'MASRAF / ÇIKIŞ'}</span>
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-bold text-stone-900 dark:text-stone-100">
+                          {t.category}
+                        </td>
+                        <td className="py-3 px-4 text-stone-600 dark:text-stone-300">
+                          {t.description}
+                        </td>
+                        <td className="py-3 px-4 text-stone-500">
+                          {t.processedBy}
+                        </td>
+                        <td className="py-3 px-4 font-mono text-stone-500">
+                          {new Date(t.createdAt).toLocaleTimeString('tr-TR')} - {new Date(t.createdAt).toLocaleDateString('tr-TR')}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono font-black text-sm">
+                          <span className={t.type === 'in' ? 'text-emerald-600' : 'text-red-600'}>
+                            {t.type === 'in' ? '+' : '-'}{formatCurrency(t.amount)}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCashTransaction(t.id)}
+                            className="p-1.5 text-stone-400 hover:text-red-600 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                            title="Kaydı Sil"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB CONTENT 2: GARSON SATIŞ DAĞILIMI */}
+      {activeTab === 'STAFF' && (
+        <div className="bg-white dark:bg-stone-900 rounded-3xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-xs">
+          <div className="p-4 sm:p-5 border-b border-stone-200 dark:border-stone-800">
+            <h2 className="text-base font-black text-stone-900 dark:text-stone-100">
+              Garson Satış Dağılımı ({dateRangeLabel})
+            </h2>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Hangi garson ne kadar ciro yaptı, kaç adisyon açtı ve ortalama masa tutarı
+            </p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-500 font-bold uppercase tracking-wider">
+                  <th className="py-3.5 px-4">Personel / Garson</th>
+                  <th className="py-3.5 px-4">Görevi</th>
+                  <th className="py-3.5 px-4 text-center">Masa / Sipariş Sayısı</th>
+                  <th className="py-3.5 px-4 text-right">Ortalama Masa Tutarı</th>
+                  <th className="py-3.5 px-4 text-right">Toplam Ciro</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stone-100 dark:divide-stone-800 font-medium">
+                {staffBreakdown.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-stone-400">
+                      Bu tarih aralığında henüz satış bulunmuyor
+                    </td>
+                  </tr>
+                ) : (
+                  staffBreakdown.map((s, idx) => (
+                    <tr key={idx} className="hover:bg-stone-50 dark:hover:bg-stone-800/40 transition-colors">
+                      <td className="py-3.5 px-4 font-bold text-stone-950 dark:text-stone-100">
+                        {s.name}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold text-[10px]">
+                          {s.role}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-bold text-stone-800 dark:text-stone-200">
+                        {s.orderCount} Adet
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-mono font-bold text-stone-600 dark:text-stone-300">
+                        {formatCurrency(s.avgCheck)}
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-mono font-black text-sm text-stone-950 dark:text-white">
+                        {formatCurrency(s.totalRevenue)}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* TAB CONTENT 3: ÖDEME & TAHSİLAT DAĞILIMI */}
+      {activeTab === 'PAYMENTS' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white dark:bg-stone-900 rounded-3xl p-5 border border-stone-200 dark:border-stone-800 shadow-xs">
+            <h2 className="text-base font-black text-stone-900 dark:text-stone-100 mb-1">
+              Ödeme Kanalları Dökümü
+            </h2>
+            <p className="text-xs text-stone-500 mb-4">
+              Tahsilatların ödeme tiplerine göre oransal ve tutarsal dağılımı
+            </p>
+
+            <div className="space-y-3">
+              {paymentBreakdown.length === 0 ? (
+                <div className="py-8 text-center text-stone-400 text-xs">
+                  Bu dönemde henüz tahsilat kaydı yok
+                </div>
+              ) : (
+                paymentBreakdown.map((item, idx) => (
+                  <div key={idx} className="space-y-1.5 p-3 rounded-2xl bg-stone-50 dark:bg-stone-950/60 border border-stone-200/60 dark:border-stone-800">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-stone-900 dark:text-stone-100">{item.method}</span>
+                      <div className="text-right">
+                        <span className="font-mono font-black text-stone-950 dark:text-white">
+                          {formatCurrency(item.total)}
+                        </span>
+                        <span className="text-[11px] text-stone-400 ml-1.5">({item.percent}%)</span>
+                      </div>
+                    </div>
+                    {/* Progress bar */}
+                    <div className="w-full h-2 bg-stone-200 dark:bg-stone-800 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-orange-600 rounded-full transition-all duration-300"
+                        style={{ width: `${item.percent}%` }}
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-stone-900 rounded-3xl p-5 border border-stone-200 dark:border-stone-800 shadow-xs flex flex-col justify-between">
+            <div>
+              <h2 className="text-base font-black text-stone-900 dark:text-stone-100 mb-1">
+                Kasa & Banka Özeti
+              </h2>
+              <p className="text-xs text-stone-500 mb-4">
+                Nakit ve dijital tahsilatların karşılaştırması
+              </p>
+
+              <div className="space-y-2.5">
+                <div className="flex justify-between p-3 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200/60 dark:border-stone-800 text-xs">
+                  <span className="text-stone-600 dark:text-stone-400">Nakit Satışlar Toplamı:</span>
+                  <span className="font-mono font-bold text-stone-950 dark:text-white">{formatCurrency(metrics.cashRevenue)}</span>
+                </div>
+                <div className="flex justify-between p-3 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200/60 dark:border-stone-800 text-xs">
+                  <span className="text-stone-600 dark:text-stone-400">POS / Kredi Kartı Satışları:</span>
+                  <span className="font-mono font-bold text-stone-950 dark:text-white">{formatCurrency(metrics.posRevenue)}</span>
+                </div>
+                <div className="flex justify-between p-3 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200/60 dark:border-stone-800 text-xs">
+                  <span className="text-stone-600 dark:text-stone-400">Yemek Kartları (Sodexo, Multinet vb.):</span>
+                  <span className="font-mono font-bold text-stone-950 dark:text-white">{formatCurrency(metrics.mealCardRevenue)}</span>
+                </div>
+                <div className="flex justify-between p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-xs font-black">
+                  <span className="text-emerald-800 dark:text-emerald-300">KASADAKİ FİZİKSEL NET NAKİT:</span>
+                  <span className="font-mono text-emerald-900 dark:text-emerald-200 text-sm">{formatCurrency(metrics.expectedDrawerCash)}</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsZReportOpen(true)}
+              className="w-full mt-4 py-3 bg-white text-stone-950 font-black text-xs rounded-2xl border border-stone-300 shadow-md hover:bg-stone-100 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            >
+              <FileText size={16} />
+              <span>GÜN SONU Z-RAPORU ÇIKART</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* TAB CONTENT 4: EN ÇOK SATAN ÜRÜNLER */}
+      {activeTab === 'PRODUCTS' && (
+        <div className="bg-white dark:bg-stone-900 rounded-3xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-xs">
+          <div className="p-4 sm:p-5 border-b border-stone-200 dark:border-stone-800">
+            <h2 className="text-base font-black text-stone-900 dark:text-stone-100">
+              En Çok Satan Ürünler ({dateRangeLabel})
+            </h2>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Satış adedi ve sağladığı ciroya göre ürün sıralaması
+            </p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-500 font-bold uppercase tracking-wider">
+                  <th className="py-3.5 px-4">#</th>
+                  <th className="py-3.5 px-4">Ürün Adı</th>
+                  <th className="py-3.5 px-4">Kategori</th>
+                  <th className="py-3.5 px-4 text-center">Satış Adedi</th>
+                  <th className="py-3.5 px-4 text-right">Toplam Ciro</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stone-100 dark:divide-stone-800 font-medium">
+                {topProducts.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-stone-400">
+                      Bu dönemde henüz ürün satışı kaydedilmedi
+                    </td>
+                  </tr>
+                ) : (
+                  topProducts.map((p, idx) => (
+                    <tr key={idx} className="hover:bg-stone-50 dark:hover:bg-stone-800/40 transition-colors">
+                      <td className="py-3.5 px-4 font-mono font-bold text-stone-400">
+                        {idx + 1}
+                      </td>
+                      <td className="py-3.5 px-4 font-bold text-stone-950 dark:text-stone-100">
+                        {p.name}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-medium text-[11px]">
+                          {p.category}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-bold text-stone-800 dark:text-stone-200">
+                        {p.count} Adet
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-mono font-black text-sm text-stone-950 dark:text-white">
+                        {formatCurrency(p.revenue)}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Cash Transaction Modal */}
+      <CashTransactionModal
+        isOpen={isCashModalOpen}
+        onClose={() => setIsCashModalOpen(false)}
+        defaultType={cashModalType}
+      />
+
+      {/* Thermal Z-Report Modal */}
+      <ThermalSlipModal
+        isOpen={isZReportOpen}
+        onClose={() => setIsZReportOpen(false)}
+        type="z-report"
+        zReportData={zReportPayload}
+      />
+
     </div>
   );
 }

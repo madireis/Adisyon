@@ -4,9 +4,10 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { useApp } from '@/lib/store';
 import { cn, formatCurrency, generateId } from '@/lib/utils';
-import { ChevronLeft, ChevronRight, Plus, Minus, Trash2, CheckCircle2, Send, CreditCard, Save, Utensils, Sparkles, X, Receipt, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Minus, Trash2, CheckCircle2, Send, CreditCard, Save, Utensils, Sparkles, X, Receipt, Search, Printer } from 'lucide-react';
 import ModifierModal from '@/components/pos/ModifierModal';
 import PaymentModal from '@/components/pos/PaymentModal';
+import ThermalSlipModal from '@/components/pos/ThermalSlipModal';
 import PosIcon from '@/components/common/PosIcon';
 import type { OrderItem, MenuItem, Order, OrderItemModifier, KitchenTicket, KitchenStation, Table } from '@/types/pos';
 import { seedDefaultMenu } from '@/lib/mockData';
@@ -22,6 +23,8 @@ export default function OrderPage() {
   const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isMobileTicketOpen, setIsMobileTicketOpen] = useState(false);
+  const [isSlipModalOpen, setIsSlipModalOpen] = useState(false);
+  const [slipModalType, setSlipModalType] = useState<'kitchen' | 'receipt'>('receipt');
   const [notes, setNotes] = useState('');
   
   const table = useLiveQuery(() => db.table<Table>('tables').get(tableId || ''), [tableId]);
@@ -644,6 +647,17 @@ export default function OrderPage() {
                 </button>
                 <button
                   onClick={() => {
+                    setSlipModalType('receipt');
+                    setIsSlipModalOpen(true);
+                  }}
+                  disabled={!order && localItems.length === 0}
+                  className="py-3 px-2 rounded-2xl font-black text-xs bg-white text-stone-950 hover:bg-stone-100 border border-stone-300 shadow-xs active:scale-95 disabled:opacity-50 col-span-2 flex items-center justify-center gap-2 cursor-pointer ios-spring"
+                >
+                  <Printer className="w-4 h-4 text-stone-950" />
+                  <span>HESAP / ADİSYON FİŞİ YAZDIR</span>
+                </button>
+                <button
+                  onClick={() => {
                     setIsMobileTicketOpen(false);
                     setIsPaymentModalOpen(true);
                   }}
@@ -784,6 +798,17 @@ export default function OrderPage() {
               MUTFAĞA GÖNDER
             </button>
             <button 
+              onClick={() => {
+                setSlipModalType('receipt');
+                setIsSlipModalOpen(true);
+              }} 
+              disabled={!order && localItems.length === 0}
+              className="py-3 px-2 rounded-xl font-black text-xs bg-white text-stone-950 hover:bg-stone-100 border border-stone-300 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer col-span-2 active:scale-95 disabled:opacity-50"
+            >
+              <Printer className="w-4 h-4 text-stone-950" />
+              <span>HESAP / ADİSYON FİŞİ YAZDIR</span>
+            </button>
+            <button 
               onClick={() => setIsPaymentModalOpen(true)} 
               disabled={!order && localItems.length === 0}
               className="py-3.5 px-4 rounded-xl font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-50 col-span-2 flex items-center justify-center gap-2 shadow-md cursor-pointer"
@@ -832,6 +857,31 @@ export default function OrderPage() {
           table={table!}
           onClose={() => setIsPaymentModalOpen(false)}
           onSuccess={() => navigate('/tables')}
+        />
+      )}
+
+      {isSlipModalOpen && (
+        <ThermalSlipModal
+          isOpen={isSlipModalOpen}
+          onClose={() => setIsSlipModalOpen(false)}
+          type={slipModalType}
+          order={order || {
+            id: generateId(),
+            tableId: tableId || '',
+            tableLabel: table?.label || 'Masa',
+            waiterId: state.currentUser?.id || 'staff-1',
+            waiterName: state.currentUser?.name || 'Garson',
+            items: localItems,
+            status: 'open',
+            subtotal,
+            discount: 0,
+            tax,
+            total,
+            guestCount: table?.guestCount || 2,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            notes,
+          }}
         />
       )}
     </div>

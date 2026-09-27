@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Clock, CheckCircle2, ChefHat, Play, Flame, Coffee, Check, BellRing } from 'lucide-react';
+import { Clock, CheckCircle2, ChefHat, Play, Flame, Coffee, Check, BellRing, Printer } from 'lucide-react';
 import { db } from '@/lib/db';
 import { cn, getElapsedMinutes } from '@/lib/utils';
+import ThermalSlipModal from '@/components/pos/ThermalSlipModal';
 import type { KitchenTicket, KitchenStation } from '@/types/pos';
 
 export default function KitchenPage() {
   const [activeStation, setActiveStation] = useState<KitchenStation | 'ALL'>('ALL');
   const [mobileStatusTab, setMobileStatusTab] = useState<'new' | 'preparing' | 'ready' | 'completed'>('new');
+  const [selectedTicketForPrint, setSelectedTicketForPrint] = useState<KitchenTicket | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -112,21 +114,32 @@ export default function KitchenPage() {
           ))}
         </div>
 
-        {ticket.status !== 'completed' && (
+        <div className="flex items-center gap-2 mt-2">
           <button
-            onClick={() => advanceStatus(ticket)}
-            className={cn(
-              "w-full mt-2 py-3 rounded-xl font-bold text-xs sm:text-sm text-white flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95",
-              ticket.status === 'new' ? "bg-blue-600 hover:bg-blue-700" : "",
-              ticket.status === 'preparing' ? "bg-emerald-600 hover:bg-emerald-700" : "",
-              ticket.status === 'ready' ? "bg-stone-600 hover:bg-stone-500" : ""
-            )}
+            onClick={() => setSelectedTicketForPrint(ticket)}
+            className="py-2.5 px-3 bg-white text-stone-950 font-black text-xs rounded-xl shadow-xs hover:bg-stone-100 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+            title="Mutfak Fişini Yazdır"
           >
-            {ticket.status === 'new' && <><Play size={16} /> Hazırlamaya Başla</>}
-            {ticket.status === 'preparing' && <><Check size={16} /> Hazır Olarak İşaretle</>}
-            {ticket.status === 'ready' && <><CheckCircle2 size={16} /> Servis Edildi</>}
+            <Printer size={15} className="text-stone-950" />
+            <span>Fiş Yazdır</span>
           </button>
-        )}
+
+          {ticket.status !== 'completed' && (
+            <button
+              onClick={() => advanceStatus(ticket)}
+              className={cn(
+                "flex-1 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95",
+                ticket.status === 'new' ? "bg-blue-600 hover:bg-blue-700" : "",
+                ticket.status === 'preparing' ? "bg-emerald-600 hover:bg-emerald-700" : "",
+                ticket.status === 'ready' ? "bg-stone-600 hover:bg-stone-500" : ""
+              )}
+            >
+              {ticket.status === 'new' && <><Play size={15} /> Başla</>}
+              {ticket.status === 'preparing' && <><Check size={15} /> Hazır</>}
+              {ticket.status === 'ready' && <><CheckCircle2 size={15} /> Servis Edildi</>}
+            </button>
+          )}
+        </div>
       </div>
     );
   };
@@ -301,6 +314,15 @@ export default function KitchenPage() {
           </div>
         </div>
       </div>
+
+      {selectedTicketForPrint && (
+        <ThermalSlipModal
+          isOpen={Boolean(selectedTicketForPrint)}
+          onClose={() => setSelectedTicketForPrint(null)}
+          type="kitchen"
+          kitchenTicket={selectedTicketForPrint}
+        />
+      )}
     </div>
   );
 }

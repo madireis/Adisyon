@@ -91,8 +91,24 @@ button, a, [role="button"] {
   scrollbar-width: none;
 }
 
-/* Print styles for adisyon */
+/* Print styles for adisyon & thermal tickets */
 @media print {
-  .no-print { display: none !important; }
-  body { background: white !important; color: black !important; }
+  .no-print, header, aside, nav, .bottom-nav { display: none !important; }
+  body { 
+    background: white !important; 
+    color: black !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+  }
+  .thermal-receipt {
+    width: 80mm !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 4mm !important;
+    font-family: 'Courier New', Courier, monospace !important;
+    color: black !important;
+    background: white !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
 }

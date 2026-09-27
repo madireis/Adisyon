@@ -148,6 +148,17 @@ export interface Payment {
   processedBy: string
 }
 
+// ─── Cash Register (Kasa Giriş / Çıkış) ────────────────────────
+export interface CashTransaction {
+  id: string
+  type: 'in' | 'out' // 'in' = Kasa Girişi, 'out' = Kasa Çıkışı / Masraf
+  amount: number
+  description: string
+  category: string // 'Masraf', 'Tedarikçi', 'Avans', 'Kasa Açılış', 'Diğer'
+  processedBy: string
+  createdAt: string
+}
+
 // ─── Kitchen ──────────────────────────────────────────────────
 export interface KitchenTicket {
   id: string
