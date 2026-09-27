@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Clock, CheckCircle2, ChefHat, Play, Flame, Coffee, Check, BellRing, Printer } from 'lucide-react';
+import { Clock, CheckCircle2, ChefHat, Play, Flame, Utensils, Sparkles, Check, BellRing, Printer } from 'lucide-react';
 import { db } from '@/lib/db';
 import { cn, getElapsedMinutes } from '@/lib/utils';
 import ThermalSlipModal from '@/components/pos/ThermalSlipModal';
@@ -33,9 +33,9 @@ export default function KitchenPage() {
   const stations: { id: KitchenStation | 'ALL', label: string, icon: React.ReactNode }[] = [
     { id: 'ALL', label: 'Tümü', icon: <ChefHat size={16} /> },
     { id: 'kitchen', label: 'Sıcak Mutfak', icon: <Flame size={16} /> },
-    { id: 'bar', label: 'Bar', icon: <Coffee size={16} /> },
+    { id: 'bar', label: 'Bar', icon: <Sparkles size={16} /> },
     { id: 'dessert', label: 'Tatlı', icon: <CheckCircle2 size={16} /> },
-    { id: 'coffee', label: 'Kahve Barı', icon: <Coffee size={16} /> },
+    { id: 'coffee', label: 'Kahve Barı', icon: <Utensils size={16} /> },
   ];
 
   const advanceStatus = async (ticket: KitchenTicket) => {

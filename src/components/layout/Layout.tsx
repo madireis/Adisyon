@@ -21,7 +21,6 @@ import {
   LogOut,
   UtensilsCrossed,
   ShieldCheck,
-  Coffee,
   Sun,
   Moon,
   Wifi,
@@ -182,18 +181,12 @@ export default function Layout() {
         {/* Brand Bar */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-stone-200 dark:border-stone-800 shrink-0">
           {sidebarOpen ? (
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-orange-600 flex items-center justify-center text-white shadow-xs shrink-0">
-                <Coffee size={18} />
-              </div>
-              <div>
-                <h1 className="font-black text-lg text-orange-600 tracking-tight leading-none">WOT'S CAFE</h1>
-                <span className="text-[10px] text-stone-400 dark:text-stone-500 font-bold uppercase tracking-wider">Silivri Sahil POS</span>
-              </div>
+            <div className="flex items-center">
+              <h1 className="font-black text-xl text-orange-600 tracking-tight leading-none">WOT'S CAFE</h1>
             </div>
           ) : (
-            <div className="w-8 h-8 rounded-xl bg-orange-600 flex items-center justify-center text-white shadow-xs mx-auto">
-              <Coffee size={18} />
+            <div className="w-8 h-8 rounded-xl bg-orange-600 flex items-center justify-center text-white shadow-xs mx-auto font-black text-sm">
+              W
             </div>
           )}
           <button 
@@ -307,14 +300,8 @@ export default function Layout() {
           <div className="relative w-4/5 max-w-xs bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-200 border-r border-stone-200 dark:border-stone-800">
             {/* Drawer Header */}
             <div className="p-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between bg-stone-50 dark:bg-stone-950">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-orange-600 flex items-center justify-center text-white shadow-xs">
-                  <Coffee size={18} />
-                </div>
-                <div>
-                  <h2 className="font-black text-base text-orange-600 leading-tight">WOT'S CAFE</h2>
-                  <span className="text-[10px] text-stone-400 dark:text-stone-500 font-bold uppercase tracking-wider">Silivri Sahil</span>
-                </div>
+              <div>
+                <h2 className="font-black text-xl text-orange-600 leading-tight">WOT'S CAFE</h2>
               </div>
               <button 
                 onClick={() => setIsMobileDrawerOpen(false)}
@@ -413,8 +400,8 @@ export default function Layout() {
               <Menu size={20} />
             </button>
 
-            <span className="font-black text-stone-900 dark:text-stone-100 text-sm tracking-tight md:hidden">
-              WOT'S
+            <span className="font-black text-orange-600 dark:text-orange-500 text-sm tracking-tight md:hidden">
+              WOT'S CAFE
             </span>
 
             {/* Subtle role indicator */}

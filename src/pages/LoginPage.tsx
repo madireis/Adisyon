@@ -4,7 +4,6 @@ import { useApp } from '@/lib/store';
 import { db } from '@/lib/db';
 import { staffMembers as fallbackStaff } from '@/lib/mockData';
 import { 
-  Coffee, 
   User, 
   KeyRound, 
   ArrowRight, 
@@ -112,10 +111,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Brand Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-orange-600 text-white shadow-xl shadow-orange-600/30 mb-4 transform hover:scale-105 transition-transform">
-            <Coffee size={34} />
-          </div>
-          <h1 className="text-3xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
             WOT'S CAFE
           </h1>
           <p className="text-xs font-bold text-orange-600 uppercase tracking-widest mt-1">

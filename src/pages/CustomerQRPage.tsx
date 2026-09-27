@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
-import { Bell, Droplets, Receipt, CheckCircle2, ShoppingBag, Plus, Minus, Search, Sparkles, Coffee } from 'lucide-react';
+import { Bell, Droplets, Receipt, CheckCircle2, ShoppingBag, Plus, Minus, Search, Sparkles } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import PosIcon from '@/components/common/PosIcon';
 import type { MenuItem, Category, Table } from '@/types/pos';
@@ -59,13 +59,8 @@ export default function CustomerQRPage() {
       <header className="bg-stone-900 text-white p-5 sticky top-0 z-30 shadow-md">
         <div className="max-w-md mx-auto flex justify-between items-center">
           <div>
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-orange-600 flex items-center justify-center text-white">
-                <Coffee size={16} />
-              </div>
-              <h1 className="text-xl font-black text-orange-400 tracking-tight">WOT'S CAFE</h1>
-            </div>
-            <p className="text-[11px] text-stone-400">Silivri Sahil • Dijital Menü</p>
+            <h1 className="text-xl font-black text-orange-400 tracking-tight">WOT'S CAFE</h1>
+            <p className="text-[11px] text-stone-400 font-medium">Dijital Menü</p>
           </div>
           <div className="bg-stone-800 px-3 py-1.5 rounded-xl text-xs font-bold text-stone-200 border border-stone-700">
             Masa {table?.label || '12'}

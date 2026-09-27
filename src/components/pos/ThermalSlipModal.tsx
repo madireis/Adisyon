@@ -85,9 +85,8 @@ export default function ThermalSlipModal({
           >
             {/* Header info */}
             <div className="text-center pb-3 border-b-2 border-dashed border-stone-400">
-              <h2 className="text-base font-black tracking-wider uppercase text-stone-950">WOT'S CAFE & BISTRO</h2>
-              <p className="text-[10px] text-stone-600 mt-0.5">Silivri Sahil Kordon Boyu</p>
-              <p className="text-[10px] text-stone-600">Tel: 0212 727 00 00</p>
+              <h2 className="text-base font-black tracking-wider uppercase text-stone-950">WOT'S CAFE</h2>
+              <p className="text-[10px] text-stone-600 mt-0.5">Tel: 0212 727 00 00</p>
               
               <div className="mt-2 inline-block px-3 py-1 bg-stone-100 rounded-md font-bold text-[11px] tracking-wide border border-stone-300">
                 {type === 'kitchen' && '*** MUTFAK SİPARİŞ FİŞİ ***'}

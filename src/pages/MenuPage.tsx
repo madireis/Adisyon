@@ -297,7 +297,7 @@ export default function MenuPage() {
                         </div>
                         <h3 className="text-lg font-bold text-stone-800 mb-1">Menüde Henüz Ürün Yok</h3>
                         <p className="text-sm text-stone-500 mb-5">
-                          Wot's Cafe Silivri Sahil için hazırlanmış kahvaltı, ızgara, burger, pizza, tatlı ve kahve çeşitlerini tek tıkla yükleyebilirsiniz.
+                          Wot's Cafe için hazırlanmış kahvaltı, ızgara, burger, pizza, tatlı ve içecek çeşitlerini tek tıkla yükleyebilirsiniz.
                         </p>
                         <button
                           onClick={handleLoadDefaultMenu}

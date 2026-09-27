@@ -147,7 +147,7 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 dark:text-stone-100 tracking-tight">WOT'S CAFE — Yönetim Özeti</h1>
-          <p className="text-stone-500 dark:text-stone-400 text-sm mt-1">Silivri Sahil Şubesi Canlı Finans & Operasyon Tablosu</p>
+          <p className="text-stone-500 dark:text-stone-400 text-sm mt-1">Canlı Finans & Operasyon Tablosu</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-transparent dark:border-emerald-800/60 rounded-full text-xs font-bold flex items-center gap-1.5">
