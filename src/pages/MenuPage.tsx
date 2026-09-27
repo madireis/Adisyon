@@ -162,14 +162,6 @@ export default function MenuPage() {
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
           <button 
-            onClick={handleLoadDefaultMenu}
-            className="bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black px-4 py-2.5 rounded-xl font-extrabold text-sm flex items-center gap-2 border border-stone-300 dark:border-stone-300 shadow-xs transition-colors cursor-pointer"
-            title="Wot's Cafe 85 kalem standart restoran menüsünü yükle"
-          >
-            <Sparkles size={16} className="text-orange-600" />
-            <span>Standart Menüyü Yükle</span>
-          </button>
-          <button 
             onClick={openAddModal}
             className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-sm transition-colors cursor-pointer"
           >
@@ -295,16 +287,16 @@ export default function MenuPage() {
                         <div className="w-16 h-16 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center mb-4">
                           <Utensils size={32} />
                         </div>
-                        <h3 className="text-lg font-bold text-stone-800 mb-1">Menüde Henüz Ürün Yok</h3>
+                        <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-1">Menüde Henüz Ürün Yok</h3>
                         <p className="text-sm text-stone-500 mb-5">
-                          Wot's Cafe için hazırlanmış kahvaltı, ızgara, burger, pizza, tatlı ve içecek çeşitlerini tek tıkla yükleyebilirsiniz.
+                          Menüye yeni ürün eklemek için aşağıdaki butonu kullanabilirsiniz.
                         </p>
                         <button
-                          onClick={handleLoadDefaultMenu}
+                          onClick={openAddModal}
                           className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-2xl font-black text-sm flex items-center gap-2 shadow-md transition-all active:scale-95 cursor-pointer"
                         >
-                          <Sparkles size={18} />
-                          Wot's Cafe Restoran Menüsünü Yükle (85 Ürün)
+                          <Plus size={18} />
+                          Yeni Ürün Ekle
                         </button>
                       </div>
                     ) : (

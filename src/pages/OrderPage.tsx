@@ -10,7 +10,6 @@ import PaymentModal from '@/components/pos/PaymentModal';
 import ThermalSlipModal from '@/components/pos/ThermalSlipModal';
 import PosIcon from '@/components/common/PosIcon';
 import type { OrderItem, MenuItem, Order, OrderItemModifier, KitchenTicket, KitchenStation, Table } from '@/types/pos';
-import { seedDefaultMenu } from '@/lib/mockData';
 
 export default function OrderPage() {
   const { tableId } = useParams<{ tableId: string }>();
@@ -403,24 +402,14 @@ export default function OrderPage() {
               {searchQuery ? 'Aramanıza uygun ürün bulunamadı' : 'Bu kategoride ürün bulunamadı'}
             </h3>
             <p className="text-xs text-stone-400 dark:text-stone-500 mb-4 max-w-sm">
-              {searchQuery ? 'Farklı bir arama terimi deneyin veya aramayı temizleyin.' : 'Wot\'s Cafe standart restoran menüsünü tek tıkla yükleyebilirsiniz.'}
+              {searchQuery ? 'Farklı bir arama terimi deneyin veya aramayı temizleyin.' : 'Bu kategoride henüz ürün bulunmuyor.'}
             </p>
-            {searchQuery ? (
+            {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
                 className="bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-xs font-bold px-4 py-2 rounded-xl cursor-pointer"
               >
                 Aramayı Temizle
-              </button>
-            ) : (
-              <button
-                onClick={async () => {
-                  await seedDefaultMenu(db, false);
-                }}
-                className="bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5 transition-colors active:scale-95"
-              >
-                <Sparkles size={14} />
-                Wot's Cafe Menüsünü Yükle
               </button>
             )}
           </div>
