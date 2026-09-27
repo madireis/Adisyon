@@ -468,18 +468,6 @@ export default function Layout() {
               </span>
             </div>
 
-            {/* Account Switcher trigger for Manager */}
-            {hasManagerSession && (
-              <button
-                onClick={() => setIsAccountSwitcherOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer border shadow-2xs active:scale-95 bg-orange-600 hover:bg-orange-700 text-white border-orange-700"
-                title="Yönetici Yetkisi: Hesaplar Arası Geçiş Yap"
-              >
-                <ArrowLeftRight size={13} />
-                <span className="hidden sm:inline">Hesap Değiştir</span>
-              </button>
-            )}
-
             {/* Current user avatar (compact, tooltip instead of wordy text) */}
             <div 
               className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs cursor-default select-none border border-orange-500/40"
