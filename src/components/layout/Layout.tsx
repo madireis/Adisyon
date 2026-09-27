@@ -89,7 +89,6 @@ export default function Layout() {
     if (user.role === 'waiter') {
       return [
         { path: '/tables', label: 'Masalar', icon: Grid2X2 },
-        { path: '/kitchen', label: 'Mutfak', icon: ChefHat },
       ];
     }
     if (user.role === 'kitchen' || user.role === 'bar') {

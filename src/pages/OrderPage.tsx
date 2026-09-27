@@ -494,7 +494,7 @@ export default function OrderPage() {
                 className="py-2.5 px-3.5 bg-orange-600 hover:bg-orange-500 active:scale-95 text-white font-black text-xs rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer transition-all"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>Mutfak</span>
+                <span>Gönder</span>
               </button>
             )}
 
