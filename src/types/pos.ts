@@ -124,10 +124,17 @@ export interface Order {
   tax: number
   total: number
   guestCount: number
-  createdAt: string
+  createdAt: string // Sipariş Başlangıç Saati (Table opened / order created)
   updatedAt: string
-  sentToKitchenAt?: string
-  paidAt?: string
+  startedTakingAt?: string // Garsonun masaya ilk sipariş girmeye başladığı saat
+  sentToKitchenAt?: string // Mutfağa iletilme saati
+  kitchenReadyAt?: string // Mutfakta hazırlandı işaretlenme saati
+  kitchenDurationMinutes?: number // Mutfakta hazırlanma süresi (dakika)
+  paidAt?: string // Ödemenin tamamlandığı saat
+  paidBy?: string // Ödemeyi alan kasiyer/personel adı
+  paidById?: string // Ödemeyi alan personel id
+  paymentMethod?: string // Nakit, Kredi Kartı, Parçalı vs.
+  durationMinutes?: number // Masanın açılışından ödemeye kadar geçen toplam süre (dakika)
   notes: string
 }
 
@@ -146,6 +153,9 @@ export interface Payment {
   change: number
   paidAt: string
   processedBy: string
+  processedById?: string
+  waiterName?: string
+  durationMinutes?: number
 }
 
 // ─── Cash Register (Kasa Giriş / Çıkış) ────────────────────────

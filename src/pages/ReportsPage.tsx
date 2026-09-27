@@ -16,23 +16,32 @@ import {
   Calendar,
   PieChart as PieChartIcon,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  ChefHat,
+  Clock,
+  Timer,
+  Search,
+  Eye
 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import { useApp } from '@/lib/store';
 import CashTransactionModal from '@/components/pos/CashTransactionModal';
 import ThermalSlipModal, { type ZReportData } from '@/components/pos/ThermalSlipModal';
+import OrderTimelineModal from '@/components/orders/OrderTimelineModal';
 import type { Staff, MenuItem, Order, Payment, CashTransaction } from '@/types/pos';
 
 export default function ReportsPage() {
   const { state } = useApp();
-  const [activeTab, setActiveTab] = useState<'CASH_REGISTER' | 'STAFF' | 'PAYMENTS' | 'PRODUCTS'>('CASH_REGISTER');
+  const [activeTab, setActiveTab] = useState<'ORDERS' | 'CASH_REGISTER' | 'STAFF' | 'PAYMENTS' | 'PRODUCTS'>('ORDERS');
   const [dateRange, setDateRange] = useState<'TODAY' | 'YESTERDAY' | 'WEEK' | 'MONTH'>('TODAY');
 
   // Modal States
   const [isCashModalOpen, setIsCashModalOpen] = useState(false);
   const [cashModalType, setCashModalType] = useState<'in' | 'out'>('out');
   const [isZReportOpen, setIsZReportOpen] = useState(false);
+  const [selectedTimelineOrder, setSelectedTimelineOrder] = useState<Order | null>(null);
+  const [orderSearchQuery, setOrderSearchQuery] = useState('');
+  const [selectedWaiterFilter, setSelectedWaiterFilter] = useState('ALL');
 
   // Live queries
   const orders = useLiveQuery(() => db.orders.toArray()) || [];
@@ -87,6 +96,23 @@ export default function ReportsPage() {
       dateRangeLabel: label 
     };
   }, [orders, payments, cashTransactions, dateRange]);
+
+  // Order List Filtered by Search & Waiter
+  const displayedOrders = useMemo(() => {
+    return filteredOrders.filter(o => {
+      if (selectedWaiterFilter !== 'ALL' && o.waiterId !== selectedWaiterFilter && o.waiterName !== selectedWaiterFilter) {
+        return false;
+      }
+      if (orderSearchQuery.trim()) {
+        const q = orderSearchQuery.toLowerCase();
+        const matchTable = (o.tableLabel || '').toLowerCase().includes(q);
+        const matchWaiter = (o.waiterName || '').toLowerCase().includes(q);
+        const matchId = (o.id || '').toLowerCase().includes(q);
+        return matchTable || matchWaiter || matchId;
+      }
+      return true;
+    }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [filteredOrders, selectedWaiterFilter, orderSearchQuery]);
 
   // Financial Metric Calculations
   const metrics = useMemo(() => {
@@ -489,6 +515,23 @@ export default function ReportsPage() {
       <div className="flex border-b border-stone-200 dark:border-stone-800 overflow-x-auto gap-2">
         <button
           type="button"
+          onClick={() => setActiveTab('ORDERS')}
+          className={cn(
+            "pb-3 px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer",
+            activeTab === 'ORDERS'
+              ? "border-orange-600 text-orange-600 dark:text-orange-400"
+              : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
+          )}
+        >
+          <Receipt size={17} />
+          <span>Adisyon & Garson Sipariş Geçmişi</span>
+          <span className="text-[10px] bg-stone-200 dark:bg-stone-800 px-2 py-0.5 rounded-full font-mono">
+            {filteredOrders.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('CASH_REGISTER')}
           className={cn(
             "pb-3 px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer",
@@ -546,6 +589,190 @@ export default function ReportsPage() {
           <span>En Çok Satan Ürünler</span>
         </button>
       </div>
+
+      {/* TAB CONTENT: ADİSYON GEÇMİŞİ & GARSON SÜRELERİ */}
+      {activeTab === 'ORDERS' && (
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white dark:bg-stone-900 p-4 rounded-3xl border border-stone-200 dark:border-stone-800">
+            <div>
+              <h2 className="text-base font-black text-stone-900 dark:text-stone-100">
+                {dateRangeLabel} Garson Sipariş & Adisyon Geçmişi
+              </h2>
+              <p className="text-xs text-stone-500 mt-0.5">
+                Garsonun sipariş almaya başladığı saat, mutfağa iletim, hazırlık ve ödeme alma süreleri
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              {/* Search input */}
+              <div className="relative flex-1 sm:w-56">
+                <Search className="absolute left-3 top-2.5 text-stone-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Masa veya garson ara..."
+                  value={orderSearchQuery}
+                  onChange={(e) => setOrderSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl text-xs font-medium text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+
+              {/* Waiter Filter */}
+              <select
+                value={selectedWaiterFilter}
+                onChange={(e) => setSelectedWaiterFilter(e.target.value)}
+                className="py-2 px-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl text-xs font-bold text-stone-800 dark:text-stone-200 cursor-pointer focus:outline-none"
+              >
+                <option value="ALL">Tüm Garsonlar</option>
+                {staff.map(s => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {displayedOrders.length === 0 ? (
+            <div className="bg-white dark:bg-stone-900 rounded-3xl p-10 border border-stone-200 dark:border-stone-800 text-center flex flex-col items-center justify-center space-y-3">
+              <div className="w-14 h-14 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-400 flex items-center justify-center">
+                <Receipt size={28} />
+              </div>
+              <h3 className="text-sm font-black text-stone-900 dark:text-stone-100">
+                Seçilen aralıkta adisyon kaydı bulunamadı
+              </h3>
+              <p className="text-xs text-stone-500 max-w-sm">
+                Masalardan sipariş alındıkça ve mutfağa iletildikçe tüm garson detayları burada listelenir.
+              </p>
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-stone-900 rounded-3xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-xs">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-500 font-bold uppercase tracking-wider">
+                      <th className="py-3.5 px-4">Masa</th>
+                      <th className="py-3.5 px-4">Siparişi Alan Garson</th>
+                      <th className="py-3.5 px-4">Sipariş Başlangıcı</th>
+                      <th className="py-3.5 px-4">Mutfağa İletilme</th>
+                      <th className="py-3.5 px-4">Mutfak Hazırlık Süresi</th>
+                      <th className="py-3.5 px-4">Ödeme Saati & Alan</th>
+                      <th className="py-3.5 px-4">Masa Toplam Süresi</th>
+                      <th className="py-3.5 px-4">Ödeme Türü</th>
+                      <th className="py-3.5 px-4 text-right">Tutar</th>
+                      <th className="py-3.5 px-4 text-center">Durum</th>
+                      <th className="py-3.5 px-4 text-center">İncele</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800 font-medium">
+                    {displayedOrders.map(o => {
+                      const startStr = o.createdAt ? new Date(o.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '-';
+                      const sentStr = o.sentToKitchenAt ? new Date(o.sentToKitchenAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '-';
+                      const paidStr = o.paidAt ? new Date(o.paidAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '-';
+                      
+                      const totalMins = o.durationMinutes || (o.createdAt ? Math.max(1, Math.round((Date.now() - new Date(o.createdAt).getTime()) / 60000)) : 1);
+                      const kitchenMins = o.kitchenDurationMinutes || (o.kitchenReadyAt && o.sentToKitchenAt ? Math.max(1, Math.round((new Date(o.kitchenReadyAt).getTime() - new Date(o.sentToKitchenAt).getTime()) / 60000)) : null);
+
+                      return (
+                        <tr 
+                          key={o.id} 
+                          onClick={() => setSelectedTimelineOrder(o)}
+                          className="hover:bg-stone-50 dark:hover:bg-stone-800/40 transition-colors cursor-pointer"
+                        >
+                          <td className="py-3 px-4 font-black text-stone-900 dark:text-stone-100 whitespace-nowrap">
+                            <span className="bg-orange-50 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400 px-2 py-0.5 rounded-lg border border-orange-200 dark:border-orange-800">
+                              Masa {o.tableLabel}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 font-bold text-stone-900 dark:text-stone-100 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5">
+                              <Users size={13} className="text-orange-600" />
+                              <span>{o.waiterName || 'Garson'}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 font-mono font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                            {startStr}
+                          </td>
+                          <td className="py-3 px-4 font-mono text-stone-600 dark:text-stone-400 whitespace-nowrap">
+                            {sentStr !== '-' ? (
+                              <span className="flex items-center gap-1">
+                                <ChefHat size={12} className="text-amber-500" />
+                                {sentStr}
+                              </span>
+                            ) : (
+                              <span className="text-stone-400 italic">İletilmedi</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 whitespace-nowrap">
+                            {kitchenMins ? (
+                              <span className="font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                                ✓ {kitchenMins} dk
+                              </span>
+                            ) : o.sentToKitchenAt ? (
+                              <span className="text-amber-600 font-bold animate-pulse">
+                                Hazırlanıyor...
+                              </span>
+                            ) : (
+                              <span className="text-stone-400">-</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 whitespace-nowrap">
+                            {o.paidAt ? (
+                              <div>
+                                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 block">
+                                  {paidStr}
+                                </span>
+                                <span className="text-[10px] text-stone-400">
+                                  {o.paidBy || 'Kasiyer'}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-red-500 font-bold">Ödeme Bekliyor</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 whitespace-nowrap font-mono font-bold text-stone-700 dark:text-stone-300">
+                            <span className="flex items-center gap-1">
+                              <Timer size={13} className="text-purple-500" />
+                              {totalMins} dk
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 whitespace-nowrap text-stone-600 dark:text-stone-400 font-medium">
+                            {o.paymentMethod || (o.status === 'paid' ? 'Nakit TL' : '-')}
+                          </td>
+                          <td className="py-3 px-4 text-right font-mono font-black text-sm text-stone-950 dark:text-white whitespace-nowrap">
+                            {formatCurrency(o.total)}
+                          </td>
+                          <td className="py-3 px-4 text-center whitespace-nowrap">
+                            <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase border ${
+                              o.status === 'paid'
+                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                                : o.status === 'ready'
+                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border-blue-300 dark:border-blue-800'
+                                : 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300 border-orange-300 dark:border-orange-800'
+                            }`}>
+                              {o.status === 'paid' ? 'Ödendi' : o.status === 'ready' ? 'Hazır' : o.status === 'sent' ? 'Mutfakta' : 'Açık'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-center whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedTimelineOrder(o);
+                              }}
+                              className="py-1 px-2.5 bg-white text-stone-950 font-bold text-[11px] rounded-lg border border-stone-300 hover:bg-stone-100 active:scale-95 transition-all shadow-2xs inline-flex items-center gap-1 cursor-pointer"
+                            >
+                              <Eye size={12} />
+                              <span>Zaman Çizelgesi</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* TAB CONTENT 1: KASA DEFTERİ (GİREN & ÇIKAN PARA) */}
       {activeTab === 'CASH_REGISTER' && (
@@ -899,6 +1126,13 @@ export default function ReportsPage() {
         onClose={() => setIsZReportOpen(false)}
         type="z-report"
         zReportData={zReportPayload}
+      />
+
+      {/* Order Detailed Timeline Modal */}
+      <OrderTimelineModal
+        order={selectedTimelineOrder}
+        isOpen={!!selectedTimelineOrder}
+        onClose={() => setSelectedTimelineOrder(null)}
       />
 
     </div>

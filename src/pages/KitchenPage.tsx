@@ -51,13 +51,19 @@ export default function KitchenPage() {
         } catch {}
       }
     } else if (ticket.status === 'preparing') {
+      const sentTime = ticket.createdAt ? new Date(ticket.createdAt).getTime() : Date.now();
+      const kitchenDurationMinutes = Math.max(1, Math.round((new Date(nowIso).getTime() - sentTime) / 60000));
       await db.kitchenTickets.update(ticket.id, {
         status: 'ready',
         completedAt: nowIso,
       });
       if (ticket.orderId) {
         try {
-          await db.orders.update(ticket.orderId, { status: 'ready' });
+          await db.orders.update(ticket.orderId, {
+            status: 'ready',
+            kitchenReadyAt: nowIso,
+            kitchenDurationMinutes,
+          });
         } catch {}
       }
     } else if (ticket.status === 'ready') {

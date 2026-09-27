@@ -65,12 +65,34 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
     }
 
     const nowIso = new Date().toISOString();
+    const durationMinutes = order.createdAt 
+      ? Math.max(1, Math.round((new Date(nowIso).getTime() - new Date(order.createdAt).getTime()) / 60000))
+      : 1;
+
+    const methodNames: Record<string, string> = {
+      cash: 'Nakit TL',
+      credit_card: 'Kredi Kartı',
+      debit_card: 'Banka Kartı',
+      sodexo: 'Sodexo',
+      multinet: 'Multinet',
+      ticket: 'Ticket Edenred',
+      metropol: 'Metropol Card',
+      ikram: 'İkram',
+    };
+
+    const paymentMethodLabel = parts.length > 1
+      ? `Parçalı (${parts.map(p => methodNames[p.method] || p.method).join(' + ')})`
+      : (methodNames[parts[0]?.method] || parts[0]?.method || 'Nakit TL');
 
     try {
       await db.orders.put({
         ...order,
         status: 'paid',
         paidAt: nowIso,
+        paidBy: state.currentUser?.name || 'Kasiyer',
+        paidById: state.currentUser?.id || 'staff-2',
+        paymentMethod: paymentMethodLabel,
+        durationMinutes,
         updatedAt: nowIso,
       });
 
@@ -89,7 +111,10 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
         total: totalPaid,
         change,
         paidAt: nowIso,
-        processedBy: state.currentUser?.id || 'staff-2',
+        processedBy: state.currentUser?.name || 'Kasiyer',
+        processedById: state.currentUser?.id || 'staff-2',
+        waiterName: order.waiterName || 'Garson',
+        durationMinutes,
       };
       await db.payments.add(paymentRecord);
 
@@ -99,7 +124,7 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
         userId: state.currentUser?.id || 'staff-2',
         userName: state.currentUser?.name || 'Kasiyer',
         action: 'Ödeme Alındı',
-        details: `${table.label} masası için ₺${totalPaid} tutarında ödeme tahsil edildi (${parts.map(p => p.method).join(', ')}).`,
+        details: `${table.label} masası için ₺${totalPaid} tutarında ödeme tahsil edildi (${paymentMethodLabel}). Masa süresi: ${durationMinutes} dk. Garson: ${order.waiterName || 'Belirtilmedi'}.`,
         entityType: 'payment',
         entityId: paymentRecord.id,
         timestamp: nowIso,
@@ -115,12 +140,31 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
   const handleQuickFullPay = async (method: PaymentMethod) => {
     const fullAmount = order.total;
     const nowIso = new Date().toISOString();
+    const durationMinutes = order.createdAt 
+      ? Math.max(1, Math.round((new Date(nowIso).getTime() - new Date(order.createdAt).getTime()) / 60000))
+      : 1;
+
+    const methodNames: Record<string, string> = {
+      cash: 'Nakit TL',
+      credit_card: 'Kredi Kartı',
+      debit_card: 'Banka Kartı',
+      sodexo: 'Sodexo',
+      multinet: 'Multinet',
+      ticket: 'Ticket Edenred',
+      metropol: 'Metropol Card',
+      ikram: 'İkram',
+    };
+    const paymentMethodLabel = methodNames[method] || (method === 'cash' ? 'Nakit TL' : 'Kredi Kartı');
 
     try {
       await db.orders.put({
         ...order,
         status: 'paid',
         paidAt: nowIso,
+        paidBy: state.currentUser?.name || 'Kasiyer',
+        paidById: state.currentUser?.id || 'staff-2',
+        paymentMethod: paymentMethodLabel,
+        durationMinutes,
         updatedAt: nowIso,
       });
 
@@ -139,7 +183,10 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
         total: fullAmount,
         change: 0,
         paidAt: nowIso,
-        processedBy: state.currentUser?.id || 'staff-2',
+        processedBy: state.currentUser?.name || 'Kasiyer',
+        processedById: state.currentUser?.id || 'staff-2',
+        waiterName: order.waiterName || 'Garson',
+        durationMinutes,
       };
       await db.payments.add(paymentRecord);
 
@@ -148,7 +195,7 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
         userId: state.currentUser?.id || 'staff-2',
         userName: state.currentUser?.name || 'Kasiyer',
         action: 'Hızlı Ödeme Alındı',
-        details: `${table.label} masası için ₺${fullAmount} tutarında hızlı tam ödeme alındı (${method === 'cash' ? 'Nakit' : 'Kredi Kartı'}).`,
+        details: `${table.label} masası için ₺${fullAmount} tutarında hızlı tam ödeme alındı (${paymentMethodLabel}). Masa süresi: ${durationMinutes} dk. Garson: ${order.waiterName || 'Belirtilmedi'}.`,
         entityType: 'payment',
         entityId: paymentRecord.id,
         timestamp: nowIso,

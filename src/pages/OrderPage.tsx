@@ -4,7 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { useApp } from '@/lib/store';
 import { cn, formatCurrency, generateId } from '@/lib/utils';
-import { ChevronLeft, ChevronRight, Plus, Minus, Trash2, CheckCircle2, Send, CreditCard, Save, Utensils, Sparkles, X, Receipt, Search, Printer } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Minus, Trash2, CheckCircle2, Send, CreditCard, Save, Utensils, Sparkles, X, Receipt, Search, Printer, Clock, Users, ChefHat, Timer } from 'lucide-react';
 import ModifierModal from '@/components/pos/ModifierModal';
 import PaymentModal from '@/components/pos/PaymentModal';
 import ThermalSlipModal from '@/components/pos/ThermalSlipModal';
@@ -26,6 +26,7 @@ export default function OrderPage() {
   const [isSlipModalOpen, setIsSlipModalOpen] = useState(false);
   const [slipModalType, setSlipModalType] = useState<'kitchen' | 'receipt'>('receipt');
   const [notes, setNotes] = useState('');
+  const [orderStartedAt] = useState<string>(() => new Date().toISOString());
   
   const table = useLiveQuery(() => db.table<Table>('tables').get(tableId || ''), [tableId]);
   
@@ -162,16 +163,17 @@ export default function OrderPage() {
           tax,
           total,
           guestCount: currentTable?.guestCount || 2,
-          createdAt: nowIso,
-          updatedAt: nowIso,
+          createdAt: orderStartedAt || nowIso,
+          startedTakingAt: orderStartedAt || nowIso,
           sentToKitchenAt: nowIso,
+          updatedAt: nowIso,
           notes,
         };
         await db.orders.add(newOrder);
         await db.table<Table>('tables').update(tableId, {
           status: 'occupied',
           currentOrderId,
-          occupiedAt: currentTable?.occupiedAt || nowIso,
+          occupiedAt: currentTable?.occupiedAt || orderStartedAt || nowIso,
           guestCount: currentTable?.guestCount || 2,
         });
       } else {
@@ -180,6 +182,7 @@ export default function OrderPage() {
           status: 'sent',
           subtotal,
           total,
+          sentToKitchenAt: order?.sentToKitchenAt || nowIso,
           updatedAt: nowIso,
           notes,
         });
@@ -253,7 +256,8 @@ export default function OrderPage() {
           tax,
           total,
           guestCount: currentTable?.guestCount || 2,
-          createdAt: nowIso,
+          startedTakingAt: orderStartedAt || nowIso,
+          createdAt: orderStartedAt || nowIso,
           updatedAt: nowIso,
           notes,
         };
@@ -261,7 +265,7 @@ export default function OrderPage() {
         await db.table<Table>('tables').update(tableId, {
           status: 'occupied',
           currentOrderId,
-          occupiedAt: nowIso,
+          occupiedAt: currentTable?.occupiedAt || orderStartedAt || nowIso,
           guestCount: currentTable?.guestCount || 2,
         });
       } else if (currentOrderId) {
@@ -271,6 +275,7 @@ export default function OrderPage() {
           total,
           updatedAt: nowIso,
           notes,
+          ...((!order?.startedTakingAt) ? { startedTakingAt: orderStartedAt || nowIso } : {}),
         });
       }
       navigate('/tables');
@@ -528,7 +533,7 @@ export default function OrderPage() {
                     {localItems.reduce((acc, i) => acc + i.quantity, 0)} Ürün
                   </span>
                 </div>
-                <p className="text-xs text-stone-400 font-medium mt-0.5">Garson: {state.currentUser?.name || 'Garson'}</p>
+                <p className="text-xs text-stone-400 font-medium mt-0.5">Garson: {order?.waiterName || state.currentUser?.name || 'Garson'}</p>
               </div>
               <button
                 type="button"
@@ -537,6 +542,37 @@ export default function OrderPage() {
               >
                 <X className="w-5 h-5" />
               </button>
+            </div>
+
+            {/* Order Timing & Status Details */}
+            <div className="px-4 py-2 bg-stone-950/90 border-b border-stone-800 flex items-center justify-between gap-2 text-xs shrink-0">
+              <div className="flex items-center gap-1.5 text-stone-300">
+                <Clock className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+                <span className="font-semibold text-stone-200">
+                  {new Date(order?.startedTakingAt || order?.createdAt || orderStartedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+                <span className="text-stone-600">•</span>
+                <span className="text-orange-300 font-bold">
+                  {Math.max(0, Math.floor((Date.now() - new Date(order?.startedTakingAt || order?.createdAt || orderStartedAt).getTime()) / 60000))} dk
+                </span>
+              </div>
+              <div>
+                {order?.kitchenReadyAt ? (
+                  <span className="px-2 py-0.5 rounded-md bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold text-[11px] flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Mutfak Hazır ({order.kitchenDurationMinutes || 0} dk)
+                  </span>
+                ) : order?.sentToKitchenAt ? (
+                  <span className="px-2 py-0.5 rounded-md bg-amber-950/80 text-amber-300 border border-amber-700/60 font-bold text-[11px] flex items-center gap-1">
+                    <ChefHat className="w-3 h-3 text-amber-400" />
+                    Mutfakta ({Math.max(0, Math.floor((Date.now() - new Date(order.sentToKitchenAt).getTime()) / 60000))} dk)
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-md bg-stone-800 text-stone-300 border border-stone-700 font-medium text-[11px]">
+                    Sipariş Alınıyor
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Items List */}
@@ -731,13 +767,46 @@ export default function OrderPage() {
                 {table?.guestCount || 2} Kişi
               </span>
             </div>
-            <p className="text-xs text-stone-400 font-medium mt-0.5">Garson: {state.currentUser?.name || 'Garson'}</p>
+            <p className="text-xs text-stone-400 font-medium mt-0.5">Garson: {order?.waiterName || state.currentUser?.name || 'Garson'}</p>
           </div>
           <div className="text-right">
             <span className="text-[10px] text-stone-400 uppercase tracking-wider block font-bold">Adisyon</span>
             <span className="font-mono font-black text-sm text-stone-200">
               #{order?.id?.slice(0, 6).toUpperCase() || 'YENİ'}
             </span>
+          </div>
+        </div>
+
+        {/* Order Lifecycle Details Banner */}
+        <div className="px-4 py-2.5 bg-stone-950/70 border-b border-stone-800/80 flex items-center justify-between gap-2 text-xs shrink-0">
+          <div className="flex items-center gap-2 text-stone-300">
+            <div className="flex items-center gap-1.5 bg-stone-800/80 px-2.5 py-1 rounded-lg border border-stone-700/60">
+              <Clock className="w-3.5 h-3.5 text-orange-400" />
+              <span className="font-black text-stone-100">
+                {new Date(order?.startedTakingAt || order?.createdAt || orderStartedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+              <span className="text-stone-500">•</span>
+              <span className="text-orange-300 font-bold">
+                {Math.max(0, Math.floor((Date.now() - new Date(order?.startedTakingAt || order?.createdAt || orderStartedAt).getTime()) / 60000))} dk
+              </span>
+            </div>
+          </div>
+          <div>
+            {order?.kitchenReadyAt ? (
+              <span className="px-2.5 py-1 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-700 font-bold text-xs flex items-center gap-1.5 shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Mutfak Hazır ({order.kitchenDurationMinutes || 0} dk)
+              </span>
+            ) : order?.sentToKitchenAt ? (
+              <span className="px-2.5 py-1 rounded-lg bg-amber-950/80 text-amber-300 border border-amber-700 font-bold text-xs flex items-center gap-1.5 shadow-2xs">
+                <ChefHat className="w-3.5 h-3.5 text-amber-400" />
+                Mutfakta ({Math.max(0, Math.floor((Date.now() - new Date(order.sentToKitchenAt).getTime()) / 60000))} dk)
+              </span>
+            ) : (
+              <span className="px-2.5 py-1 rounded-lg bg-stone-800 text-stone-300 border border-stone-700 font-medium text-xs">
+                Sipariş Alınıyor
+              </span>
+            )}
           </div>
         </div>
 

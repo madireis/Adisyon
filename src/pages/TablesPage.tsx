@@ -219,6 +219,9 @@ export default function TablesPage() {
           {tables.map((table: Table) => {
             const order = getOrderForTable(table.id);
             const isOccupied = table.status === 'occupied' || table.status === 'payment_waiting';
+            const startIso = order?.startedTakingAt || order?.createdAt || table.occupiedAt;
+            const startTimeStr = startIso ? new Date(startIso).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
+            const elapsedMins = startIso ? getElapsedMinutes(new Date(startIso)) : 0;
             
             return (
               <div
@@ -308,8 +311,8 @@ export default function TablesPage() {
                         <Users className="w-2.5 h-2.5 text-stone-500 dark:text-stone-400" />
                         <span>{table.guestCount || 1}</span>
                         <span className="text-stone-300 dark:text-stone-600">•</span>
-                        <Clock className="w-2.5 h-2.5 text-stone-500 dark:text-stone-400" />
-                        <span>{table.occupiedAt ? getElapsedMinutes(new Date(table.occupiedAt)) + 'm' : '-'}</span>
+                        <Clock className="w-2.5 h-2.5 text-orange-500 dark:text-orange-400" />
+                        <span>{startTimeStr ? `${startTimeStr} (${elapsedMins}m)` : '-'}</span>
                       </div>
                     ) : activeEditMode ? (
                       <span className="text-[9px] font-bold text-amber-900 dark:text-amber-200 bg-amber-500/20 px-2 py-0.5 rounded-full">
@@ -394,9 +397,9 @@ export default function TablesPage() {
                           <Users className="w-3 h-3 text-stone-500 dark:text-stone-400" />
                           <span>{table.guestCount || 1} / {table.seats} kişi</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-stone-500 dark:text-stone-400" />
-                          <span>{table.occupiedAt ? getElapsedMinutes(new Date(table.occupiedAt)) + ' dk' : '-'}</span>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3 h-3 text-orange-500 dark:text-orange-400" />
+                          <span>{startTimeStr ? `${startTimeStr} (${elapsedMins} dk)` : '-'}</span>
                         </div>
                       </div>
                     )}
@@ -460,9 +463,9 @@ export default function TablesPage() {
                           <Users className="w-3 h-3 text-stone-500 dark:text-stone-400" />
                           <span>{table.guestCount || 1} kişi</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-stone-500 dark:text-stone-400" />
-                          <span>{table.occupiedAt ? getElapsedMinutes(new Date(table.occupiedAt)) + ' dk' : '-'}</span>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3 h-3 text-orange-500 dark:text-orange-400" />
+                          <span>{startTimeStr ? `${startTimeStr} (${elapsedMins} dk)` : '-'}</span>
                         </div>
                       </div>
                     )}
