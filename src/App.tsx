@@ -21,6 +21,7 @@ const AuditLogPage = lazy(() => import('@/pages/AuditLogPage'));
 const OnlineOrdersPage = lazy(() => import('@/pages/OnlineOrdersPage'));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 const CustomerQRPage = lazy(() => import('@/pages/CustomerQRPage'));
+const GuidePage = lazy(() => import('@/pages/GuidePage'));
 
 const SuspenseFallback = () => (
   <div className="p-4 sm:p-8 flex items-center justify-center min-h-screen bg-stone-50 dark:bg-stone-950">
@@ -57,6 +58,7 @@ export default function App() {
           <Route path="/menu" element={<MenuPage />} />
           <Route path="/staff" element={<StaffPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/guide" element={<GuidePage />} />
 
           {/* Clean redirects for removed bloated routes */}
           <Route path="/dashboard" element={<Navigate to="/reports" replace />} />

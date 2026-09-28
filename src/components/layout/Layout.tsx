@@ -26,7 +26,8 @@ import {
   Wifi,
   Banknote,
   QrCode,
-  ArrowLeftRight
+  ArrowLeftRight,
+  BookOpen
 } from 'lucide-react';
 import type { UserRole } from '@/types/pos';
 import { useTheme } from '@/lib/theme';
@@ -87,6 +88,9 @@ export default function Layout() {
 
     // Sistem Ayarları & Yazıcı
     { path: '/settings', label: 'Ayarlar & Yazıcı', icon: Settings, roles: ['owner', 'manager'] },
+
+    // Patron Rehberi & İş Akış Kılavuzu
+    { path: '/guide', label: 'Patron Rehberi & Akış', icon: BookOpen, roles: ['owner', 'manager'] },
   ];
 
   // Mobile Bottom Navigation Shortcuts
@@ -105,7 +109,7 @@ export default function Layout() {
       { path: '/tables', label: 'Masalar', icon: Grid2X2 },
       { path: '/kitchen', label: 'Mutfak', icon: ChefHat },
       { path: '/reports', label: 'Kasa & Ciro', icon: Banknote },
-      { path: '/staff', label: 'Garsonlar', icon: Users },
+      { path: '/guide', label: 'Rehber', icon: BookOpen },
     ];
   };
 
