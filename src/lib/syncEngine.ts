@@ -1,6 +1,5 @@
 import type { PosDatabase } from '@/lib/db';
 import { getLocalServerBaseUrl } from '@/lib/localNetwork';
-import mqtt, { type MqttClient } from 'mqtt';
 
 // ─────────────────────────────────────────────────────────────
 // CLIENT IDENTIFICATION
@@ -43,7 +42,7 @@ export type SyncTableName = typeof SYNC_TABLES[number];
 let isApplyingRemoteSync = false;
 let activeDbInstance: PosDatabase | null = null;
 
-// Message deduplication cache across multiple transports (MQTT, BroadcastChannel, SSE)
+// Message deduplication cache across multiple transports (BroadcastChannel, SSE, Cloud)
 const processedMessageIds = new Set<string>();
 
 function markAndCheckProcessed(msgId?: string): boolean {
@@ -58,20 +57,10 @@ function markAndCheckProcessed(msgId?: string): boolean {
 }
 
 // ─────────────────────────────────────────────────────────────
-// CLOUD SYNC CONFIGURATION (MQTT & CLOUD SSE)
+// CLOUD SYNC CONFIGURATION
 // ─────────────────────────────────────────────────────────────
 
-const MQTT_BROKERS = [
-  'wss://broker.emqx.io:8084/mqtt',
-  'wss://broker.hivemq.com:8884/mqtt',
-];
-
-const MQTT_TOPIC_ROOT = 'wots_cafe_pos_sync/madireis_restaurant';
-const TOPIC_MUTATION = `${MQTT_TOPIC_ROOT}/mutation`;
-const TOPIC_SNAPSHOT_REQ = `${MQTT_TOPIC_ROOT}/snapshot_request`;
-const TOPIC_SNAPSHOT_RES = `${MQTT_TOPIC_ROOT}/snapshot_response`;
-
-const CLOUD_FALLBACK_URL = 'https://ntfy.sh/wots_pos_sync_madireis_restaurant';
+const CLOUD_SYNC_URL = 'https://ntfy.sh/wots_pos_sync_madireis_restaurant';
 
 // ─────────────────────────────────────────────────────────────
 // AUDIO NOTIFICATIONS (Web Audio API Synthesizer - Zero Assets)
@@ -182,7 +171,7 @@ function sanitizeSyncItems(tableName: string, items: any[]) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// APPLY REMOTE CHANGES (FROM MQTT, SSE, OR BROADCAST)
+// APPLY REMOTE CHANGES (FROM SSE, CLOUD, OR BROADCAST)
 // ─────────────────────────────────────────────────────────────
 
 export async function applyRemoteSync(
@@ -227,78 +216,10 @@ export async function applyRemoteSync(
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// LAYER 2: MQTT OVER SECURE WEBSOCKETS (Cloud Cross-Device)
-// ─────────────────────────────────────────────────────────────
-
-let mqttClient: MqttClient | null = null;
-let currentBrokerIndex = 0;
-let isMqttConnected = false;
-
-function setupMqttSync(db: PosDatabase) {
-  if (typeof window === 'undefined') return;
-
-  function connectBroker() {
-    try {
-      const brokerUrl = MQTT_BROKERS[currentBrokerIndex];
-      const client = mqtt.connect(brokerUrl, {
-        clientId: 'wots_' + CLIENT_ID,
-        clean: true,
-        connectTimeout: 8000,
-        reconnectPeriod: 4000,
-        keepalive: 30,
-      });
-
-      mqttClient = client;
-
-      client.on('connect', () => {
-        isMqttConnected = true;
-        console.log('[Sync Engine] Connected to MQTT broker:', brokerUrl);
-
-        client.subscribe([TOPIC_MUTATION, TOPIC_SNAPSHOT_REQ, TOPIC_SNAPSHOT_RES], (err) => {
-          if (!err) {
-            // Request snapshot of active tables, orders, kitchen tickets from active peers
-            setTimeout(() => {
-              requestNetworkSnapshot();
-            }, 600);
-          }
-        });
-      });
-
-      client.on('message', (topic, message) => {
-        try {
-          const payload = JSON.parse(message.toString());
-          handleIncomingNetworkMessage(db, topic, payload);
-        } catch (e) {
-          console.warn('[Sync Engine] Failed to parse MQTT message:', e);
-        }
-      });
-
-      client.on('error', (err) => {
-        console.warn('[Sync Engine] MQTT error:', err?.message || err);
-      });
-
-      client.on('close', () => {
-        isMqttConnected = false;
-      });
-
-      client.on('offline', () => {
-        isMqttConnected = false;
-        // If current broker went offline, cycle to backup
-        currentBrokerIndex = (currentBrokerIndex + 1) % MQTT_BROKERS.length;
-      });
-    } catch (e) {
-      console.warn('[Sync Engine] MQTT initialization error:', e);
-    }
-  }
-
-  connectBroker();
-}
-
 /**
- * Handle incoming messages from MQTT or Cloud SSE
+ * Handle incoming messages from Cloud SSE
  */
-function handleIncomingNetworkMessage(db: PosDatabase, topic: string, payload: any) {
+function handleIncomingNetworkMessage(db: PosDatabase, payload: any) {
   if (!payload || payload.senderId === CLIENT_ID) return;
 
   // Deduplicate messages across transports
@@ -306,102 +227,30 @@ function handleIncomingNetworkMessage(db: PosDatabase, topic: string, payload: a
     return;
   }
 
-  // 1. Regular database mutation (put/delete)
-  if (topic === TOPIC_MUTATION || payload.type === 'MUTATION') {
-    if (payload.changes || payload.deleted) {
-      applyRemoteSync(db, payload.changes, payload.deleted, payload.senderId);
-    }
-    return;
-  }
-
-  // 2. Snapshot Request from newly joined device
-  if (topic === TOPIC_SNAPSHOT_REQ || payload.type === 'REQUEST_SNAPSHOT') {
-    respondToSnapshotRequest(db, payload.senderId);
-    return;
-  }
-
-  // 3. Snapshot Response received from an existing peer
-  if (topic === TOPIC_SNAPSHOT_RES || payload.type === 'SNAPSHOT_RESPONSE') {
-    if (payload.targetId === CLIENT_ID && payload.data) {
-      console.log('[Sync Engine] Applying snapshot from peer:', payload.senderId);
-      applyRemoteSync(db, payload.data, undefined, payload.senderId);
-    }
-    return;
-  }
-}
-
-/**
- * Request latest active state from existing peers
- */
-function requestNetworkSnapshot() {
-  if (!mqttClient || !isMqttConnected) return;
-
-  const req = {
-    msgId: 'req_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8),
-    type: 'REQUEST_SNAPSHOT',
-    senderId: CLIENT_ID,
-    timestamp: Date.now(),
-  };
-
-  try {
-    mqttClient.publish(TOPIC_SNAPSHOT_REQ, JSON.stringify(req), { qos: 1 });
-  } catch {}
-}
-
-/**
- * Respond to a snapshot request with active orders, tables, and tickets
- */
-async function respondToSnapshotRequest(db: PosDatabase, targetId: string) {
-  if (!mqttClient || !isMqttConnected || !targetId) return;
-
-  try {
-    const activeTables = await db.table('tables').where('status').notEqual('available').toArray();
-    const activeOrders = await db.orders.where('status').anyOf(['open', 'sent', 'preparing', 'ready', 'served']).toArray();
-    const activeTickets = await db.kitchenTickets.where('status').anyOf(['new', 'preparing', 'ready']).toArray();
-
-    if (activeTables.length > 0 || activeOrders.length > 0 || activeTickets.length > 0) {
-      const msgId = 'res_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
-      markAndCheckProcessed(msgId);
-
-      const resPayload = {
-        msgId,
-        type: 'SNAPSHOT_RESPONSE',
-        targetId,
-        senderId: CLIENT_ID,
-        data: {
-          tables: activeTables,
-          orders: activeOrders,
-          kitchenTickets: activeTickets,
-        },
-        timestamp: Date.now(),
-      };
-
-      mqttClient.publish(TOPIC_SNAPSHOT_RES, JSON.stringify(resPayload), { qos: 1 });
-    }
-  } catch (e) {
-    console.warn('[Sync Engine] Error sending snapshot response:', e);
+  if (payload.changes || payload.deleted) {
+    applyRemoteSync(db, payload.changes, payload.deleted, payload.senderId);
   }
 }
 
 // ─────────────────────────────────────────────────────────────
-// LAYER 3: CLOUD FALLBACK SSE (ntfy.sh - 100% Port 443 Compatible)
+// LAYER 2: CLOUD SYNC STREAM (ntfy.sh - 100% Port 443 Compatible)
 // ─────────────────────────────────────────────────────────────
 
 let cloudEventSource: EventSource | null = null;
 
-function setupCloudFallbackSSE(db: PosDatabase) {
+function setupCloudSyncSSE(db: PosDatabase) {
   if (typeof window === 'undefined' || !window.EventSource) return;
 
   try {
     // ?since=5s drops stale messages and connects directly to live stream
-    cloudEventSource = new EventSource(`${CLOUD_FALLBACK_URL}/sse?since=5s`);
+    cloudEventSource = new EventSource(`${CLOUD_SYNC_URL}/sse?since=5s`);
 
     cloudEventSource.onmessage = (e) => {
       try {
         const ntfyData = JSON.parse(e.data);
         if (ntfyData.event === 'message' && ntfyData.message) {
           const payload = JSON.parse(ntfyData.message);
-          handleIncomingNetworkMessage(db, TOPIC_MUTATION, payload);
+          handleIncomingNetworkMessage(db, payload);
         }
       } catch {}
     };
@@ -413,7 +262,7 @@ function setupCloudFallbackSSE(db: PosDatabase) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// LAYER 4: LOCAL NODE SERVER SSE & SYNC (When running server.js)
+// LAYER 3: LOCAL NODE SERVER SSE & SYNC (When running server.js)
 // ─────────────────────────────────────────────────────────────
 
 let localEventSourceInstance: EventSource | null = null;
@@ -515,20 +364,11 @@ async function flushPendingChanges() {
     } catch {}
   }
 
-  // 2. Publish to Cloud MQTT over TLS WebSocket (< 50ms latency across devices worldwide)
-  if (mqttClient && isMqttConnected) {
-    try {
-      mqttClient.publish(TOPIC_MUTATION, JSON.stringify(payload), { qos: 1 });
-    } catch (e) {
-      console.warn('[Sync Engine] MQTT publish error:', e);
-    }
-  }
-
-  // 3. Fallback / Port-443 broadcast via Cloud HTTP stream (ntfy.sh)
+  // 2. Broadcast via Cloud HTTPS stream (ntfy.sh - works across devices anywhere)
   try {
     const jsonStr = JSON.stringify(payload);
     if (jsonStr.length < 3800) {
-      fetch(CLOUD_FALLBACK_URL, {
+      fetch(CLOUD_SYNC_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: jsonStr,
@@ -536,7 +376,7 @@ async function flushPendingChanges() {
     }
   } catch {}
 
-  // 4. Push to local WiFi Node server if running
+  // 3. Push to local WiFi Node server if running
   try {
     const baseUrl = getLocalServerBaseUrl();
     if (baseUrl) {
@@ -620,19 +460,16 @@ export function initSyncEngine(db: PosDatabase) {
     });
   }
 
-  // 3. Connect Cloud Real-Time MQTT over WebSocket
-  setupMqttSync(db);
+  // 3. Connect Cloud Sync SSE Stream (Web / GitHub Pages / WiFi)
+  setupCloudSyncSSE(db);
 
-  // 4. Connect Cloud Fallback SSE Stream
-  setupCloudFallbackSSE(db);
-
-  // 5. Connect Local Server SSE (if available)
+  // 4. Connect Local Server SSE (if available)
   setupLocalServerSSE(db);
 
-  // 6. Initial State Alignment with Local Node Server (if running)
+  // 5. Initial State Alignment with Local Node Server (if running)
   syncInitialLocalMasterState(db);
 
-  // 7. Periodic Safety Catch-up Poll for Local Node Server
+  // 6. Periodic Safety Catch-up Poll for Local Node Server
   setInterval(() => {
     checkLocalServerDrift(db);
   }, 8000);
