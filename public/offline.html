@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Çevrimdışı — WOT'S CAFE</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #1c1917;
+        color: #f5f5f4;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 24px;
+        text-align: center;
+      }
+      .card {
+        background: #292524;
+        border: 1px solid #44403c;
+        border-radius: 28px;
+        padding: 36px 28px;
+        max-width: 420px;
+        width: 100%;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      }
+      .icon-box {
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+        background: rgba(234, 88, 12, 0.15);
+        color: #ea580c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+      }
+      h1 { font-size: 22px; font-weight: 900; margin-bottom: 8px; color: #fafaf9; }
+      p { font-size: 14px; line-height: 1.5; color: #a8a29e; margin-bottom: 24px; }
+      .badge {
+        display: inline-block;
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+        font-size: 11px;
+        font-weight: 800;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        margin-bottom: 20px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        background: #ea580c;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 14px;
+        padding: 14px 20px;
+        border-radius: 16px;
+        border: none;
+        cursor: pointer;
+        transition: background 0.2s;
+        text-decoration: none;
+      }
+      .btn:hover { background: #c2410c; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="icon-box">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="1" y1="1" x2="23" y2="23"></line>
+          <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+          <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+          <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+          <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+          <line x1="12" y1="20" x2="12.01" y2="20"></line>
+        </svg>
+      </div>
+      <span class="badge">ÇEVRİMDIŞI MOD</span>
+      <h1>İnternet Bağlantısı Yok</h1>
+      <p>WOT'S CAFE Adisyon uygulaması cihazınızda yüklü ve yerel veritabanında çalışmaya devam edebilir. İnternet veya yerel ağ bağlantınız geri geldiğinde otomatik bağlanacaktır.</p>
+      <button class="btn" onclick="window.location.reload()">
+        Tekrar Dene
+      </button>
+    </div>
+  </body>
+</html>

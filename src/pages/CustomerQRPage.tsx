@@ -6,6 +6,7 @@ import { Bell, Droplets, Receipt, CheckCircle2, ShoppingBag, Plus, Minus, Search
 import { cn, formatCurrency, generateId } from '@/lib/utils';
 import PosIcon from '@/components/common/PosIcon';
 import type { MenuItem, Category, Table, Order, KitchenTicket, KitchenStation, OrderItem } from '@/types/pos';
+import wotsLogo from '@/assets/logo.jpg';
 
 export default function CustomerQRPage() {
   const { tableId } = useParams<{ tableId: string }>();
@@ -226,11 +227,18 @@ export default function CustomerQRPage() {
       {/* Brand Header */}
       <header className="bg-stone-900 text-white px-4 py-3 sm:p-5 sticky top-0 z-30 shadow-md pt-[max(env(safe-area-inset-top),0.75rem)]">
         <div className="max-w-md mx-auto flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-black text-orange-400 tracking-tight">WOT'S CAFE</h1>
-            <p className="text-[11px] text-stone-400 font-medium">Dijital Menü</p>
+          <div className="flex items-center gap-3">
+            <img 
+              src={wotsLogo} 
+              alt="WOT'S CAFE" 
+              className="w-10 h-10 rounded-xl object-contain bg-black border border-orange-500/30 shadow-xs shrink-0" 
+            />
+            <div>
+              <h1 className="text-base sm:text-lg font-black text-orange-400 tracking-tight leading-none">WOT'S CAFE</h1>
+              <p className="text-[11px] text-stone-400 font-medium mt-0.5">Dijital Menü & Sipariş</p>
+            </div>
           </div>
-          <div className="bg-stone-800 px-3 py-1.5 rounded-xl text-xs font-bold text-stone-200 border border-stone-700">
+          <div className="bg-stone-800 px-3 py-1.5 rounded-xl text-xs font-bold text-stone-200 border border-stone-700 shrink-0">
             Masa {table?.label || '12'}
           </div>
         </div>

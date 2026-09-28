@@ -7,6 +7,7 @@ import { useTheme } from '@/lib/theme';
 import { useLocalNetwork } from '@/lib/useLocalNetwork';
 import LocalNetworkModal from '@/components/common/LocalNetworkModal';
 import { generateQRCodeSVG } from '@/lib/qrCodeGenerator';
+import wotsLogo from '@/assets/logo.jpg';
 
 interface PrinterConfig {
   id: string;
@@ -193,8 +194,18 @@ export default function SettingsPage() {
             {/* Profile Section */}
             <div>
               <h2 className="text-xl font-black text-stone-900 dark:text-stone-100 mb-1">WOT'S CAFE RESTAURANT İşletme Profili</h2>
-              <p className="text-xs text-stone-500 dark:text-stone-400 mb-6">Adisyon ve fiş üzerinde yer alacak resmi işletme bilgileri</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 mb-5">Adisyon ve fiş üzerinde yer alacak resmi işletme bilgileri</p>
               
+              <div className="flex items-center gap-4 p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 mb-6 max-w-xl shadow-2xs">
+                <div className="w-16 h-16 rounded-2xl bg-black p-1.5 shadow-md border border-orange-500/30 flex items-center justify-center shrink-0">
+                  <img src={wotsLogo} alt="WOT'S CAFE" className="w-full h-full object-contain rounded-xl" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-stone-900 dark:text-stone-100">Resmi WOT'S CAFE Logosu</h4>
+                  <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">Tüm adisyon hesap fişlerinde, mutfak sipariş çıktılarında, QR müşteri menüsünde ve giriş ekranında bu logo kullanılmaktadır.</p>
+                </div>
+              </div>
+
               <div className="space-y-4 max-w-xl">
                 <div>
                   <label className="block text-xs font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider mb-1">Ticari Ünvan / Restoran Adı</label>

@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Printer, ChefHat, Receipt, FileText } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import type { KitchenTicket, Order } from '@/types/pos';
+import wotsLogo from '@/assets/logo.jpg';
 
 export type ThermalSlipType = 'kitchen' | 'receipt' | 'z-report';
 
@@ -85,6 +86,13 @@ export default function ThermalSlipModal({
           >
             {/* Header info */}
             <div className="text-center pb-3 border-b-2 border-dashed border-stone-400">
+              <div className="flex justify-center mb-2">
+                <img 
+                  src={wotsLogo} 
+                  alt="WOT'S CAFE" 
+                  className="w-14 h-14 object-contain rounded-xl bg-black mx-auto shadow-xs border border-stone-800" 
+                />
+              </div>
               <h2 className="text-base font-black tracking-wider uppercase text-stone-950">WOT'S CAFE</h2>
               <p className="text-[10px] text-stone-600 mt-0.5">Tel: 0212 727 00 00</p>
               

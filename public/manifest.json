@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+  "id": "wots-pos-adisyon-app",
+  "name": "Wot's Cafe — Adisyon & POS",
+  "short_name": "Wot's Adisyon",
+  "description": "Wot's Cafe Gerçek Zamanlı Restoran & Kafe Adisyon, Masa ve Kasa Yönetim Sistemi",
+  "start_url": "./#/login",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1c1917",
+  "theme_color": "#ea580c",
+  "lang": "tr-TR",
+  "dir": "ltr",
+  "categories": ["business", "food", "productivity"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Masalar & Sipariş",
+      "short_name": "Masalar",
+      "description": "Restoran masa haritası ve sipariş ekranı",
+      "url": "./#/tables",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mutfak Ekranı (KDS)",
+      "short_name": "Mutfak",
+      "description": "Canlı mutfak ve bar sipariş fişleri",
+      "url": "./#/kitchen",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Kasa & Raporlar",
+      "short_name": "Kasa",
+      "description": "Günlük ciro ve kasa kapanışı",
+      "url": "./#/reports",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

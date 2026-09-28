@@ -5,6 +5,7 @@ import { TrendingUp, Users, ShoppingBag, Receipt, LayoutGrid, XCircle, Utensils,
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, Legend } from 'recharts';
 import { formatCurrency, getTimeString } from '@/lib/utils';
 import type { Order, Table, AuditLog, Payment } from '@/types/pos';
+import wotsLogo from '@/assets/logo.jpg';
 
 export default function DashboardPage() {
   const orders = useLiveQuery(() => db.orders.toArray()) || [];
@@ -144,10 +145,15 @@ export default function DashboardPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-4 sm:space-y-6 lg:space-y-8 dark:bg-stone-950 dark:text-stone-100">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-        <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 dark:text-stone-100 tracking-tight">WOT'S CAFE — Yönetim Özeti</h1>
-          <p className="text-stone-500 dark:text-stone-400 text-sm mt-1">Canlı Finans & Operasyon Tablosu</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-black p-1 shadow-md border border-orange-500/30 flex items-center justify-center shrink-0">
+            <img src={wotsLogo} alt="WOT'S CAFE" className="w-full h-full object-contain rounded-xl" />
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 dark:text-stone-100 tracking-tight">WOT'S CAFE — Yönetim Özeti</h1>
+            <p className="text-stone-500 dark:text-stone-400 text-xs sm:text-sm mt-0.5">Canlı Finans & Operasyon Tablosu</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-transparent dark:border-emerald-800/60 rounded-full text-xs font-bold flex items-center gap-1.5">

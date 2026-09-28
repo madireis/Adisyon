@@ -27,14 +27,18 @@ import {
   Banknote,
   QrCode,
   ArrowLeftRight,
-  BookOpen
+  BookOpen,
+  Download,
 } from 'lucide-react';
 import type { UserRole } from '@/types/pos';
 import { useTheme } from '@/lib/theme';
 import { useLocalNetwork } from '@/lib/useLocalNetwork';
 import { disconnectLocalClient } from '@/lib/localNetwork';
+import { usePwaInstall } from '@/lib/usePwaInstall';
 import LocalNetworkModal from '@/components/common/LocalNetworkModal';
 import AccountSwitcherModal from '@/components/common/AccountSwitcherModal';
+import PwaInstallModal from '@/components/common/PwaInstallModal';
+import wotsLogo from '@/assets/logo.jpg';
 
 interface NavItem {
   path: string;
@@ -51,8 +55,10 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false);
+  const [isPwaModalOpen, setIsPwaModalOpen] = useState(false);
   
   const { isWifiConnected, activeGarsonCount } = useLocalNetwork();
+  const { isInstalled } = usePwaInstall();
   const [isAccountSwitcherOpen, setIsAccountSwitcherOpen] = useState(false);
 
   // Close mobile drawer on route change
@@ -192,19 +198,31 @@ export default function Layout() {
         )}
       >
         {/* Brand Bar */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-stone-200 dark:border-stone-800 shrink-0">
+        <div className="h-16 flex items-center justify-between px-3.5 border-b border-stone-200 dark:border-stone-800 shrink-0">
           {sidebarOpen ? (
-            <div className="flex items-center">
-              <h1 className="font-black text-xl text-orange-600 tracking-tight leading-none">WOT'S CAFE</h1>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <img 
+                src={wotsLogo} 
+                alt="WOT'S" 
+                className="w-9 h-9 rounded-xl object-contain bg-black shadow-xs border border-orange-500/20 shrink-0" 
+              />
+              <div className="min-w-0">
+                <h1 className="font-black text-base text-orange-600 dark:text-orange-500 tracking-tight leading-none truncate">WOT'S CAFE</h1>
+                <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400 block tracking-wider uppercase mt-0.5">Adisyon & POS</span>
+              </div>
             </div>
           ) : (
-            <div className="w-8 h-8 rounded-xl bg-orange-600 flex items-center justify-center text-white shadow-xs mx-auto font-black text-sm">
-              W
+            <div className="mx-auto flex items-center justify-center">
+              <img 
+                src={wotsLogo} 
+                alt="WOT'S" 
+                className="w-9 h-9 rounded-xl object-contain bg-black shadow-xs border border-orange-500/20" 
+              />
             </div>
           )}
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer shrink-0"
           >
             {sidebarOpen ? <ChevronLeft size={18} /> : <Menu size={18} />}
           </button>
@@ -272,6 +290,17 @@ export default function Layout() {
                 </div>
               )}
 
+              {/* PWA App Install Button */}
+              {!isInstalled && (
+                <button
+                  onClick={() => setIsPwaModalOpen(true)}
+                  className="w-full py-2 px-3 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs min-h-[38px]"
+                >
+                  <Download size={14} />
+                  <span>Uygulamayı İndir</span>
+                </button>
+              )}
+
               <button
                 onClick={handleLogout}
                 className="w-full mt-1 py-2.5 bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 min-h-[40px]"
@@ -289,6 +318,15 @@ export default function Layout() {
                   title="Hesaplar Arası Geçiş Yap"
                 >
                   <ArrowLeftRight size={18} />
+                </button>
+              )}
+              {!isInstalled && (
+                <button
+                  onClick={() => setIsPwaModalOpen(true)}
+                  className="p-2.5 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/50 rounded-xl min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors cursor-pointer"
+                  title="Uygulamayı Telefona İndir"
+                >
+                  <Download size={18} />
                 </button>
               )}
               <button 
@@ -313,8 +351,16 @@ export default function Layout() {
           <div className="relative w-4/5 max-w-xs bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-200 border-r border-stone-200 dark:border-stone-800">
             {/* Drawer Header */}
             <div className="p-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between bg-stone-50 dark:bg-stone-950">
-              <div>
-                <h2 className="font-black text-xl text-orange-600 leading-tight">WOT'S CAFE</h2>
+              <div className="flex items-center gap-2.5">
+                <img 
+                  src={wotsLogo} 
+                  alt="WOT'S CAFE" 
+                  className="w-9 h-9 rounded-xl object-contain bg-black shadow-xs border border-orange-500/20 shrink-0" 
+                />
+                <div>
+                  <h2 className="font-black text-lg text-orange-600 dark:text-orange-500 leading-none">WOT'S CAFE</h2>
+                  <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400 block tracking-wider uppercase mt-0.5">Adisyon & POS</span>
+                </div>
               </div>
               <button 
                 onClick={() => setIsMobileDrawerOpen(false)}
@@ -384,6 +430,20 @@ export default function Layout() {
                 </div>
               )}
 
+              {/* PWA Mobile Drawer Install Button */}
+              {!isInstalled && (
+                <button
+                  onClick={() => {
+                    setIsMobileDrawerOpen(false);
+                    setIsPwaModalOpen(true);
+                  }}
+                  className="w-full py-2.5 px-3 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs min-h-[44px]"
+                >
+                  <Download size={16} />
+                  <span>Uygulamayı Telefona İndir</span>
+                </button>
+              )}
+
               <button
                 onClick={() => {
                   setIsMobileDrawerOpen(false);
@@ -416,9 +476,16 @@ export default function Layout() {
               <Menu size={19} />
             </button>
 
-            <span className="font-black text-orange-600 dark:text-orange-500 text-sm tracking-tight md:hidden">
-              WOT'S CAFE
-            </span>
+            <div className="flex items-center gap-1.5 md:hidden">
+              <img 
+                src={wotsLogo} 
+                alt="WOT'S" 
+                className="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-contain bg-black border border-orange-500/20 shrink-0" 
+              />
+              <span className="font-black text-orange-600 dark:text-orange-500 text-xs sm:text-sm tracking-tight">
+                WOT'S CAFE
+              </span>
+            </div>
 
             {/* Subtle role indicator */}
             <span className={cn("text-[9px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full border shadow-2xs", roleInfo.badgeColor)}>
@@ -427,6 +494,18 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2.5">
+            {/* PWA Install Button in Header */}
+            {!isInstalled && (
+              <button
+                onClick={() => setIsPwaModalOpen(true)}
+                className="px-2 sm:px-2.5 py-1 rounded-full text-xs font-extrabold flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer border shadow-2xs active:scale-95 bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800 hover:bg-orange-100"
+                title="WOT'S POS Uygulamasını Telefona/Bilgisayara İndir"
+              >
+                <Download size={13} />
+                <span className="hidden xs:inline">Uygulama İndir</span>
+              </button>
+            )}
+
             {/* Local WiFi Network & Garson Presence Badge */}
             <button
               onClick={() => setIsNetworkModalOpen(true)}
@@ -548,6 +627,12 @@ export default function Layout() {
       <AccountSwitcherModal 
         isOpen={isAccountSwitcherOpen}
         onClose={() => setIsAccountSwitcherOpen(false)}
+      />
+
+      {/* PWA Uygulama İndirme Modalı */}
+      <PwaInstallModal
+        isOpen={isPwaModalOpen}
+        onClose={() => setIsPwaModalOpen(false)}
       />
     </div>
   );

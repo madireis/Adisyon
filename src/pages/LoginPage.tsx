@@ -10,9 +10,13 @@ import {
   AlertCircle, 
   Eye, 
   EyeOff,
-  Loader2
+  Loader2,
+  Download
 } from 'lucide-react';
 import type { Staff } from '@/types/pos';
+import wotsLogo from '@/assets/logo.jpg';
+import { usePwaInstall } from '@/lib/usePwaInstall';
+import PwaInstallModal from '@/components/common/PwaInstallModal';
 
 export default function LoginPage() {
   const { state, dispatch } = useApp();
@@ -23,6 +27,8 @@ export default function LoginPage() {
   const [showPin, setShowPin] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPwaModalOpen, setIsPwaModalOpen] = useState(false);
+  const { isInstalled } = usePwaInstall();
 
   // If already logged in, redirect to respective screen
   React.useEffect(() => {
@@ -124,8 +130,15 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-stone-100 via-stone-50 to-orange-50/30 dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 flex flex-col items-center justify-center p-4 sm:p-6 select-none dark:text-stone-100">
       <div className="w-full max-w-md">
         {/* Brand Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
+        <div className="text-center mb-8 flex flex-col items-center">
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-black p-2.5 shadow-2xl border-2 border-orange-500/30 mb-4 flex items-center justify-center transform transition-transform hover:scale-105">
+            <img 
+              src={wotsLogo} 
+              alt="WOT'S CAFE" 
+              className="w-full h-full object-contain rounded-2xl" 
+            />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
             WOT'S CAFE
           </h1>
           <p className="text-xs font-bold text-orange-600 uppercase tracking-widest mt-1">
@@ -217,11 +230,36 @@ export default function LoginPage() {
           </form>
         </div>
 
+        {/* PWA Install Promo Button on Login Page */}
+        {!isInstalled && (
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => setIsPwaModalOpen(true)}
+              className="w-full py-3 px-4 bg-white/90 dark:bg-stone-900/90 hover:bg-white dark:hover:bg-stone-900 border border-orange-200 dark:border-stone-800 hover:border-orange-500 rounded-2xl shadow-sm text-stone-700 dark:text-stone-300 font-bold text-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer group active:scale-[0.99]"
+            >
+              <div className="w-7 h-7 rounded-xl bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Download size={14} className="group-hover:animate-bounce" />
+              </div>
+              <div className="text-left">
+                <div className="text-stone-900 dark:text-stone-100 font-extrabold text-xs">Bu Cihaza Uygulama Olarak İndir</div>
+                <div className="text-[10px] text-stone-500 dark:text-stone-400 font-medium">Ana ekrana ekle, tam ekran ve hızlı çalıştır</div>
+              </div>
+            </button>
+          </div>
+        )}
+
         {/* Minimal Footer */}
         <div className="text-center mt-6 text-xs text-stone-400 dark:text-stone-500">
           Wot's Cafe POS &copy; {new Date().getFullYear()} — Tüm Hakları Saklıdır
         </div>
       </div>
+
+      {/* PWA Install Modal */}
+      <PwaInstallModal
+        isOpen={isPwaModalOpen}
+        onClose={() => setIsPwaModalOpen(false)}
+      />
     </div>
   );
 }

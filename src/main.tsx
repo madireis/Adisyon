@@ -17,3 +17,24 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     </ThemeProvider>
   </React.StrictMode>
 );
+
+// Register Progressive Web App Service Worker
+if (
+  'serviceWorker' in navigator &&
+  (window.location.protocol === 'https:' ||
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1')
+) {
+  window.addEventListener('load', () => {
+    const swUrl = `${import.meta.env.BASE_URL}sw.js`;
+    navigator.serviceWorker
+      .register(swUrl)
+      .then((reg) => {
+        console.log('[PWA] Service Worker registered successfully, scope:', reg.scope);
+      })
+      .catch((err) => {
+        console.warn('[PWA] Service Worker registration failed:', err);
+      });
+  });
+}
+

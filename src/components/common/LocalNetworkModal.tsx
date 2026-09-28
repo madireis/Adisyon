@@ -14,7 +14,8 @@ import {
   Server,
   ExternalLink,
   Edit3,
-  Utensils
+  Utensils,
+  Download
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -295,6 +296,21 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+
+          {/* PWA Phone Installation Guide Banner */}
+          <div className="p-3.5 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-stone-900 dark:to-orange-950/30 rounded-2xl border border-orange-200 dark:border-orange-900/50 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-orange-600 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+              <Download size={16} />
+            </div>
+            <div className="text-xs">
+              <span className="font-extrabold text-stone-900 dark:text-stone-100 block">
+                Telefona Mobil Uygulama Olarak İndirme
+              </span>
+              <p className="text-stone-600 dark:text-stone-300 mt-0.5 leading-relaxed">
+                Garsonlar QR kodu telefonla tarattıktan sonra çıkan ekrandaki <strong>"Uygulama Olarak İndir"</strong> butonuna basabilir veya tarayıcı menüsünden <strong>"Ana Ekrana Ekle"</strong> diyerek tam ekran yerel bir mobil uygulama gibi kullanabilirler.
+              </p>
             </div>
           </div>
 

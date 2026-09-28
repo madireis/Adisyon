@@ -484,7 +484,8 @@ const server = http.createServer((req, res) => {
   // 10. Default: Serve built Vite static files if dist directory exists
   const distDir = path.join(__dirname, 'dist');
   if (fs.existsSync(distDir)) {
-    let filePath = path.join(distDir, url.pathname === '/' ? 'index.html' : url.pathname);
+    let cleanPath = url.pathname.replace(/^\/Adisyon\/?/, '/');
+    let filePath = path.join(distDir, cleanPath === '/' ? 'index.html' : cleanPath);
     if (!fs.existsSync(filePath)) {
       filePath = path.join(distDir, 'index.html'); // SPA fallback
     }
@@ -498,9 +499,17 @@ const server = http.createServer((req, res) => {
       '.png': 'image/png',
       '.jpg': 'image/jpeg',
       '.svg': 'image/svg+xml',
+      '.webmanifest': 'application/manifest+json',
+      '.woff2': 'font/woff2',
+      '.woff': 'font/woff',
     };
 
     const contentType = mimeTypes[ext] || 'application/octet-stream';
+    if (filePath.endsWith('sw.js')) {
+      res.setHeader('Service-Worker-Allowed', '/');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+
     fs.readFile(filePath, (err, data) => {
       if (err) {
         res.writeHead(500);

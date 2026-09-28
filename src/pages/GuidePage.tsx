@@ -34,6 +34,7 @@ import {
   BellRing
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import wotsLogo from '@/assets/logo.jpg';
 
 export default function GuidePage() {
   const navigate = useNavigate();
@@ -64,17 +65,22 @@ export default function GuidePage() {
       <div className="bg-stone-900 text-stone-100 p-4 sm:p-8 border-b border-stone-800 shrink-0">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-2 bg-orange-950/80 text-orange-400 border border-orange-800/80 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-2">
-                <ShieldCheck size={14} />
-                Patron & Yönetici Başucu Kılavuzu
+            <div className="flex items-start gap-4">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-black p-1.5 shadow-xl border border-orange-500/30 shrink-0 hidden xs:flex items-center justify-center">
+                <img src={wotsLogo} alt="WOT'S CAFE" className="w-full h-full object-contain rounded-xl" />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                Sistem Nasıl Çalışır? (Tüm Akış & Patron Rehberi)
-              </h1>
-              <p className="text-xs sm:text-sm text-stone-300 mt-1 max-w-2xl leading-relaxed">
-                Karmaşık teknik terimler yok. Masaya müşteri oturduğu andan gün sonu kasanın kapanışına kadar neyi, nereden, nasıl yapacağınız adım adım en sade haliyle burada.
-              </p>
+              <div>
+                <div className="inline-flex items-center gap-2 bg-orange-950/80 text-orange-400 border border-orange-800/80 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-2">
+                  <ShieldCheck size={14} />
+                  Patron & Yönetici Başucu Kılavuzu
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                  Sistem Nasıl Çalışır? (Tüm Akış & Patron Rehberi)
+                </h1>
+                <p className="text-xs sm:text-sm text-stone-300 mt-1 max-w-2xl leading-relaxed">
+                  Karmaşık teknik terimler yok. Masaya müşteri oturduğu andan gün sonu kasanın kapanışına kadar neyi, nereden, nasıl yapacağınız adım adım en sade haliyle burada.
+                </p>
+              </div>
             </div>
 
             {/* Fast Jump Shortcuts for Owner */}
@@ -754,8 +760,8 @@ export default function GuidePage() {
         {/* Footer Pro Tip */}
         <div className="p-5 rounded-2xl bg-stone-900 text-stone-100 border border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center font-black shrink-0">
-              W
+            <div className="w-11 h-11 rounded-xl bg-black p-1 shadow-md border border-orange-500/30 flex items-center justify-center shrink-0">
+              <img src={wotsLogo} alt="WOT'S CAFE" className="w-full h-full object-contain rounded-lg" />
             </div>
             <div>
               <h4 className="font-bold text-sm text-white">Wot's Cafe Adisyon & POS Sistemi</h4>
