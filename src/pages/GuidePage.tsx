@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   BookOpen, 
@@ -8,30 +8,26 @@ import {
   CreditCard, 
   Banknote, 
   Users, 
-  Settings, 
   Search, 
   CheckCircle2, 
   AlertCircle, 
-  ArrowRight, 
   Smartphone, 
-  Printer, 
   Flame, 
-  Sparkles, 
-  Clock, 
   ShieldCheck, 
   TrendingUp, 
   Receipt, 
-  Plus, 
   HelpCircle,
   Lightbulb,
   Check,
   ChevronDown,
   ChevronUp,
-  ExternalLink,
   Laptop,
   Wifi,
   ShoppingBag,
-  BellRing
+  BellRing,
+  Copy,
+  X,
+  ArrowUpRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import wotsLogo from '@/assets/logo.jpg';
@@ -41,14 +37,26 @@ export default function GuidePage() {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedFaq, setExpandedFaq] = useState<string | null>('faq-1');
+  const [copiedUrl, setCopiedUrl] = useState(false);
 
   const toggleFaq = (id: string) => {
     setExpandedFaq(prev => prev === id ? null : id);
   };
 
+  const handleCopyLink = () => {
+    const fullUrl = window.location.origin + window.location.pathname;
+    try {
+      navigator.clipboard.writeText(fullUrl);
+      setCopiedUrl(true);
+      setTimeout(() => setCopiedUrl(false), 2000);
+    } catch {
+      // Fallback
+    }
+  };
+
   const tabs = [
-    { id: 'all', label: 'Tüm Kılavuz', icon: BookOpen },
-    { id: 'overview', label: '1. Sistemin Mantığı', icon: Lightbulb },
+    { id: 'all', label: 'Tümü', icon: BookOpen },
+    { id: 'overview', label: '1. Sistem Mantığı', icon: Lightbulb },
     { id: 'waiter', label: '2. Garson & Sipariş', icon: Grid2X2 },
     { id: 'kitchen', label: '3. Mutfak (KDS)', icon: ChefHat },
     { id: 'qr', label: '4. QR Dijital Menü', icon: QrCode },
@@ -59,84 +67,184 @@ export default function GuidePage() {
     { id: 'faq', label: '9. Sık Sorulanlar', icon: HelpCircle },
   ];
 
+  const cleanQuery = searchQuery.trim().toLowerCase();
+
+  // Search keyword matchers for each section
+  const sectionMatches = useMemo(() => {
+    if (!cleanQuery) return {
+      overview: true,
+      waiter: true,
+      kitchen: true,
+      qr: true,
+      cashier: true,
+      reports: true,
+      menu: true,
+      staff: true,
+      faq: true
+    };
+
+    const testMatch = (words: string[]) => words.some(w => w.toLowerCase().includes(cleanQuery));
+
+    return {
+      overview: testMatch(['sistem', 'mantık', 'nasıl', 'kurulum', 'wifi', 'internet', 'renk', 'yeşil', 'turuncu', 'kırmızı', 'mor', 'çevrimdışı']),
+      waiter: testMatch(['garson', 'sipariş', 'masa', 'sepet', 'ekle', 'mutfağa gönder', 'not', 'ilave', 'adisyon']),
+      kitchen: testMatch(['mutfak', 'kds', 'aşçı', 'barmen', 'bar', 'yeni', 'hazırlanıyor', 'hazır', 'servis edildi', 'istasyon', 'zil']),
+      qr: testMatch(['qr', 'menü', 'müşteri', 'dijital', 'garson çağır', 'hesap iste', 'onayla', 'çağrı']),
+      cashier: testMatch(['kasa', 'ödeme', 'hesap', 'nakit', 'kredi kartı', 'parçalı', 'indirim', 'ikram', 'fiş', 'termal', 'pos']),
+      reports: testMatch(['ciro', 'gün sonu', 'z raporu', 'rapor', 'gider', 'masraf', 'kasa çıkış', 'avans', 'net ciro', 'satış']),
+      menu: testMatch(['menü', 'fiyat', 'zam', 'fiyat güncelle', 'tükendi', 'mevcut', 'kategori', 'kalem']),
+      staff: testMatch(['personel', 'garson', 'telefon', 'bağlama', 'pin', 'şifre', 'giriş', 'terminal', 'link']),
+      faq: testMatch(['soru', 'sss', 'faq', 'internet kesilirse', 'şarj', 'taşı', 'aktar', 'yazıcı', 'güvenlik', 'denetim', 'çalınma'])
+    };
+  }, [cleanQuery]);
+
+  const totalMatches = Object.values(sectionMatches).filter(Boolean).length;
+
+  const faqs = [
+    {
+      id: 'faq-1',
+      q: '1. Kafede internet kesilirse siparişler kaybolur mu?',
+      a: 'Kesinlikle hayır! Sistem IndexedDB adı verilen yerel tarayıcı veritabanını kullanır. İnternet dursa dahi aldığınız sipariş cihazda güvenle saklanır. İnternet geldiğinde anında diğer cihazlarla otomatik eşitlenir.',
+      keywords: 'internet kesinti çevrimdışı kaybolma veri saklama'
+    },
+    {
+      id: 'faq-2',
+      q: '2. Garsonun telefonunun şarjı biterse masanın siparişi silinir mi?',
+      a: 'Hayır! Sipariş anlık senkronize olduğu için başka herhangi bir telefondan, kasadaki bilgisayardan veya mutfak tabletinden o masaya tıklandığında sipariş kalemleri eksiksiz karşınıza gelir.',
+      keywords: 'şarj pil telefon kapanma silinme'
+    },
+    {
+      id: 'faq-3',
+      q: '3. Müşteri masasını değiştirmek isterse (Masa Taşıma) ne yapılır?',
+      a: 'Mevcut masayı açın. Üst bardaki "Masayı Aktar / Taşı" butonu ile yeni masayı seçtiğinizde tüm adisyon ve mutfak durumu yeni masaya aktarılır, eski masa boşa çıkar.',
+      keywords: 'masa taşıma aktarma değiştirme yer'
+    },
+    {
+      id: 'faq-4',
+      q: '4. Termal Fiş Yazıcısı nasıl bağlanır?',
+      a: 'Sistem standart 80mm ve 58mm termal yazıcılarla doğrudan uyumludur. Bilgisayarınıza veya tabletinize USB / Bluetooth / Wi-Fi ile bağlı herhangi bir yazıcıya sistemden "Fiş Yazdır" dediğinizde otomatik profesyonel restoran fişi formatında çıktı verir.',
+      keywords: 'termal fiş yazıcı bluetooth usb yazdırma çıktı'
+    },
+    {
+      id: 'faq-5',
+      q: '5. Garson hesabı kendi cebine atabilir mi? (Güvenlik & Denetim)',
+      a: 'Hayır. Garson rolündeki personeller adisyon iptal edemez, indirim yapamaz ve kasayı kapatamaz. Ayrıca yapılan her işlem (kim saat kaçta hangi ürünü ekledi, ne zaman mutfağa gönderildi) sistemin Denetim Günlüğü sayfasına saniyesi saniyesine kaydedilir.',
+      keywords: 'güvenlik denetim hırsızlık iptal yetki silme log'
+    }
+  ];
+
+  const filteredFaqs = faqs.filter(faq => {
+    if (!cleanQuery) return true;
+    return faq.q.toLowerCase().includes(cleanQuery) || 
+           faq.a.toLowerCase().includes(cleanQuery) || 
+           faq.keywords.toLowerCase().includes(cleanQuery);
+  });
+
   return (
-    <div className="h-full flex flex-col bg-stone-100 dark:bg-stone-950 overflow-y-auto select-none pb-24">
+    <div className="w-full min-h-full flex flex-col bg-stone-100 dark:bg-stone-950 pb-36 sm:pb-24">
       {/* Top Hero Banner */}
-      <div className="bg-stone-900 text-stone-100 p-4 sm:p-8 border-b border-stone-800 shrink-0">
-        <div className="max-w-6xl mx-auto">
+      <div className="bg-stone-900 text-stone-100 p-4 sm:p-6 lg:p-8 border-b border-stone-800 shrink-0">
+        <div className="max-w-6xl mx-auto space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-black p-1.5 shadow-xl border border-orange-500/30 shrink-0 hidden xs:flex items-center justify-center">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-black p-1 sm:p-1.5 shadow-xl border border-orange-500/30 shrink-0 flex items-center justify-center">
                 <img src={wotsLogo} alt="WOT'S CAFE" className="w-full h-full object-contain rounded-xl" />
               </div>
-              <div>
-                <div className="inline-flex items-center gap-2 bg-orange-950/80 text-orange-400 border border-orange-800/80 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-2">
-                  <ShieldCheck size={14} />
-                  Patron & Yönetici Başucu Kılavuzu
+              <div className="min-w-0">
+                <div className="inline-flex items-center gap-1.5 bg-orange-950/80 text-orange-400 border border-orange-800/80 px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider mb-1.5">
+                  <ShieldCheck size={13} className="shrink-0" />
+                  <span>Patron & Yönetici Başucu Kılavuzu</span>
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                  Sistem Nasıl Çalışır? (Tüm Akış & Patron Rehberi)
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight leading-tight">
+                  Sistem Nasıl Çalışır? (Tüm Akış & Rehber)
                 </h1>
                 <p className="text-xs sm:text-sm text-stone-300 mt-1 max-w-2xl leading-relaxed">
-                  Karmaşık teknik terimler yok. Masaya müşteri oturduğu andan gün sonu kasanın kapanışına kadar neyi, nereden, nasıl yapacağınız adım adım en sade haliyle burada.
+                  Masaya müşteri oturduğu andan gün sonu kasa kapanışına kadar neyi, nereden yapacağınız en sade haliyle burada.
                 </p>
               </div>
             </div>
 
-            {/* Fast Jump Shortcuts for Owner */}
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Fast Jump Shortcuts for Owner (Responsive 3-grid on mobile, flex on desktop) */}
+            <div className="grid grid-cols-3 gap-1.5 sm:flex sm:items-center sm:gap-2 shrink-0">
               <button
                 onClick={() => navigate('/tables')}
-                className="px-3 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
+                className="px-2.5 sm:px-3 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-[11px] sm:text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer active:scale-95 text-center"
               >
-                <Grid2X2 size={14} />
-                <span>Masalara Git</span>
+                <Grid2X2 size={14} className="shrink-0" />
+                <span className="truncate">Masalar</span>
               </button>
               <button
                 onClick={() => navigate('/kitchen')}
-                className="px-3 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-xl text-xs font-bold transition-all border border-stone-700 flex items-center gap-1.5 cursor-pointer active:scale-95"
+                className="px-2.5 sm:px-3 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-xl text-[11px] sm:text-xs font-bold transition-all border border-stone-700 flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer active:scale-95 text-center"
               >
-                <ChefHat size={14} />
-                <span>Mutfağa Git</span>
+                <ChefHat size={14} className="shrink-0" />
+                <span className="truncate">Mutfak</span>
               </button>
               <button
                 onClick={() => navigate('/reports')}
-                className="px-3 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
+                className="px-2.5 sm:px-3 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-[11px] sm:text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer active:scale-95 text-center"
               >
-                <Banknote size={14} />
-                <span>Kasa & Ciro</span>
+                <Banknote size={14} className="shrink-0" />
+                <span className="truncate">Kasa & Ciro</span>
               </button>
             </div>
           </div>
 
-          {/* Quick Search */}
-          <div className="mt-6 relative max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 w-4 h-4" />
+          {/* Quick Real-Time Search Bar */}
+          <div className="relative max-w-md w-full">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 w-4 h-4 pointer-events-none" />
             <input
               type="text"
-              placeholder="Rehberde ara (örn: fiyat değiştirme, fiş yazdır, garson ekle)..."
+              placeholder="Rehberde ara (örn: fiş, fiyat, garson, kasa)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-stone-800/90 border border-stone-700 rounded-xl text-xs text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"
+              className="w-full pl-10 pr-9 py-2.5 bg-stone-800/90 border border-stone-700 rounded-xl text-xs text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium transition-all"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-white rounded-md transition-colors"
+                title="Aramayı Temizle"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
+
+          {/* Search Result Info Chip */}
+          {cleanQuery && (
+            <div className="flex items-center justify-between text-xs text-stone-300 bg-stone-800/60 px-3 py-1.5 rounded-lg border border-stone-700/60 animate-in fade-in">
+              <span>
+                "<strong>{cleanQuery}</strong>" ile ilgili <strong>{totalMatches}</strong> bölüm listeleniyor.
+              </span>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="text-orange-400 hover:underline font-bold text-[11px] ml-2"
+              >
+                Tümünü Göster
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Category Pills Navigation */}
-      <div className="sticky top-0 z-20 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md border-b border-stone-200 dark:border-stone-800 px-3 sm:px-8 py-2.5 overflow-x-auto no-scrollbar">
-        <div className="max-w-6xl mx-auto flex items-center gap-1.5">
+      {/* Category Pills Navigation (Horizontal Touch Scroll with Momentum) */}
+      <div className="sticky top-0 z-20 bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border-b border-stone-200 dark:border-stone-800 px-3 sm:px-6 py-2 overflow-x-auto no-scrollbar scroll-smooth">
+        <div className="max-w-6xl mx-auto flex items-center gap-1.5 min-w-max">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  if (cleanQuery) setSearchQuery('');
+                }}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer active:scale-95 shrink-0",
                   isActive
-                    ? "bg-orange-600 text-white shadow-sm"
+                    ? "bg-orange-600 text-white shadow-xs font-black"
                     : "bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
                 )}
               >
@@ -149,47 +257,68 @@ export default function GuidePage() {
       </div>
 
       {/* Main Content Sections */}
-      <div className="max-w-6xl mx-auto w-full p-4 sm:p-8 space-y-8">
+      <div className="max-w-6xl mx-auto w-full px-3 py-4 sm:px-6 sm:py-8 space-y-5 sm:space-y-8">
         
+        {/* Empty Search State */}
+        {cleanQuery && totalMatches === 0 && (
+          <div className="bg-white dark:bg-stone-900 rounded-3xl p-8 border border-stone-200 dark:border-stone-800 text-center space-y-3">
+            <div className="w-12 h-12 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-400 mx-auto flex items-center justify-center">
+              <Search size={22} />
+            </div>
+            <h3 className="font-black text-base text-stone-900 dark:text-stone-100">
+              "{cleanQuery}" ile ilgili konu bulunamadı
+            </h3>
+            <p className="text-xs text-stone-500 max-w-sm mx-auto">
+              Farklı bir arama terimi deneyebilir veya kategorilerden ilgili başlığı inceleyebilirsiniz.
+            </p>
+            <button
+              onClick={() => setSearchQuery('')}
+              className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs rounded-xl shadow-xs transition-colors"
+            >
+              Aramayı Temizle & Tüm Kılavuzu Göster
+            </button>
+          </div>
+        )}
+
         {/* SECTION 1: GENEL SİSTEM MANTIĞI */}
-        {(activeTab === 'all' || activeTab === 'overview') && (
-          <section className="bg-white dark:bg-stone-900 rounded-3xl p-5 sm:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-5">
+        {(activeTab === 'all' || activeTab === 'overview') && sectionMatches.overview && (
+          <section className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-4 sm:space-y-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-orange-100 dark:bg-orange-950 text-orange-600 dark:text-orange-400 flex items-center justify-center font-black">
+              <div className="w-10 h-10 rounded-2xl bg-orange-100 dark:bg-orange-950 text-orange-600 dark:text-orange-400 flex items-center justify-center font-black shrink-0">
                 <Lightbulb size={22} />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-stone-900 dark:text-stone-100">
+                <h2 className="text-base sm:text-xl font-black text-stone-900 dark:text-stone-100">
                   1. Sistemin Mantığı: "Bu Sistem Nasıl Çalışıyor?"
                 </h2>
                 <p className="text-xs text-stone-500 dark:text-stone-400">Teknik bilmenize gerek yok, 3 cümlede özet</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
-                <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400 font-black text-sm mb-1.5">
-                  <Laptop size={16} />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
+                <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400 font-black text-xs sm:text-sm mb-1.5">
+                  <Laptop size={16} className="shrink-0" />
                   <span>Kasa / Kurulum Gerekmez</span>
                 </div>
                 <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-                  Pahalı bilgisayarlar veya sunucu kutuları almanıza gerek yok. Telefon, tablet veya normal bilgisayarın internet tarayıcısından (Chrome/Safari) siteyi açtığınız anda çalışır.
+                  Pahalı bilgisayarlar veya sunucu kutuları almanıza gerek yok. Telefon, tablet veya normal bilgisayarın internet tarayıcısından (Chrome/Safari) açtığınız anda çalışır.
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
-                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-black text-sm mb-1.5">
-                  <Wifi size={16} />
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
+                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-black text-xs sm:text-sm mb-1.5">
+                  <Wifi size={16} className="shrink-0" />
                   <span>Canlı Senkronizasyon</span>
                 </div>
                 <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-                  Garson telefondan siparişi girdiği anda mutfaktaki tablet çalar ve fiş düşer. Kasiyerin ekranında masa turuncu (dolu) olur. Her cihaz saniyenin onda birinde birbiriyle konuşur.
+                  Garson telefondan siparişi girdiği anda mutfaktaki tablet çalar ve fiş düşer. Kasiyerin ekranında masa turuncu (dolu) olur. Her cihaz saniyenin onda birinde konuşur.
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
-                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-black text-sm mb-1.5">
-                  <ShieldCheck size={16} />
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
+                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-black text-xs sm:text-sm mb-1.5">
+                  <ShieldCheck size={16} className="shrink-0" />
                   <span>İnternet Gitse Bile Güvende</span>
                 </div>
                 <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
@@ -198,41 +327,41 @@ export default function GuidePage() {
               </div>
             </div>
 
-            {/* Renk Kodları Tablosu */}
-            <div className="p-4 rounded-2xl bg-stone-900 text-white border border-stone-800">
+            {/* Renk Kodları Tablosu (Responsive 1-col on mobile, 2 on small tablets, 4 on desktop) */}
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-900 text-white border border-stone-800">
               <h3 className="text-xs font-black uppercase tracking-wider text-orange-400 mb-3">
                 Masa Renklerinin Anlamı (Masalar Ekranı)
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                <div className="flex items-center gap-2 bg-stone-800/80 p-2.5 rounded-xl border border-emerald-500/40">
-                  <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50"></span>
-                  <div>
-                    <span className="font-bold text-xs text-emerald-300 block">YEŞİL: Boş Masa</span>
-                    <span className="text-[10px] text-stone-400">Yeni müşteri oturabilir.</span>
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5">
+                <div className="flex items-center gap-2.5 bg-stone-800/80 p-2.5 rounded-xl border border-emerald-500/40">
+                  <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/50 shrink-0"></span>
+                  <div className="min-w-0">
+                    <span className="font-bold text-xs text-emerald-300 block truncate">YEŞİL: Boş Masa</span>
+                    <span className="text-[10px] text-stone-400 block truncate">Yeni müşteri oturabilir.</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 bg-stone-800/80 p-2.5 rounded-xl border border-orange-500/40">
-                  <span className="w-3.5 h-3.5 rounded-full bg-orange-500 shadow-sm shadow-orange-500/50"></span>
-                  <div>
-                    <span className="font-bold text-xs text-orange-300 block">TURUNCU: Dolu Masa</span>
-                    <span className="text-[10px] text-stone-400">İçeride aktif sipariş var.</span>
+                <div className="flex items-center gap-2.5 bg-stone-800/80 p-2.5 rounded-xl border border-orange-500/40">
+                  <span className="w-3.5 h-3.5 rounded-full bg-orange-500 shadow-xs shadow-orange-500/50 shrink-0"></span>
+                  <div className="min-w-0">
+                    <span className="font-bold text-xs text-orange-300 block truncate">TURUNCU: Dolu Masa</span>
+                    <span className="text-[10px] text-stone-400 block truncate">İçeride aktif sipariş var.</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 bg-stone-800/80 p-2.5 rounded-xl border border-red-500/40">
-                  <span className="w-3.5 h-3.5 rounded-full bg-red-500 shadow-sm shadow-red-500/50 animate-pulse"></span>
-                  <div>
-                    <span className="font-bold text-xs text-red-300 block">KIRMIZI: Hesap Bekliyor</span>
-                    <span className="text-[10px] text-stone-400">Müşteri hesabı istedi.</span>
+                <div className="flex items-center gap-2.5 bg-stone-800/80 p-2.5 rounded-xl border border-red-500/40">
+                  <span className="w-3.5 h-3.5 rounded-full bg-red-500 shadow-xs shadow-red-500/50 animate-pulse shrink-0"></span>
+                  <div className="min-w-0">
+                    <span className="font-bold text-xs text-red-300 block truncate">KIRMIZI: Hesap Bekliyor</span>
+                    <span className="text-[10px] text-stone-400 block truncate">Müşteri hesabı istedi.</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 bg-stone-800/80 p-2.5 rounded-xl border border-purple-500/40">
-                  <span className="w-3.5 h-3.5 rounded-full bg-purple-500 shadow-sm shadow-purple-500/50"></span>
-                  <div>
-                    <span className="font-bold text-xs text-purple-300 block">MOR: Rezerve Masa</span>
-                    <span className="text-[10px] text-stone-400">İleri saate ayrılmış masa.</span>
+                <div className="flex items-center gap-2.5 bg-stone-800/80 p-2.5 rounded-xl border border-purple-500/40">
+                  <span className="w-3.5 h-3.5 rounded-full bg-purple-500 shadow-xs shadow-purple-500/50 shrink-0"></span>
+                  <div className="min-w-0">
+                    <span className="font-bold text-xs text-purple-300 block truncate">MOR: Rezerve Masa</span>
+                    <span className="text-[10px] text-stone-400 block truncate">İleri saate ayrılmış masa.</span>
                   </div>
                 </div>
               </div>
@@ -241,54 +370,54 @@ export default function GuidePage() {
         )}
 
         {/* SECTION 2: GARSON & SİPARİŞ İŞ AKIŞI */}
-        {(activeTab === 'all' || activeTab === 'waiter') && (
-          <section className="bg-white dark:bg-stone-900 rounded-3xl p-5 sm:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-5">
+        {(activeTab === 'all' || activeTab === 'waiter') && sectionMatches.waiter && (
+          <section className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-4 sm:space-y-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-orange-100 dark:bg-orange-950 text-orange-600 dark:text-orange-400 flex items-center justify-center font-black">
+              <div className="w-10 h-10 rounded-2xl bg-orange-100 dark:bg-orange-950 text-orange-600 dark:text-orange-400 flex items-center justify-center font-black shrink-0">
                 <Grid2X2 size={22} />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-stone-900 dark:text-stone-100">
+                <h2 className="text-base sm:text-xl font-black text-stone-900 dark:text-stone-100">
                   2. Garson İş Akışı: "Sipariş Nasıl Alınır ve Mutfağa Gider?"
                 </h2>
                 <p className="text-xs text-stone-500 dark:text-stone-400">Garsonun telefonda yapacağı 3 basit adım</p>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div className="flex gap-4 p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 items-start">
-                <div className="w-8 h-8 rounded-full bg-orange-600 text-white font-black text-sm flex items-center justify-center shrink-0">
+            <div className="space-y-2.5 sm:space-y-3">
+              <div className="flex gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 items-start">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-orange-600 text-white font-black text-xs sm:text-sm flex items-center justify-center shrink-0 mt-0.5">
                   1
                 </div>
-                <div>
-                  <h4 className="font-black text-sm text-stone-900 dark:text-stone-100">Masayı Seç</h4>
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100">Masayı Seç</h4>
                   <p className="text-xs text-stone-600 dark:text-stone-300 mt-0.5 leading-relaxed">
                     Garson ana ekrandaki masalardan müşterinin oturduğu masaya (Örneğin <strong>Masa 4</strong>) tıklar. Karşısına kategoriler ve ürünler gelir.
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-4 p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 items-start">
-                <div className="w-8 h-8 rounded-full bg-orange-600 text-white font-black text-sm flex items-center justify-center shrink-0">
+              <div className="flex gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 items-start">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-orange-600 text-white font-black text-xs sm:text-sm flex items-center justify-center shrink-0 mt-0.5">
                   2
                 </div>
-                <div>
-                  <h4 className="font-black text-sm text-stone-900 dark:text-stone-100">Ürünleri Sepete Ekle</h4>
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100">Ürünleri Sepete Ekle</h4>
                   <p className="text-xs text-stone-600 dark:text-stone-300 mt-0.5 leading-relaxed">
                     İstenen ürünlerin üstüne basar (Örn: 2x Çay, 1x Cheeseburger). Altta turuncu renkli <strong>"Adisyon Çubuğu"</strong> otomatik yükselir ve toplam tutarı gösterir.
                   </p>
                   <p className="text-[11px] text-amber-600 dark:text-amber-400 font-bold mt-1">
-                    İpucu: Ürün üzerine tekrar basarak veya açılan pencereden adet arttırıp azaltabilir, varsa "Az pişmiş", "Buzsuz" gibi özel mutfak notu yazabilir.
+                    💡 İpucu: Ürün üzerine tekrar basarak adet arttırıp azaltabilir, "Az pişmiş", "Buzsuz" gibi özel mutfak notu yazabilir.
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-4 p-4 rounded-2xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 items-start">
-                <div className="w-8 h-8 rounded-full bg-emerald-600 text-white font-black text-sm flex items-center justify-center shrink-0">
+              <div className="flex gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-2xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 items-start">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-600 text-white font-black text-xs sm:text-sm flex items-center justify-center shrink-0 mt-0.5">
                   3
                 </div>
-                <div>
-                  <h4 className="font-black text-sm text-orange-900 dark:text-orange-200">"MUTFAĞA GÖNDER"e Bas!</h4>
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-black text-xs sm:text-sm text-orange-900 dark:text-orange-200">"MUTFAĞA GÖNDER"e Bas!</h4>
                   <p className="text-xs text-orange-800 dark:text-orange-300 mt-0.5 leading-relaxed">
                     Büyük turuncu <strong>"MUTFAĞA GÖNDER"</strong> butonuna basar. Bu kadar! Masa anında turuncu (Dolu) olur ve mutfaktaki tablete sesli bildirim gider.
                   </p>
@@ -298,8 +427,8 @@ export default function GuidePage() {
 
             <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
               <AlertCircle size={18} className="text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold block">Masaya sonradan ilave sipariş gelirse ne olur?</span>
+              <div className="leading-relaxed">
+                <strong className="block">Masaya sonradan ilave sipariş gelirse ne olur?</strong>
                 Garson masayı tekrar açıp yeni ürünü seçer ve yine "MUTFAĞA GÖNDER" der. Sistem sadece <strong>yeni eklenen</strong> ürünleri mutfağa ikinci bir fiş olarak gönderir; önceki yemekleri mükerrer basmaz!
               </div>
             </div>
@@ -307,14 +436,14 @@ export default function GuidePage() {
         )}
 
         {/* SECTION 3: MUTFAK (KDS) İŞ AKIŞI */}
-        {(activeTab === 'all' || activeTab === 'kitchen') && (
-          <section className="bg-white dark:bg-stone-900 rounded-3xl p-5 sm:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-5">
+        {(activeTab === 'all' || activeTab === 'kitchen') && sectionMatches.kitchen && (
+          <section className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-4 sm:space-y-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black">
+              <div className="w-10 h-10 rounded-2xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black shrink-0">
                 <ChefHat size={22} />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-stone-900 dark:text-stone-100">
+                <h2 className="text-base sm:text-xl font-black text-stone-900 dark:text-stone-100">
                   3. Mutfak Ekranı (KDS): "Aşçı ve Barmen Ne Yapar?"
                 </h2>
                 <p className="text-xs text-stone-500 dark:text-stone-400">Kağıt fiş israfına son veren akıllı mutfak paneli</p>
@@ -325,65 +454,73 @@ export default function GuidePage() {
               Mutfaktaki veya bardaki tablete <strong>Mutfak Ekranı</strong> açılır. Garson siparişi gönderdiği anda ekranda 4 aşamalı bir kart düzeni çalışır:
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-              <div className="p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800">
-                <span className="text-[10px] font-black uppercase text-blue-700 dark:text-blue-300 block mb-1">1. Aşama</span>
-                <h4 className="font-black text-sm text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-                  <BellRing size={15} className="text-blue-600" />
-                  YENİ (Mavi)
-                </h4>
-                <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1">
-                  Mutfakta zil çalar. Fiş burada belirir. Aşçı hangi masanın ne istediğini görür.
-                </p>
-                <div className="mt-2 text-[10px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100/70 dark:bg-blue-900/60 p-1.5 rounded-lg text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+              <div className="p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase text-blue-700 dark:text-blue-300 block mb-1">1. Aşama</span>
+                  <h4 className="font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                    <BellRing size={15} className="text-blue-600 shrink-0" />
+                    <span>YENİ (Mavi)</span>
+                  </h4>
+                  <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1 leading-relaxed">
+                    Mutfakta zil çalar. Fiş burada belirir. Aşçı hangi masanın ne istediğini görür.
+                  </p>
+                </div>
+                <div className="mt-3 text-[10px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100/70 dark:bg-blue-900/60 p-1.5 rounded-lg text-center">
                   Aşçı "BAŞLA" butonuna basar
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-orange-50 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-800">
-                <span className="text-[10px] font-black uppercase text-orange-700 dark:text-orange-300 block mb-1">2. Aşama</span>
-                <h4 className="font-black text-sm text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-                  <Flame size={15} className="text-orange-600" />
-                  HAZIRLANIYOR
-                </h4>
-                <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1">
-                  Yemek ocakta pişiyor demektir. Garsonun telefonunda "Mutfakta hazırlanıyor (3 dk)" diye süre sayar.
-                </p>
-                <div className="mt-2 text-[10px] font-bold text-orange-700 dark:text-orange-300 bg-orange-100/70 dark:bg-orange-900/60 p-1.5 rounded-lg text-center">
+              <div className="p-3.5 rounded-2xl bg-orange-50 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-800 flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase text-orange-700 dark:text-orange-300 block mb-1">2. Aşama</span>
+                  <h4 className="font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                    <Flame size={15} className="text-orange-600 shrink-0" />
+                    <span>HAZIRLANIYOR</span>
+                  </h4>
+                  <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1 leading-relaxed">
+                    Yemek ocakta pişiyor demektir. Garsonun telefonunda "Mutfakta hazırlanıyor" süresi sayar.
+                  </p>
+                </div>
+                <div className="mt-3 text-[10px] font-bold text-orange-700 dark:text-orange-300 bg-orange-100/70 dark:bg-orange-900/60 p-1.5 rounded-lg text-center">
                   Yemek pişince "HAZIR"a basar
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800">
-                <span className="text-[10px] font-black uppercase text-emerald-700 dark:text-emerald-300 block mb-1">3. Aşama</span>
-                <h4 className="font-black text-sm text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-                  <CheckCircle2 size={15} className="text-emerald-600" />
-                  HAZIR (Yeşil)
-                </h4>
-                <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1">
-                  Garsonun telefonuna hazır melodisi çalar ve masası yeşil yanıp söner. Garson yemeği tezgâhtan alır.
-                </p>
-                <div className="mt-2 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-900/60 p-1.5 rounded-lg text-center">
+              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase text-emerald-700 dark:text-emerald-300 block mb-1">3. Aşama</span>
+                  <h4 className="font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                    <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+                    <span>HAZIR (Yeşil)</span>
+                  </h4>
+                  <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1 leading-relaxed">
+                    Garsonun telefonuna bildirim melodisi çalar ve masası yanıp söner. Garson yemeği tezgâhtan alır.
+                  </p>
+                </div>
+                <div className="mt-3 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-900/60 p-1.5 rounded-lg text-center">
                   "SERVİS EDİLDİ"ye basılır
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                <span className="text-[10px] font-black uppercase text-stone-500 dark:text-stone-400 block mb-1">4. Aşama</span>
-                <h4 className="font-black text-sm text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-                  <Check size={15} className="text-stone-500" />
-                  SERVİS EDİLDİ
-                </h4>
-                <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1">
-                  Fiş arşivlenir, mutfak ekranı temizlenir. Günlük mutfak hız raporuna (Kaç dakikada çıktı) kaydedilir.
-                </p>
-                <div className="mt-2 text-[10px] font-bold text-stone-600 dark:text-stone-400 bg-stone-200 dark:bg-stone-700 p-1.5 rounded-lg text-center">
+              <div className="p-3.5 rounded-2xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase text-stone-500 dark:text-stone-400 block mb-1">4. Aşama</span>
+                  <h4 className="font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                    <Check size={15} className="text-stone-500 shrink-0" />
+                    <span>SERVİS EDİLDİ</span>
+                  </h4>
+                  <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1 leading-relaxed">
+                    Fiş arşivlenir, mutfak ekranı temizlenir. Günlük mutfak hız raporuna (Kaç dakikada çıktı) işlenir.
+                  </p>
+                </div>
+                <div className="mt-3 text-[10px] font-bold text-stone-600 dark:text-stone-400 bg-stone-200 dark:bg-stone-700 p-1.5 rounded-lg text-center">
                   Süreç Tamamlandı
                 </div>
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 text-xs text-stone-600 dark:text-stone-400 flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 text-xs text-stone-600 dark:text-stone-400 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <span>İstasyon Filtreleri: Mutfak sadece sıcak yemekleri, Bar sadece içecekleri görebilir.</span>
               <span className="font-bold text-orange-600 dark:text-orange-400">Tek tıkla istasyon filtresi</span>
             </div>
@@ -391,67 +528,67 @@ export default function GuidePage() {
         )}
 
         {/* SECTION 4: QR DİJİTAL MENÜ */}
-        {(activeTab === 'all' || activeTab === 'qr') && (
-          <section className="bg-white dark:bg-stone-900 rounded-3xl p-5 sm:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-5">
+        {(activeTab === 'all' || activeTab === 'qr') && sectionMatches.qr && (
+          <section className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-4 sm:space-y-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center font-black">
+              <div className="w-10 h-10 rounded-2xl bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center font-black shrink-0">
                 <QrCode size={22} />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-stone-900 dark:text-stone-100">
+                <h2 className="text-base sm:text-xl font-black text-stone-900 dark:text-stone-100">
                   4. QR Dijital Menü: "Müşteri Masadan Nasıl Sipariş Verir?"
                 </h2>
                 <p className="text-xs text-stone-500 dark:text-stone-400">Garson beklemeden sipariş ve garson çağırma sistemi</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 space-y-2">
-                <h4 className="font-black text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                  <Smartphone size={16} className="text-purple-600" />
-                  Müşteri Ne Yaşar?
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 space-y-2">
+                <h4 className="font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                  <Smartphone size={16} className="text-purple-600 shrink-0" />
+                  <span>Müşteri Ne Yaşar?</span>
                 </h4>
-                <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-                  1. Masadaki QR kodu telefon kamerasıyla okutur.<br />
-                  2. Şık fotoğraflı menü açılır (Örn: <code>madireis.github.io/Adisyon/#/qr/t-1</code>).<br />
-                  3. İstediği yemekleri ve tatlıları sepete atar.<br />
-                  4. <strong>"Siparişi Onayla"</strong> butonuna basar.
-                </p>
+                <div className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed space-y-1">
+                  <p>1. Masadaki QR kodu telefon kamerasıyla okutur.</p>
+                  <p className="break-all">2. Şık fotoğraflı menü açılır: <code className="bg-stone-200 dark:bg-stone-800 px-1 py-0.5 rounded text-[11px] font-mono font-bold">#/qr/t-1</code></p>
+                  <p>3. İstediği yemekleri ve tatlıları sepete atar.</p>
+                  <p>4. <strong>"Siparişi Onayla"</strong> butonuna basar.</p>
+                </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 space-y-2">
-                <h4 className="font-black text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-emerald-600" />
-                  Sistemde Ne Olur?
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 space-y-2">
+                <h4 className="font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>Sistemde Ne Olur?</span>
                 </h4>
-                <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-                  1. Masa otomatik olarak <strong>Dolu (Turuncu)</strong> duruma geçer.<br />
-                  2. Mutfaktaki aşçı tabletinde zil çalar ve <strong>"Masa 1 (QR Sipariş)"</strong> fişi çıkar.<br />
-                  3. Garsonun telefonundaki masalar ekranında da adisyon anında gözükür.
-                </p>
+                <div className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed space-y-1">
+                  <p>1. Masa otomatik olarak <strong>Dolu (Turuncu)</strong> duruma geçer.</p>
+                  <p>2. Mutfaktaki aşçı tabletinde zil çalar ve <strong>"Masa 1 (QR Sipariş)"</strong> fişi çıkar.</p>
+                  <p>3. Garsonun telefonundaki masalar ekranında da adisyon anında gözükür.</p>
+                </div>
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800">
-              <h4 className="font-black text-xs uppercase tracking-wider text-purple-900 dark:text-purple-300 mb-2">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800">
+              <h4 className="font-black text-xs uppercase tracking-wider text-purple-900 dark:text-purple-300 mb-1.5">
                 Müşteri Hızlı Çağrı Butonları (Garson Çağır / Hesap İste / Su İste)
               </h4>
               <p className="text-xs text-purple-800 dark:text-purple-300 leading-relaxed">
-                Müşteri menünün en üstündeki <strong>"Garson Çağır"</strong> veya <strong>"Hesap İste"</strong> butonuna bastığında, personelin ekranına ve denetim günlüğüne sesli bildirimle <em>"Masa 3 garson çağırdı"</em> uyarısı düşer.
+                Müşteri menünün en üstündeki <strong>"Garson Çağır"</strong> veya <strong>"Hesap İste"</strong> butonuna bastığında, personelin ekranına sesli bildirimle <em>"Masa 3 garson çağırdı"</em> uyarısı düşer.
               </p>
             </div>
           </section>
         )}
 
         {/* SECTION 5: KASA & HESAP ALMA İŞ AKIŞI */}
-        {(activeTab === 'all' || activeTab === 'cashier') && (
-          <section className="bg-white dark:bg-stone-900 rounded-3xl p-5 sm:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-5">
+        {(activeTab === 'all' || activeTab === 'cashier') && sectionMatches.cashier && (
+          <section className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-4 sm:space-y-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black shrink-0">
                 <CreditCard size={22} />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-stone-900 dark:text-stone-100">
+                <h2 className="text-base sm:text-xl font-black text-stone-900 dark:text-stone-100">
                   5. Kasa & Hesap Alma: "Ödeme Nasıl Alınır ve Masa Nasıl Kapanır?"
                 </h2>
                 <p className="text-xs text-stone-500 dark:text-stone-400">Nakit, Kredi Kartı ve Parçalı Ödeme İşlemleri</p>
@@ -459,8 +596,8 @@ export default function GuidePage() {
             </div>
 
             <div className="space-y-3">
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
-                <h4 className="font-black text-sm text-stone-900 dark:text-stone-100 mb-1">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
+                <h4 className="font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 mb-1">
                   Adım 1: Masaya Tıklayın ve "Hesabı Al" Butonuna Basın
                 </h4>
                 <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
@@ -468,28 +605,28 @@ export default function GuidePage() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
-                <h4 className="font-black text-sm text-stone-900 dark:text-stone-100 mb-1">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
+                <h4 className="font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 mb-2">
                   Adım 2: Ödeme Türünü Seçin
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2.5">
                   <div className="p-3 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-xs">
                     <span className="font-black text-stone-900 dark:text-stone-100 block mb-1">💵 Tamamı Nakit</span>
-                    Müşteri nakit verdiğinde "Nakit"e basın. Para üstünü sistem otomatik hesaplar.
+                    <p className="text-stone-600 dark:text-stone-400 leading-relaxed">Müşteri nakit verdiğinde "Nakit"e basın. Para üstünü sistem otomatik hesaplar.</p>
                   </div>
                   <div className="p-3 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-xs">
-                    <span className="font-black text-stone-900 dark:text-stone-100 block mb-1">💳 Tamamı Kredi Kartı</span>
-                    POS cihazından çekim yaptıktan sonra "Kredi Kartı" butonuna basarak adisyonu kapatın.
+                    <span className="font-black text-stone-900 dark:text-stone-100 block mb-1">💳 Kredi Kartı</span>
+                    <p className="text-stone-600 dark:text-stone-400 leading-relaxed">POS cihazından çekim yaptıktan sonra "Kredi Kartı" butonuna basarak adisyonu kapatın.</p>
                   </div>
                   <div className="p-3 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 text-xs">
                     <span className="font-black text-stone-900 dark:text-stone-100 block mb-1">⚖️ Parçalı Ödeme</span>
-                    Masa 500 TL tuttu; 200 TL'sini nakit, 300 TL'sini kart çektiler. Rakamları yazıp ikisini ayrı ayrı kaydedebilirsiniz.
+                    <p className="text-stone-600 dark:text-stone-400 leading-relaxed">Bir kısmı nakit, kalanı kart ödenebilir. Rakamları yazıp ayrı ayrı kaydedebilirsiniz.</p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
-                <h4 className="font-black text-sm text-stone-900 dark:text-stone-100 mb-1">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
+                <h4 className="font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 mb-1">
                   Adım 3: İndirim, İkram ve Fiş Yazdırma
                 </h4>
                 <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
@@ -504,39 +641,39 @@ export default function GuidePage() {
         )}
 
         {/* SECTION 6: GÜN SONU, KASA & RAPORLAR */}
-        {(activeTab === 'all' || activeTab === 'reports') && (
-          <section className="bg-white dark:bg-stone-900 rounded-3xl p-5 sm:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-5">
+        {(activeTab === 'all' || activeTab === 'reports') && sectionMatches.reports && (
+          <section className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-4 sm:space-y-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black">
+              <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black shrink-0">
                 <Banknote size={22} />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-stone-900 dark:text-stone-100">
+                <h2 className="text-base sm:text-xl font-black text-stone-900 dark:text-stone-100">
                   6. Kasa, Ciro & Gün Sonu Z Raporu
                 </h2>
                 <p className="text-xs text-stone-500 dark:text-stone-400">Patronun cebine giren ve çıkan her kuruşun net dökümü</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 space-y-2">
-                <h4 className="font-black text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                  <TrendingUp size={16} className="text-emerald-600" />
-                  Kasa & Gün Sonu Ekranında Ne Görürsünüz?
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 space-y-2">
+                <h4 className="font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                  <TrendingUp size={16} className="text-emerald-600 shrink-0" />
+                  <span>Kasa & Gün Sonu Ekranında Ne Görürsünüz?</span>
                 </h4>
                 <ul className="text-xs text-stone-600 dark:text-stone-300 space-y-1.5 list-disc pl-4 leading-relaxed">
                   <li><strong>Bugünkü Net Ciro:</strong> Masalardan toplanan toplam para.</li>
-                  <li><strong>Nakit Kasası:</strong> Çekmecede şu an fiziki olarak bulunması gereken nakit para.</li>
+                  <li><strong>Nakit Kasası:</strong> Çekmecede şu an fiziki bulunması gereken nakit.</li>
                   <li><strong>POS Kredi Kartı:</strong> Gün boyu banka POS cihazından çekilen tutar.</li>
                   <li><strong>En Çok Satanlar:</strong> Bugün kaç bardak çay, kaç hamburger satıldı?</li>
                   <li><strong>Personel Satışları:</strong> Hangi garson kaç liralık ciro yaptı?</li>
                 </ul>
               </div>
 
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 space-y-2">
-                <h4 className="font-black text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                  <Receipt size={16} className="text-red-500" />
-                  Kasadan Masraf / Gider Çıkışı Nasıl Yapılır?
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 space-y-2">
+                <h4 className="font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                  <Receipt size={16} className="text-red-500 shrink-0" />
+                  <span>Kasadan Masraf / Gider Çıkışı Nasıl Yapılır?</span>
                 </h4>
                 <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
                   Gün içinde manav geldi 400 TL verdiniz, veya garsona 200 TL avans verdiniz:<br />
@@ -548,18 +685,18 @@ export default function GuidePage() {
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <div>
                 <h4 className="font-black text-xs uppercase tracking-wider text-emerald-900 dark:text-emerald-300">
                   Akşam Kapanış: "Gün Sonu Z Raporu Fişi"
                 </h4>
-                <p className="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5">
+                <p className="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5 leading-relaxed">
                   Günü kapatırken tek tıkla termal yazıcıdan Gün Sonu Z Raporu dökümü alabilir veya arşivleyebilirsiniz.
                 </p>
               </div>
               <button
                 onClick={() => navigate('/reports')}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shrink-0 transition-all shadow-sm active:scale-95 cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shrink-0 transition-all shadow-xs active:scale-95 cursor-pointer text-center"
               >
                 Ciro Raporunu Aç
               </button>
@@ -568,35 +705,35 @@ export default function GuidePage() {
         )}
 
         {/* SECTION 7: MENÜ YÖNETİMİ & TÜKENDİ YAPMA */}
-        {(activeTab === 'all' || activeTab === 'menu') && (
-          <section className="bg-white dark:bg-stone-900 rounded-3xl p-5 sm:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-5">
+        {(activeTab === 'all' || activeTab === 'menu') && sectionMatches.menu && (
+          <section className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-4 sm:space-y-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 flex items-center justify-center font-black">
+              <div className="w-10 h-10 rounded-2xl bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 flex items-center justify-center font-black shrink-0">
                 <ShoppingBag size={22} />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-stone-900 dark:text-stone-100">
+                <h2 className="text-base sm:text-xl font-black text-stone-900 dark:text-stone-100">
                   7. Menü, Fiyat Değiştirme & 'Tükendi' Özelliği
                 </h2>
                 <p className="text-xs text-stone-500 dark:text-stone-400">Zamlarda fiyat güncelleme ve biten ürünleri kapatma</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 space-y-2">
-                <h4 className="font-black text-sm text-stone-900 dark:text-stone-100">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 space-y-2">
+                <h4 className="font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100">
                   Ürün Fiyatı Nasıl Güncellenir?
                 </h4>
-                <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-                  1. Sol menüden <strong>"Menü & Fiyatlar"</strong> sayfasına gidin.<br />
-                  2. Fiyatını değiştirmek istediğiniz ürünün üstündeki <strong>Düzenle</strong> (kalem) ikonuna basın.<br />
-                  3. Yeni fiyatı yazın (Örn: 40 yerine 45 TL) ve "Kaydet"e basın.<br />
-                  4. Anında tüm garsonların telefonunda ve müşterilerin QR menüsünde fiyat güncellenir!
-                </p>
+                <div className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed space-y-1">
+                  <p>1. Sol menüden <strong>"Menü & Fiyatlar"</strong> sayfasına gidin.</p>
+                  <p>2. Fiyatını değiştirmek istediğiniz ürünün üstündeki <strong>Düzenle</strong> (kalem) ikonuna basın.</p>
+                  <p>3. Yeni fiyatı yazın (Örn: 40 yerine 45 TL) ve "Kaydet"e basın.</p>
+                  <p>4. Anında tüm garsonların telefonunda ve müşterilerin QR menüsünde fiyat güncellenir!</p>
+                </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 space-y-2">
-                <h4 className="font-black text-sm text-stone-900 dark:text-stone-100">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 space-y-2">
+                <h4 className="font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100">
                   Mutfakta Malzeme Bittiğinde: "Tükendi" Butonu
                 </h4>
                 <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
@@ -610,33 +747,42 @@ export default function GuidePage() {
         )}
 
         {/* SECTION 8: PERSONEL VE GARSON TELEFONLARINI BAĞLAMA */}
-        {(activeTab === 'all' || activeTab === 'staff') && (
-          <section className="bg-white dark:bg-stone-900 rounded-3xl p-5 sm:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-5">
+        {(activeTab === 'all' || activeTab === 'staff') && sectionMatches.staff && (
+          <section className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-4 sm:space-y-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400 flex items-center justify-center font-black">
+              <div className="w-10 h-10 rounded-2xl bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400 flex items-center justify-center font-black shrink-0">
                 <Smartphone size={22} />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-stone-900 dark:text-stone-100">
+                <h2 className="text-base sm:text-xl font-black text-stone-900 dark:text-stone-100">
                   8. Garson Telefonlarını Bağlama: "Personel Nasıl Giriş Yapar?"
                 </h2>
                 <p className="text-xs text-stone-500 dark:text-stone-400">Garsonun kendi cep telefonunu terminale dönüştürme</p>
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 space-y-3">
-              <h4 className="font-black text-sm text-sky-950 dark:text-sky-200">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 space-y-3">
+              <h4 className="font-black text-xs sm:text-sm text-sky-950 dark:text-sky-200">
                 Uygulama İndirtmeye Gerek Yok! 3 Adımda Garsonu Başlatın:
               </h4>
-              <ol className="text-xs text-sky-900 dark:text-sky-300 space-y-2 list-decimal pl-4 leading-relaxed">
+              <ol className="text-xs text-sky-900 dark:text-sky-300 space-y-2.5 list-decimal pl-4 leading-relaxed">
                 <li>
-                  Garsona cep telefonunun internet tarayıcısından (Chrome veya Safari) sitenizin linkini açtırın:<br />
-                  <code className="bg-white dark:bg-stone-900 px-2 py-0.5 rounded text-[11px] font-mono text-orange-600 dark:text-orange-400 font-bold">
-                    https://madireis.github.io/Adisyon/
-                  </code>
+                  Garsona cep telefonunun internet tarayıcısından (Chrome veya Safari) sitenizin linkini açtırın:
+                  <div className="mt-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <code className="bg-white dark:bg-stone-900 px-2.5 py-1.5 rounded-lg text-xs font-mono text-orange-600 dark:text-orange-400 font-bold border border-sky-200 dark:border-stone-800 break-all select-all">
+                      https://madireis.github.io/Adisyon/
+                    </code>
+                    <button
+                      onClick={handleCopyLink}
+                      className="px-3 py-1.5 bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 text-white dark:text-stone-900 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                    >
+                      {copiedUrl ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                      <span>{copiedUrl ? 'Kopyalandı' : 'Linki Kopyala'}</span>
+                    </button>
+                  </div>
                 </li>
                 <li>
-                  Giriş ekranında <strong>"Garson Girişi"</strong> seçeneğine tıklar, kendi adını seçer ve PIN kodunu girer (Varsayılan PIN: 1234).
+                  Giriş ekranında kendi kullanıcı adı / numarasını ve PIN kodunu girer (Örn: 1007 / 1234).
                 </li>
                 <li>
                   Artık garsonun telefonu bir el terminalidir! Masaları görür, sipariş alır, mutfağa gönderir. Patron panelini veya ciro ekranını göremez, yetkisi kısıtlıdır.
@@ -644,13 +790,13 @@ export default function GuidePage() {
               </ol>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 flex items-center justify-between text-xs">
-              <span className="text-stone-600 dark:text-stone-300">
+            <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
+              <span className="text-stone-600 dark:text-stone-300 leading-relaxed">
                 Yeni garson eklemek veya PIN kodunu değiştirmek için <strong>"Garsonlar & Personel"</strong> sayfasına gidebilirsiniz.
               </span>
               <button
                 onClick={() => navigate('/staff')}
-                className="px-3.5 py-1.5 bg-stone-800 hover:bg-stone-700 text-white rounded-xl font-bold cursor-pointer transition-all active:scale-95 shrink-0 ml-3"
+                className="w-full sm:w-auto px-4 py-2 bg-stone-800 hover:bg-stone-700 text-white rounded-xl font-bold cursor-pointer transition-all active:scale-95 shrink-0 text-center"
               >
                 Personel Yönetimi
               </button>
@@ -659,118 +805,65 @@ export default function GuidePage() {
         )}
 
         {/* SECTION 9: SIK SORULAN SORULAR & ALTIN KURALLAR */}
-        {(activeTab === 'all' || activeTab === 'faq') && (
-          <section className="bg-white dark:bg-stone-900 rounded-3xl p-5 sm:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-5">
+        {(activeTab === 'all' || activeTab === 'faq') && sectionMatches.faq && (
+          <section className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 border border-stone-200 dark:border-stone-800 shadow-xs space-y-4 sm:space-y-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black">
+              <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black shrink-0">
                 <HelpCircle size={22} />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-stone-900 dark:text-stone-100">
+                <h2 className="text-base sm:text-xl font-black text-stone-900 dark:text-stone-100">
                   9. Sık Sorulan Sorular & Patron İpuçları
                 </h2>
                 <p className="text-xs text-stone-500 dark:text-stone-400">Kafanızda hiçbir soru işareti kalmasın</p>
               </div>
             </div>
 
-            <div className="space-y-3">
-              {/* FAQ 1 */}
-              <div className="border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden">
-                <button
-                  onClick={() => toggleFaq('faq-1')}
-                  className="w-full p-4 text-left font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 flex items-center justify-between bg-stone-50/50 dark:bg-stone-950/50 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
-                >
-                  <span>1. Kafede internet kesilirse siparişler kaybolur mu?</span>
-                  {expandedFaq === 'faq-1' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                </button>
-                {expandedFaq === 'faq-1' && (
-                  <div className="p-4 pt-2 text-xs text-stone-600 dark:text-stone-300 leading-relaxed border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
-                    <strong>Kesinlikle hayır!</strong> Sistem IndexedDB adı verilen yerel tarayıcı veritabanını kullanır. İnternet dursa dahi sipariş cihazda güvenle saklanır. İnternet geldiğinde anında diğer cihazlarla otomatik eşitlenir.
+            <div className="space-y-2.5 sm:space-y-3">
+              {filteredFaqs.map(faq => {
+                const isOpen = expandedFaq === faq.id || (Boolean(cleanQuery) && filteredFaqs.length <= 3);
+                return (
+                  <div key={faq.id} className="border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden transition-colors">
+                    <button
+                      onClick={() => toggleFaq(faq.id)}
+                      className="w-full p-3.5 sm:p-4 text-left font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 flex items-center justify-between gap-3 bg-stone-50/50 dark:bg-stone-950/50 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                    >
+                      <span className="leading-snug">{faq.q}</span>
+                      {isOpen ? <ChevronUp size={16} className="shrink-0 text-orange-600" /> : <ChevronDown size={16} className="shrink-0 text-stone-400" />}
+                    </button>
+                    {isOpen && (
+                      <div className="p-3.5 sm:p-4 pt-1 sm:pt-1 text-xs text-stone-600 dark:text-stone-300 leading-relaxed border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 animate-in fade-in">
+                        {faq.a}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-
-              {/* FAQ 2 */}
-              <div className="border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden">
-                <button
-                  onClick={() => toggleFaq('faq-2')}
-                  className="w-full p-4 text-left font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 flex items-center justify-between bg-stone-50/50 dark:bg-stone-950/50 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
-                >
-                  <span>2. Garsonun telefonunun şarjı biterse masanın siparişi silinir mi?</span>
-                  {expandedFaq === 'faq-2' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                </button>
-                {expandedFaq === 'faq-2' && (
-                  <div className="p-4 pt-2 text-xs text-stone-600 dark:text-stone-300 leading-relaxed border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
-                    <strong>Hayır!</strong> Sipariş bulut üzerinden senkronize olduğu için başka herhangi bir telefondan, kasadaki bilgisayardan veya mutfak tabletinden o masaya tıklandığında sipariş kalemleri eksiksiz karşınıza gelir.
-                  </div>
-                )}
-              </div>
-
-              {/* FAQ 3 */}
-              <div className="border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden">
-                <button
-                  onClick={() => toggleFaq('faq-3')}
-                  className="w-full p-4 text-left font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 flex items-center justify-between bg-stone-50/50 dark:bg-stone-950/50 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
-                >
-                  <span>3. Müşteri masasını değiştirmek isterse (Masa Taşıma) ne yapılır?</span>
-                  {expandedFaq === 'faq-3' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                </button>
-                {expandedFaq === 'faq-3' && (
-                  <div className="p-4 pt-2 text-xs text-stone-600 dark:text-stone-300 leading-relaxed border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
-                    Mevcut masayı açın. Üst bardaki "Masayı Aktar / Taşı" butonu ile yeni masayı seçtiğinizde tüm adisyon ve mutfak durumu yeni masaya aktarılır, eski masa boşa çıkar.
-                  </div>
-                )}
-              </div>
-
-              {/* FAQ 4 */}
-              <div className="border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden">
-                <button
-                  onClick={() => toggleFaq('faq-4')}
-                  className="w-full p-4 text-left font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 flex items-center justify-between bg-stone-50/50 dark:bg-stone-950/50 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
-                >
-                  <span>4. Termal Fiş Yazıcısı nasıl bağlanır?</span>
-                  {expandedFaq === 'faq-4' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                </button>
-                {expandedFaq === 'faq-4' && (
-                  <div className="p-4 pt-2 text-xs text-stone-600 dark:text-stone-300 leading-relaxed border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
-                    Sistem standart 80mm ve 58mm termal yazıcılarla doğrudan uyumludur. Bilgisayarınıza veya tabletinize USB / Bluetooth / Wi-Fi ile bağlı herhangi bir yazıcıya sistemden "Fiş Yazdır" dediğinizde otomatik profesyonel restoran fişi formatında çıktı verir.
-                  </div>
-                )}
-              </div>
-
-              {/* FAQ 5 */}
-              <div className="border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden">
-                <button
-                  onClick={() => toggleFaq('faq-5')}
-                  className="w-full p-4 text-left font-black text-xs sm:text-sm text-stone-900 dark:text-stone-100 flex items-center justify-between bg-stone-50/50 dark:bg-stone-950/50 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
-                >
-                  <span>5. Garson hesabı kendi cebine atabilir mi? (Güvenlik & Denetim)</span>
-                  {expandedFaq === 'faq-5' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                </button>
-                {expandedFaq === 'faq-5' && (
-                  <div className="p-4 pt-2 text-xs text-stone-600 dark:text-stone-300 leading-relaxed border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
-                    <strong>Hayır.</strong> Garson rolündeki personeller adisyon iptal edemez, indirim yapamaz ve kasayı kapatamaz. Ayrıca yapılan her işlem (kim saat kaçta hangi ürünü ekledi, ne zaman mutfağa gönderildi) sistemin <strong>Denetim Günlüğü</strong> (Audit Log) sayfasına saniyesi saniyesine kaydedilir.
-                  </div>
-                )}
-              </div>
+                );
+              })}
             </div>
           </section>
         )}
 
-        {/* Footer Pro Tip */}
-        <div className="p-5 rounded-2xl bg-stone-900 text-stone-100 border border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+        {/* Footer Card */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-stone-900 text-stone-100 border border-stone-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-black p-1 shadow-md border border-orange-500/30 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-black p-1 shadow-md border border-orange-500/30 flex items-center justify-center shrink-0">
               <img src={wotsLogo} alt="WOT'S CAFE" className="w-full h-full object-contain rounded-lg" />
             </div>
-            <div>
-              <h4 className="font-bold text-sm text-white">Wot's Cafe Adisyon & POS Sistemi</h4>
-              <p className="text-xs text-stone-400">Her gün güncellenen akıllı ve kesintisiz restoran yönetim altyapısı.</p>
+            <div className="min-w-0">
+              <h4 className="font-bold text-xs sm:text-sm text-white truncate">Wot's Cafe Adisyon & POS Sistemi</h4>
+              <p className="text-[11px] sm:text-xs text-stone-400 truncate">Her gün güncellenen akıllı ve kesintisiz restoran altyapısı.</p>
             </div>
           </div>
           <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="px-4 py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white rounded-xl text-xs font-bold transition-all border border-stone-700 cursor-pointer active:scale-95 shrink-0"
+            onClick={() => {
+              const scrollable = document.querySelector('main');
+              if (scrollable) {
+                scrollable.scrollTo({ top: 0, behavior: 'smooth' });
+              } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+            className="w-full sm:w-auto px-4 py-2.5 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white rounded-xl text-xs font-bold transition-all border border-stone-700 cursor-pointer active:scale-95 shrink-0 text-center"
           >
             Sayfa Başına Dön ↑
           </button>
