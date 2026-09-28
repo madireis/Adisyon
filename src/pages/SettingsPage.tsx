@@ -108,32 +108,34 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto flex flex-col lg:flex-row lg:h-full gap-4 lg:gap-8 select-none">
+    <div className="p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto flex flex-col lg:flex-row lg:h-full gap-3 sm:gap-4 lg:gap-8 select-none">
       {/* Sidebar navigation */}
-      <div className="w-full lg:w-64 flex lg:flex-col gap-2 shrink-0 overflow-x-auto pb-2 lg:pb-0">
-        <h1 className="text-2xl font-black text-stone-800 dark:text-stone-100 lg:mb-6 flex items-center gap-2 shrink-0 pr-4 lg:pr-0">
-          <Settings className="text-orange-600 w-6 h-6" />
-          Sistem Ayarları
+      <div className="w-full lg:w-64 flex flex-col gap-2 shrink-0">
+        <h1 className="text-xl sm:text-2xl font-black text-stone-800 dark:text-stone-100 lg:mb-4 flex items-center gap-2">
+          <Settings className="text-orange-600 w-5 h-5 sm:w-6 sm:h-6" />
+          <span>Sistem Ayarları</span>
         </h1>
-        {sections.map(section => (
-          <button
-            key={section.id}
-            onClick={() => setActiveSection(section.id)}
-            className={cn(
-              "flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm text-left transition-all cursor-pointer shrink-0 whitespace-nowrap",
-              activeSection === section.id 
-                ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-sm" 
-                : "text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800/60"
-            )}
-          >
-            {section.icon}
-            <span>{section.label}</span>
-          </button>
-        ))}
+        <div className="flex lg:flex-col gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+          {sections.map(section => (
+            <button
+              key={section.id}
+              onClick={() => setActiveSection(section.id)}
+              className={cn(
+                "flex items-center gap-2 sm:gap-3 px-3.5 py-2.5 sm:py-3.5 rounded-xl font-bold text-xs sm:text-sm text-left transition-all cursor-pointer shrink-0 whitespace-nowrap",
+                activeSection === section.id 
+                  ? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-sm" 
+                  : "text-stone-600 dark:text-stone-400 bg-white/70 dark:bg-stone-900/60 lg:bg-transparent border border-stone-200/60 dark:border-stone-800 lg:border-transparent hover:bg-stone-100 dark:hover:bg-stone-800/60"
+              )}
+            >
+              {section.icon}
+              <span>{section.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Main Settings Panel */}
-      <div className="flex-1 bg-white dark:bg-stone-900 rounded-3xl shadow-sm border border-stone-200 dark:border-stone-800 p-4 sm:p-6 lg:p-8 overflow-y-auto min-w-0">
+      <div className="flex-1 bg-white dark:bg-stone-900 rounded-3xl shadow-sm border border-stone-200 dark:border-stone-800 p-3.5 sm:p-6 lg:p-8 overflow-y-auto min-w-0">
         {activeSection === 'general' && (
           <div className="space-y-8">
             {/* Theme Selector Section */}
@@ -298,29 +300,32 @@ export default function SettingsPage() {
                 </span>
               </div>
 
-              <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 overflow-hidden divide-y divide-stone-100 dark:divide-stone-800">
-                {connectedGarsons.map((garson) => (
-                  <div key={garson.id} className="p-3.5 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-orange-600 text-white font-bold text-xs flex items-center justify-center">
-                        {garson.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <div>
-                        <span className="font-bold text-xs text-stone-900 dark:text-stone-100 block">{garson.name}</span>
-                        <span className="text-[10px] text-stone-500 dark:text-stone-400 font-semibold">{garson.deviceName} • {garson.ip}</span>
-                      </div>
-                    </div>
-
-                    <span className={cn(
-                      "text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border",
-                      garson.isOnline 
-                        ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" 
-                        : "bg-stone-100 text-stone-500 border-stone-200"
-                    )}>
-                      {garson.isOnline ? 'Canlı Bağlı' : 'Koptu'}
-                    </span>
+              <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 overflow-hidden">
+                {connectedGarsons.filter(g => g.isOnline).length === 0 ? (
+                  <div className="p-6 text-center text-xs text-stone-400">
+                    Şu an WiFi ağında aktif bağlı garson cihazı yok.
                   </div>
-                ))}
+                ) : (
+                  <div className="divide-y divide-stone-100 dark:divide-stone-800">
+                    {connectedGarsons.filter(g => g.isOnline).map((garson) => (
+                      <div key={garson.id} className="p-3.5 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-orange-600 text-white font-bold text-xs flex items-center justify-center">
+                            {garson.name.split(' ').map(n => n[0]).join('')}
+                          </div>
+                          <div>
+                            <span className="font-bold text-xs text-stone-900 dark:text-stone-100 block">{garson.name}</span>
+                            <span className="text-[10px] text-stone-500 dark:text-stone-400 font-semibold">{garson.deviceName} • {garson.ip}</span>
+                          </div>
+                        </div>
+
+                        <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
+                          Aktif Bağlı
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

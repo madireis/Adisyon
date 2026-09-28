@@ -287,27 +287,27 @@ export default function OrderPage() {
   return (
     <div className="flex flex-col lg:flex-row h-full w-full bg-stone-100 dark:bg-stone-950 overflow-hidden select-none relative">
       {/* Mobile Top Header (lg:hidden) */}
-      <div className="lg:hidden bg-stone-900/95 backdrop-blur-xl text-white px-3.5 py-2.5 flex items-center justify-between shrink-0 shadow-sm z-20 border-b border-white/10">
+      <div className="lg:hidden bg-stone-900 text-white px-3.5 py-2.5 pt-[max(env(safe-area-inset-top),0.75rem)] flex items-center justify-between shrink-0 shadow-sm z-20 border-b border-stone-800">
         <button
           onClick={() => navigate('/tables')}
-          className="flex items-center gap-1.5 text-stone-200 hover:text-white font-bold text-xs py-1.5 px-2.5 rounded-full bg-stone-800/80 active:scale-95 transition-all ios-spring cursor-pointer border border-white/5"
+          className="flex items-center gap-1.5 text-stone-200 hover:text-white font-bold text-xs py-2 px-3 rounded-full bg-stone-800/90 active:scale-95 transition-all ios-spring cursor-pointer border border-stone-700 min-h-[38px]"
         >
           <ChevronLeft className="w-4 h-4 text-orange-400" />
           <span>Masalar</span>
         </button>
         <div className="flex items-center gap-2 text-center">
           <span className="text-base font-black text-orange-400 tracking-tight">Masa {table?.label || ''}</span>
-          <span className="text-[11px] bg-stone-800/80 text-stone-300 px-2.5 py-0.5 rounded-full font-medium border border-white/5">
+          <span className="text-[11px] bg-stone-800 text-stone-300 px-2.5 py-0.5 rounded-full font-bold border border-stone-700">
             {table?.guestCount || 2} Kişi
           </span>
         </div>
         <button
           onClick={() => setIsMobileTicketOpen(true)}
           className={cn(
-            "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 ios-spring cursor-pointer",
+            "flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold transition-all active:scale-95 ios-spring cursor-pointer min-h-[38px]",
             localItems.length > 0
               ? "bg-orange-600 text-white shadow-sm"
-              : "bg-stone-800/80 text-stone-400 border border-white/5"
+              : "bg-stone-800 text-stone-400 border border-stone-700"
           )}
         >
           <Receipt className="w-3.5 h-3.5" />
@@ -460,19 +460,19 @@ export default function OrderPage() {
 
       {/* Mobile Floating Island Adisyon Bar (lg:hidden) */}
       {(localItems.length > 0 || order) && (
-        <div className="lg:hidden fixed bottom-3 left-3 right-3 z-30 p-2.5 bg-stone-950 text-white rounded-2xl shadow-2xl border border-stone-800 flex items-center justify-between gap-2.5 animate-in slide-in-from-bottom duration-200">
+        <div className="lg:hidden fixed bottom-safe left-3 right-3 z-30 max-w-md mx-auto p-2.5 bg-stone-950/95 backdrop-blur-xl text-white rounded-2xl shadow-2xl border border-stone-800 flex items-center justify-between gap-2.5 animate-in slide-in-from-bottom duration-200">
           <button
             type="button"
             onClick={() => setIsMobileTicketOpen(true)}
-            className="flex-1 flex items-center gap-3 px-2 py-1 text-left cursor-pointer active:scale-98 transition-transform"
+            className="flex-1 flex items-center gap-2.5 px-1 py-1 text-left cursor-pointer active:scale-98 transition-transform min-w-0"
           >
             <div className="w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center font-black text-sm shadow-md shrink-0">
               {localItems.reduce((acc, i) => acc + i.quantity, 0)}x
             </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 truncate">
                 <span className="text-xs font-black text-orange-400 uppercase tracking-wider">Adisyon</span>
-                <span className="text-[10px] text-stone-400 font-bold">• Masa {table?.label}</span>
+                <span className="text-[10px] text-stone-400 font-bold truncate">• Masa {table?.label}</span>
               </div>
               <div className="text-base font-black font-mono text-white leading-tight">
                 {formatCurrency(total)}
@@ -485,7 +485,7 @@ export default function OrderPage() {
               <button
                 type="button"
                 onClick={handleSendToKitchen}
-                className="py-2.5 px-3.5 bg-orange-600 hover:bg-orange-500 active:scale-95 text-white font-black text-xs rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer transition-all"
+                className="py-2.5 px-3 bg-orange-600 hover:bg-orange-500 active:scale-95 text-white font-black text-xs rounded-xl shadow-md flex items-center gap-1 cursor-pointer transition-all"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>Gönder</span>
@@ -507,7 +507,7 @@ export default function OrderPage() {
       {/* Mobile Slide-Up Ticket Sheet (lg:hidden) */}
       {isMobileTicketOpen && (
         <div className="lg:hidden fixed inset-0 bg-stone-950/80 backdrop-blur-sm z-50 flex flex-col justify-end animate-in fade-in duration-200">
-          <div className="bg-stone-900 text-stone-100 rounded-t-[32px] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-250 border-t border-stone-700">
+          <div className="bg-stone-900 text-stone-100 rounded-t-[32px] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-250 border-t border-stone-700 pb-safe">
             {/* Handle */}
             <div className="w-full pt-3 pb-1 flex justify-center bg-stone-950 shrink-0">
               <div className="w-12 h-1.5 bg-stone-700 rounded-full" />

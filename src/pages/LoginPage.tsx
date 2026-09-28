@@ -15,7 +15,7 @@ import {
 import type { Staff } from '@/types/pos';
 
 export default function LoginPage() {
-  const { dispatch } = useApp();
+  const { state, dispatch } = useApp();
   const navigate = useNavigate();
 
   const [usernameInput, setUsernameInput] = useState('');
@@ -23,6 +23,20 @@ export default function LoginPage() {
   const [showPin, setShowPin] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // If already logged in, redirect to respective screen
+  React.useEffect(() => {
+    if (state.currentUser) {
+      const role = state.currentUser.role;
+      if (role === 'owner' || role === 'manager') {
+        navigate('/reports');
+      } else if (role === 'kitchen' || role === 'bar') {
+        navigate('/kitchen');
+      } else {
+        navigate('/tables');
+      }
+    }
+  }, [state.currentUser, navigate]);
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

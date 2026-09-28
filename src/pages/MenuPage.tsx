@@ -215,9 +215,74 @@ export default function MenuPage() {
           </div>
         </div>
 
-        {/* Table */}
+        {/* Content: Mobile Cards (md:hidden) + Desktop Table (hidden md:block) */}
         <div className="flex-1 overflow-auto">
-          <table className="w-full text-left border-collapse">
+          {/* Mobile Card List */}
+          <div className="md:hidden divide-y divide-stone-100 dark:divide-stone-800 p-2 space-y-2.5">
+            {filteredItems.map(item => {
+              const category = categories.find(c => c.id === item.categoryId);
+              return (
+                <div key={item.id} className="bg-stone-50/70 dark:bg-stone-950/60 p-3.5 rounded-2xl border border-stone-200/80 dark:border-stone-800 flex flex-col gap-2.5 shadow-2xs">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-black text-sm text-stone-900 dark:text-stone-100">{item.name}</span>
+                        <span className="text-[10px] bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 px-2 py-0.5 rounded-md font-semibold">
+                          {category?.name || '-'}
+                        </span>
+                      </div>
+                      {item.description && (
+                        <p className="text-xs text-stone-400 mt-1 line-clamp-2">{item.description}</p>
+                      )}
+                    </div>
+                    <span className="font-mono font-black text-base text-orange-600 dark:text-orange-400 shrink-0">
+                      ₺{item.price}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-stone-200/60 dark:border-stone-800/80 gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="px-2 py-0.5 bg-stone-200/60 dark:bg-stone-800 text-stone-600 dark:text-stone-300 rounded-md text-[11px] font-semibold">
+                        {stationLabels[item.station] || item.station}
+                      </span>
+                      <button 
+                        onClick={() => toggleAvailability(item)}
+                        className={cn(
+                          "px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer",
+                          item.available 
+                            ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60" 
+                            : "bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/60"
+                        )}
+                      >
+                        {item.available ? <Check size={11} /> : <X size={11} />}
+                        {item.available ? 'Satışta' : 'Tükendi'}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button 
+                        onClick={() => openEditModal(item)}
+                        className="p-2 text-stone-500 hover:text-orange-600 dark:hover:text-orange-400 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl transition-colors cursor-pointer min-h-[34px] min-w-[34px] flex items-center justify-center shadow-2xs"
+                        title="Ürünü Düzenle"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteItem(item)}
+                        className="p-2 text-red-500 hover:text-red-700 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl transition-colors cursor-pointer min-h-[34px] min-w-[34px] flex items-center justify-center shadow-2xs"
+                        title="Ürünü Sil"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View */}
+          <table className="hidden md:table w-full text-left border-collapse">
             <thead className="bg-stone-50 dark:bg-stone-950/80 sticky top-0 z-10 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-300 border-b border-stone-200 dark:border-stone-800">
               <tr>
                 <th className="py-3 sm:py-3.5 px-3 sm:px-6">Ürün Adı</th>
@@ -307,6 +372,12 @@ export default function MenuPage() {
               )}
             </tbody>
           </table>
+
+          {filteredItems.length === 0 && (
+            <div className="md:hidden py-16 text-center text-stone-400 text-sm">
+              Arama kriterine uygun ürün bulunamadı.
+            </div>
+          )}
         </div>
       </div>
 

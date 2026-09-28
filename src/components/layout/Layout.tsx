@@ -31,6 +31,7 @@ import {
 import type { UserRole } from '@/types/pos';
 import { useTheme } from '@/lib/theme';
 import { useLocalNetwork } from '@/lib/useLocalNetwork';
+import { disconnectLocalClient } from '@/lib/localNetwork';
 import LocalNetworkModal from '@/components/common/LocalNetworkModal';
 import AccountSwitcherModal from '@/components/common/AccountSwitcherModal';
 
@@ -51,17 +52,22 @@ export default function Layout() {
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false);
   
   const { isWifiConnected, activeGarsonCount } = useLocalNetwork();
-  
-  const user = state.currentUser || defaultUser;
-  const isManager = user.role === 'owner' || user.role === 'manager';
-  const hasManagerSession = Boolean(state.originalManager || isManager);
-  const isSwitchedToAnotherUser = Boolean(state.originalManager && state.currentUser.id !== state.originalManager.id);
   const [isAccountSwitcherOpen, setIsAccountSwitcherOpen] = useState(false);
 
   // Close mobile drawer on route change
   useEffect(() => {
     setIsMobileDrawerOpen(false);
   }, [location.pathname]);
+
+  // Route protection: prevent access if user is not signed in
+  if (!state.currentUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const user = state.currentUser;
+  const isManager = user.role === 'owner' || user.role === 'manager';
+  const hasManagerSession = Boolean(state.originalManager || isManager);
+  const isSwitchedToAnotherUser = Boolean(state.originalManager && user.id !== state.originalManager.id);
 
   const allNavItems: NavItem[] = [
     // Garson, Kasiyer & Yetkili
@@ -138,8 +144,11 @@ export default function Layout() {
   };
 
   const handleLogout = () => {
+    if (user?.id) {
+      disconnectLocalClient(user.id);
+    }
     dispatch({ type: 'LOGOUT' });
-    navigate('/');
+    navigate('/login');
   };
 
   const getRoleHeaderInfo = () => {
@@ -389,15 +398,18 @@ export default function Layout() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Header */}
-        <header className="h-12 sm:h-13 bg-[#f8f7f5]/80 dark:bg-stone-950/80 backdrop-blur-md border-b border-stone-200/40 dark:border-stone-800/60 flex items-center justify-between px-3 sm:px-6 shrink-0 z-20 sticky top-0 transition-colors">
-          <div className="flex items-center gap-2">
+        <header className={cn(
+          "h-12 sm:h-13 bg-[#f8f7f5]/90 dark:bg-stone-950/90 backdrop-blur-md border-b border-stone-200/50 dark:border-stone-800/60 flex items-center justify-between px-2.5 sm:px-6 shrink-0 z-20 sticky top-0 transition-colors",
+          isOrderPage && "hidden md:flex"
+        )}>
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Mobile Hamburger Menu button */}
             <button
               onClick={() => setIsMobileDrawerOpen(true)}
-              className="md:hidden p-2 rounded-xl text-stone-600 dark:text-stone-300 hover:bg-stone-200/60 dark:hover:bg-stone-800/60 active:scale-95 min-h-[38px] min-w-[38px] flex items-center justify-center cursor-pointer transition-all"
+              className="md:hidden p-1.5 sm:p-2 rounded-xl text-stone-600 dark:text-stone-300 hover:bg-stone-200/60 dark:hover:bg-stone-800/60 active:scale-95 min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer transition-all"
               title="Menüyü Aç"
             >
-              <Menu size={20} />
+              <Menu size={19} />
             </button>
 
             <span className="font-black text-orange-600 dark:text-orange-500 text-sm tracking-tight md:hidden">
@@ -405,47 +417,47 @@ export default function Layout() {
             </span>
 
             {/* Subtle role indicator */}
-            <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-2xs", roleInfo.badgeColor)}>
+            <span className={cn("text-[9px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full border shadow-2xs", roleInfo.badgeColor)}>
               {user.role === 'waiter' ? 'Garson' : user.role === 'kitchen' ? 'Mutfak' : 'Yönetici'}
             </span>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
             {/* Local WiFi Network & Garson Presence Badge */}
             <button
               onClick={() => setIsNetworkModalOpen(true)}
               className={cn(
-                "px-2.5 py-1 rounded-full text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer border shadow-2xs active:scale-95",
-                isWifiConnected
+                "px-2 sm:px-2.5 py-1 rounded-full text-xs font-extrabold flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer border shadow-2xs active:scale-95",
+                activeGarsonCount > 0
                   ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100"
-                  : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-100"
+                  : "bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 border-stone-300 dark:border-stone-700 hover:bg-stone-200"
               )}
-              title="Yerel WiFi Ağ Durumu & Garson Telefon Bağlantılarını Göster"
+              title="Garson WiFi Ağ Durumu & Canlı Bağlantıları Göster"
             >
               <div className="relative flex h-2 w-2">
-                {isWifiConnected && (
+                {activeGarsonCount > 0 && (
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 )}
-                <span className={cn("relative inline-flex rounded-full h-2 w-2", isWifiConnected ? "bg-emerald-500" : "bg-amber-500")}></span>
+                <span className={cn("relative inline-flex rounded-full h-2 w-2", activeGarsonCount > 0 ? "bg-emerald-500" : "bg-stone-400")}></span>
               </div>
-              <Wifi size={14} />
+              <Wifi size={13} />
               <span className="hidden sm:inline">
-                WiFi {activeGarsonCount > 0 ? `(${activeGarsonCount} Garson)` : ''}
+                {activeGarsonCount > 0 ? `${activeGarsonCount} Garson Aktif` : 'Garsonlar Çevrimdışı'}
               </span>
             </button>
 
             {/* Theme Toggle Button (Sun / Moon) */}
             <button
               onClick={toggleTheme}
-              className="p-1.5 sm:p-2 rounded-full text-stone-600 dark:text-amber-400 hover:bg-stone-200/60 dark:hover:bg-stone-800/80 active:scale-90 transition-all cursor-pointer border border-stone-200/60 dark:border-stone-800/60 shadow-2xs"
+              className="p-1.5 sm:p-2 rounded-full text-stone-600 dark:text-amber-400 hover:bg-stone-200/60 dark:hover:bg-stone-800/80 active:scale-90 transition-all cursor-pointer border border-stone-200/60 dark:border-stone-800/60 shadow-2xs min-h-[34px] min-w-[34px] flex items-center justify-center"
               title={resolvedTheme === 'dark' ? 'Açık Moduna Geç' : 'Koyu Moduna Geç'}
             >
-              {resolvedTheme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-stone-700" />}
+              {resolvedTheme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-stone-700" />}
             </button>
 
-            {/* Current user avatar (compact, tooltip instead of wordy text) */}
+            {/* Current user avatar */}
             <div 
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs cursor-default select-none border border-orange-500/40"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs cursor-default select-none border border-orange-500/40 shrink-0"
               title={`${user.name} (${user.role === 'waiter' ? 'Garson' : user.role === 'kitchen' ? 'Mutfak' : 'Yönetici'})`}
             >
               {user.name.split(' ').map(n => n[0]).join('')}
@@ -482,14 +494,14 @@ export default function Layout() {
         )}
 
         {/* Page Content */}
-        <main className={cn("flex-1 overflow-auto bg-[#f8f7f5] dark:bg-stone-950 relative text-stone-800 dark:text-stone-100", !isOrderPage && "pb-24 md:pb-0")}>
+        <main className={cn("flex-1 overflow-x-hidden overflow-y-auto bg-[#f8f7f5] dark:bg-stone-950 relative text-stone-800 dark:text-stone-100", !isOrderPage ? "pb-28 md:pb-0" : "pb-0")}>
           <Outlet />
         </main>
 
         {/* iOS Floating Island Tab Bar for Mobile (hidden on dedicated order page) */}
         {!isOrderPage && (
-          <div className="md:hidden fixed bottom-3 left-3 right-3 z-40">
-            <nav className="bg-white/85 dark:bg-stone-900/90 backdrop-blur-xl border border-white/60 dark:border-stone-800/80 shadow-[0_8px_32px_rgba(0,0,0,0.12)] rounded-3xl p-1.5 flex items-center justify-around">
+          <div className="md:hidden fixed bottom-safe left-3 right-3 z-40 max-w-md mx-auto pointer-events-none">
+            <nav className="pointer-events-auto bg-white/90 dark:bg-stone-900/90 backdrop-blur-xl border border-stone-200/80 dark:border-stone-800 shadow-[0_8px_32px_rgba(0,0,0,0.15)] rounded-3xl p-1.5 flex items-center justify-around">
               {getMobileBottomNav().map((item) => {
                 const isActive = location.pathname === item.path;
                 const Icon = item.icon;
@@ -498,7 +510,7 @@ export default function Layout() {
                     key={item.path}
                     to={item.path}
                     className={cn(
-                      "flex-1 flex flex-col items-center justify-center py-1.5 rounded-2xl transition-all min-h-[48px] cursor-pointer active:scale-90",
+                      "flex-1 flex flex-col items-center justify-center py-1.5 rounded-2xl transition-all min-h-[46px] cursor-pointer active:scale-90",
                       isActive 
                         ? "bg-orange-600 text-white shadow-xs font-bold" 
                         : "text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 font-medium"
@@ -512,7 +524,7 @@ export default function Layout() {
               {/* Quick Drawer Opener */}
               <button
                 onClick={() => setIsMobileDrawerOpen(true)}
-                className="flex-1 flex flex-col items-center justify-center py-1.5 rounded-2xl text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 font-medium min-h-[48px] cursor-pointer active:scale-90 transition-all"
+                className="flex-1 flex flex-col items-center justify-center py-1.5 rounded-2xl text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 font-medium min-h-[46px] cursor-pointer active:scale-90 transition-all"
               >
                 <Menu size={18} />
                 <span className="text-[10px] tracking-tight mt-0.5 font-bold">Menü</span>

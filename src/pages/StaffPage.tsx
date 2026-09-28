@@ -230,8 +230,116 @@ export default function StaffPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 overflow-x-auto">
-        <table className="w-full text-left">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 overflow-hidden">
+        {/* Mobile Cards View (md:hidden) */}
+        <div className="md:hidden divide-y divide-stone-100 dark:divide-stone-800 p-2 space-y-2.5">
+          {staffMembers.map((member: Staff) => {
+            const liveConnection = connectedGarsons.find(
+              g => g.id === member.id || g.name.toLowerCase().includes(member.name.toLowerCase())
+            );
+            const isWifiOnline = liveConnection?.isOnline;
+            const isPinRevealed = revealedPins[member.id] || false;
+
+            return (
+              <div key={member.id} className="bg-stone-50/70 dark:bg-stone-950/60 p-3.5 rounded-2xl border border-stone-200/80 dark:border-stone-800 flex flex-col gap-2.5 shadow-2xs">
+                {/* Header: Avatar, Name, UserNo & Role */}
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-stone-800 text-orange-600 dark:text-orange-400 font-black text-sm flex items-center justify-center shrink-0 border border-orange-200 dark:border-stone-700">
+                      {member.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-black text-sm text-stone-900 dark:text-stone-100 truncate">{member.name}</span>
+                        <span className="font-mono text-[10px] font-bold bg-orange-50 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 px-1.5 py-0.2 rounded border border-orange-200 dark:border-orange-900">
+                          #{member.username || member.id}
+                        </span>
+                      </div>
+                      {isWifiOnline && (
+                        <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5">
+                          <Smartphone size={10} /> {liveConnection.deviceName}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    {roleBadge(member.role)}
+                  </div>
+                </div>
+
+                {/* Details: PIN & WiFi Status */}
+                <div className="grid grid-cols-2 gap-2 bg-white dark:bg-stone-900 p-2.5 rounded-xl border border-stone-200/60 dark:border-stone-800 text-xs">
+                  <div>
+                    <span className="text-[10px] text-stone-400 dark:text-stone-500 font-bold block mb-1">Giriş PIN:</span>
+                    <div className="flex items-center gap-1.5 font-mono">
+                      <span className={cn(
+                        "font-bold text-stone-800 dark:text-stone-200",
+                        !isPinRevealed && "filter blur-xs select-none"
+                      )}>
+                        {member.pin}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => togglePinVisibility(member.id)}
+                        className="p-1 rounded text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
+                        title={isPinRevealed ? "PIN'i Gizle" : "PIN'i Göster"}
+                      >
+                        {isPinRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-stone-400 dark:text-stone-500 font-bold block mb-1">WiFi Durumu:</span>
+                    {isWifiOnline ? (
+                      <span className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                        Aktif Bağlı ({liveConnection.pingMs}ms)
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-stone-400 italic">Çevrimdışı</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Footer: Status & Actions */}
+                <div className="flex items-center justify-between pt-1 border-t border-stone-200/60 dark:border-stone-800/80 gap-2">
+                  <button
+                    onClick={() => toggleActive(member)}
+                    className={cn(
+                      "px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer",
+                      member.active 
+                        ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60" 
+                        : "bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-400"
+                    )}
+                  >
+                    {member.active ? '● Aktif' : '○ Pasif'}
+                  </button>
+
+                  <div className="flex items-center gap-1.5">
+                    <button 
+                      onClick={() => openEditModal(member)}
+                      className="px-3 py-1.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:text-orange-600 rounded-xl transition-colors cursor-pointer flex items-center gap-1 text-xs font-bold shadow-2xs min-h-[34px]"
+                      title="Düzenle / PIN Değiştir"
+                    >
+                      <Edit2 size={13} />
+                      <span>Düzenle</span>
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteStaff(member)}
+                      className="p-1.5 text-red-500 hover:text-red-700 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl transition-colors cursor-pointer min-h-[34px] min-w-[34px] flex items-center justify-center shadow-2xs"
+                      title="Personeli Sil"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Desktop Table View (hidden md:table) */}
+        <table className="hidden md:table w-full text-left">
           <thead className="bg-stone-50 dark:bg-stone-950/80 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-300 border-b border-stone-200 dark:border-stone-800">
             <tr>
               <th className="py-3 sm:py-3.5 px-3 sm:px-6">Kullanıcı No</th>
@@ -313,11 +421,11 @@ export default function StaffPage() {
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                         </span>
-                        WiFi Bağlı ({liveConnection.pingMs}ms)
+                        Aktif Bağlı ({liveConnection.pingMs}ms)
                       </span>
                     ) : (
-                      <span className="text-xs font-semibold text-stone-400 dark:text-stone-500 italic">
-                        Cihaz Bekleniyor
+                      <span className="text-xs font-semibold text-stone-400 dark:text-stone-500">
+                        Çevrimdışı (Giriş Yapılmadı)
                       </span>
                     )}
                   </td>

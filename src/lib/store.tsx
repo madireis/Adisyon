@@ -12,7 +12,7 @@ export const defaultUser: Staff = {
 }
 
 interface AppState {
-  currentUser: Staff
+  currentUser: Staff | null
   originalManager: Staff | null
   currentFloor: string
   isOnline: boolean
@@ -34,12 +34,12 @@ type Action =
   | { type: 'CLEAR_NOTIFICATIONS' }
   | { type: 'TOGGLE_SIDEBAR' }
 
-const getInitialUser = (): Staff => {
+const getInitialUser = (): Staff | null => {
   try {
     const raw = sessionStorage.getItem('pos_current_user');
     if (raw) return JSON.parse(raw);
   } catch {}
-  return defaultUser;
+  return null;
 };
 
 const getInitialManager = (): Staff | null => {
@@ -47,7 +47,7 @@ const getInitialManager = (): Staff | null => {
     const raw = sessionStorage.getItem('pos_original_manager');
     if (raw) return JSON.parse(raw);
   } catch {}
-  return defaultUser; // default start has manager power
+  return null;
 };
 
 const initialState: AppState = {
@@ -90,18 +90,21 @@ function appReducer(state: AppState, action: Action): AppState {
       return { ...state, currentUser: action.user }
     }
     case 'RESTORE_MANAGER': {
-      const targetManager = state.originalManager || defaultUser;
-      try {
-        sessionStorage.setItem('pos_current_user', JSON.stringify(targetManager));
-      } catch {}
-      return { ...state, currentUser: targetManager }
+      const targetManager = state.originalManager;
+      if (targetManager) {
+        try {
+          sessionStorage.setItem('pos_current_user', JSON.stringify(targetManager));
+        } catch {}
+        return { ...state, currentUser: targetManager }
+      }
+      return state;
     }
     case 'LOGOUT': {
       try {
         sessionStorage.removeItem('pos_current_user');
         sessionStorage.removeItem('pos_original_manager');
       } catch {}
-      return { ...state, currentUser: defaultUser, originalManager: null }
+      return { ...state, currentUser: null, originalManager: null }
     }
     case 'SET_FLOOR':
       return { ...state, currentFloor: action.floorId }

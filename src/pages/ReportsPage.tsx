@@ -602,37 +602,37 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto flex flex-col space-y-6 bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 select-none">
+    <div className="p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto flex flex-col space-y-4 sm:space-y-6 bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 select-none">
       
       {/* Top Header & Date Filter */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 sm:gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-orange-600/20 text-orange-600 flex items-center justify-center">
-              <Banknote size={24} />
+            <div className="w-10 h-10 rounded-2xl bg-orange-600/20 text-orange-600 flex items-center justify-center shrink-0">
+              <Banknote size={22} />
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
                 Kasa & Gün Sonu Ciro
               </h1>
               <p className="text-stone-500 text-xs sm:text-sm font-medium mt-0.5">
-                Kasa giriş/çıkış hareketleri, net nakit hesabı, ciro ve Z-Raporu
+                Kasa hareketleri, nakit hesabı, ciro ve Z-Raporu
               </p>
             </div>
           </div>
         </div>
 
         {/* Date Filter & Quick Actions */}
-        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 w-full lg:w-auto">
           {/* Date Selector */}
-          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-1 flex items-center shadow-xs">
+          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-1 grid grid-cols-4 sm:flex items-center shadow-xs">
             {(['TODAY', 'YESTERDAY', 'WEEK', 'MONTH'] as const).map(range => (
               <button
                 key={range}
                 type="button"
                 onClick={() => setDateRange(range)}
                 className={cn(
-                  "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
+                  "px-2 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer text-center",
                   dateRange === range
                     ? "bg-orange-600 text-white shadow-xs"
                     : "text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200"
@@ -643,84 +643,87 @@ export default function ReportsPage() {
             ))}
           </div>
 
-          {/* Action Buttons */}
-          <button
-            type="button"
-            onClick={() => {
-              setCashModalType('in');
-              setIsCashModalOpen(true);
-            }}
-            className="py-2.5 px-3.5 bg-white text-stone-950 font-black text-xs rounded-2xl border border-stone-300 dark:border-stone-700 shadow-xs hover:bg-stone-100 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-            title="Kasaya para girişi / bozukluk ekle"
-          >
-            <ArrowDownRight size={16} className="text-emerald-600" />
-            <span>+ Para Girişi</span>
-          </button>
+          {/* Action Buttons Grid on Mobile */}
+          <div className="grid grid-cols-2 sm:flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setCashModalType('in');
+                setIsCashModalOpen(true);
+              }}
+              className="py-2.5 px-3 bg-white text-stone-950 font-black text-xs rounded-xl border border-stone-300 dark:border-stone-700 shadow-xs hover:bg-stone-100 transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 min-h-[38px]"
+              title="Kasaya para girişi"
+            >
+              <ArrowDownRight size={15} className="text-emerald-600" />
+              <span>+ Para Girişi</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => {
-              setCashModalType('out');
-              setIsCashModalOpen(true);
-            }}
-            className="py-2.5 px-3.5 bg-white text-stone-950 font-black text-xs rounded-2xl border border-stone-300 dark:border-stone-700 shadow-xs hover:bg-stone-100 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-            title="Kasadan masraf veya gider çıkışı yap"
-          >
-            <ArrowUpRight size={16} className="text-red-600" />
-            <span>- Masraf / Çıkış</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCashModalType('out');
+                setIsCashModalOpen(true);
+              }}
+              className="py-2.5 px-3 bg-white text-stone-950 font-black text-xs rounded-xl border border-stone-300 dark:border-stone-700 shadow-xs hover:bg-stone-100 transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 min-h-[38px]"
+              title="Kasadan masraf çıkışı"
+            >
+              <ArrowUpRight size={15} className="text-red-600" />
+              <span>- Masraf</span>
+            </button>
+          </div>
 
-          <button
-            type="button"
-            onClick={() => setIsZReportOpen(true)}
-            className="py-2.5 px-4 bg-orange-600 hover:bg-orange-700 text-white font-black text-xs rounded-2xl shadow-md transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-            title="Günü kapat ve termal Z-Raporu al"
-          >
-            <Receipt size={16} />
-            <span>Z-Raporu Al & Kapat</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsZReportOpen(true)}
+              className="flex-1 sm:flex-none py-2.5 px-3.5 bg-orange-600 hover:bg-orange-700 text-white font-black text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 min-h-[38px]"
+              title="Günü kapat ve termal Z-Raporu al"
+            >
+              <Receipt size={16} />
+              <span>Z-Raporu Al & Kapat</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={handleExportCSV}
-            className="p-2.5 bg-white text-stone-800 dark:bg-stone-900 dark:text-stone-200 border border-stone-200 dark:border-stone-800 rounded-2xl hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
-            title="CSV Dışa Aktar"
-          >
-            <Download size={16} />
-          </button>
+            <button
+              type="button"
+              onClick={handleExportCSV}
+              className="p-2 bg-white text-stone-800 dark:bg-stone-900 dark:text-stone-200 border border-stone-200 dark:border-stone-800 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center shadow-2xs"
+              title="CSV Dışa Aktar"
+            >
+              <Download size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* TOP 4 CORE FINANCIAL CARDS (ENHANCED WITH VISUAL BARS) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+      {/* TOP 4 CORE FINANCIAL CARDS (2-COL ON MOBILE, 4-COL ON DESKTOP) */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         
         {/* 1. TOPLAM CİRO */}
-        <div className="bg-white dark:bg-stone-900 rounded-3xl p-5 border border-stone-200 dark:border-stone-800 shadow-xs flex flex-col justify-between">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-stone-200 dark:border-stone-800 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
-                {dateRangeLabel} Toplam Ciro
+              <span className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider">
+                {dateRangeLabel} Ciro
               </span>
-              <div className="w-8 h-8 rounded-xl bg-orange-100 dark:bg-orange-950/50 text-orange-600 flex items-center justify-center">
-                <TrendingUp size={18} />
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-orange-100 dark:bg-orange-950/50 text-orange-600 flex items-center justify-center">
+                <TrendingUp size={16} />
               </div>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl sm:text-3xl font-mono font-black text-stone-950 dark:text-white">
+            <div className="mt-2 sm:mt-3">
+              <div className="text-base sm:text-2xl font-mono font-black text-stone-950 dark:text-white truncate">
                 {formatCurrency(metrics.totalRevenue)}
               </div>
-              <div className="text-xs text-stone-500 mt-1 flex items-center gap-1">
-                <span>{metrics.closedOrdersCount} Kapalı Masa / Adisyon</span>
-                <span>• Ort. {formatCurrency(metrics.avgCheck)}</span>
+              <div className="text-[10px] sm:text-xs text-stone-500 mt-0.5 truncate">
+                {metrics.closedOrdersCount} Adisyon • Ort. {formatCurrency(metrics.avgCheck)}
               </div>
             </div>
           </div>
 
           {/* Visual distribution mini-bar */}
-          <div className="mt-3.5 pt-2.5 border-t border-stone-100 dark:border-stone-800/80">
-            <div className="flex justify-between text-[10px] font-bold text-stone-500 dark:text-stone-400 mb-1">
+          <div className="mt-2.5 pt-2 border-t border-stone-100 dark:border-stone-800/80">
+            <div className="flex justify-between text-[9px] sm:text-[10px] font-bold text-stone-500 dark:text-stone-400 mb-1">
               <span className="text-emerald-600 dark:text-emerald-400">Nakit: %{cashPercent}</span>
-              <span className="text-blue-600 dark:text-blue-400">POS / Kart: %{posPercent}</span>
+              <span className="text-blue-600 dark:text-blue-400">POS: %{posPercent}</span>
             </div>
             <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden flex">
               <div style={{ width: `${cashPercent}%` }} className="bg-emerald-500 h-full transition-all duration-500" title={`Nakit: %${cashPercent}`} />
@@ -730,31 +733,31 @@ export default function ReportsPage() {
         </div>
 
         {/* 2. KASADAKİ NET NAKİT (DRAWER BALANCE) */}
-        <div className="bg-emerald-50/60 dark:bg-emerald-950/20 rounded-3xl p-5 border border-emerald-200 dark:border-emerald-900/50 shadow-xs flex flex-col justify-between">
+        <div className="bg-emerald-50/60 dark:bg-emerald-950/20 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-emerald-200 dark:border-emerald-900/50 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-emerald-800 dark:text-emerald-400 uppercase tracking-wider">
-                Kasadaki Net Nakit
+              <span className="text-[10px] sm:text-xs font-black text-emerald-800 dark:text-emerald-400 uppercase tracking-wider">
+                Kasadaki Nakit
               </span>
-              <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
-                <Banknote size={18} />
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                <Banknote size={16} />
               </div>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl sm:text-3xl font-mono font-black text-emerald-900 dark:text-emerald-300">
+            <div className="mt-2 sm:mt-3">
+              <div className="text-base sm:text-2xl font-mono font-black text-emerald-900 dark:text-emerald-300 truncate">
                 {formatCurrency(metrics.expectedDrawerCash)}
               </div>
-              <div className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 mt-1 truncate">
-                Nakit: {formatCurrency(metrics.cashRevenue)} | Masraf: -{formatCurrency(metrics.cashOutTotal)}
+              <div className="text-[10px] sm:text-[11px] text-emerald-700/80 dark:text-emerald-400/80 mt-0.5 truncate">
+                Nakit: {formatCurrency(metrics.cashRevenue)}
               </div>
             </div>
           </div>
 
           {/* Visual Liquidity Ratio */}
-          <div className="mt-3.5 pt-2.5 border-t border-emerald-200/60 dark:border-emerald-900/60">
-            <div className="flex justify-between text-[10px] font-bold text-emerald-800 dark:text-emerald-400 mb-1">
-              <span>Nakit Kasa Dengesi</span>
-              <span>{metrics.expectedDrawerCash >= 0 ? '✓ Pozitif Mutabakat' : '⚠️ Açık'}</span>
+          <div className="mt-2.5 pt-2 border-t border-emerald-200/60 dark:border-emerald-900/60">
+            <div className="flex justify-between text-[9px] sm:text-[10px] font-bold text-emerald-800 dark:text-emerald-400 mb-1">
+              <span>Kasa Dengesi</span>
+              <span>{metrics.expectedDrawerCash >= 0 ? '✓ Pozitif' : '⚠️ Açık'}</span>
             </div>
             <div className="w-full h-1.5 bg-emerald-200/50 dark:bg-emerald-900/50 rounded-full overflow-hidden">
               <div 
@@ -770,31 +773,31 @@ export default function ReportsPage() {
         </div>
 
         {/* 3. POS / KREDİ KARTI */}
-        <div className="bg-white dark:bg-stone-900 rounded-3xl p-5 border border-stone-200 dark:border-stone-800 shadow-xs flex flex-col justify-between">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-stone-200 dark:border-stone-800 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
-                POS / Kredi Kartı
+              <span className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider">
+                Banka / POS
               </span>
-              <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950/50 text-blue-600 flex items-center justify-center">
-                <CreditCard size={18} />
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-blue-100 dark:bg-blue-950/50 text-blue-600 flex items-center justify-center">
+                <CreditCard size={16} />
               </div>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl sm:text-3xl font-mono font-black text-stone-950 dark:text-white">
+            <div className="mt-2 sm:mt-3">
+              <div className="text-base sm:text-2xl font-mono font-black text-stone-950 dark:text-white truncate">
                 {formatCurrency(metrics.posRevenue)}
               </div>
-              <div className="text-xs text-stone-500 mt-1">
-                Banka hesabına geçen toplam tahsilat
+              <div className="text-[10px] sm:text-xs text-stone-500 mt-0.5 truncate">
+                Banka hesabı tahsilatı
               </div>
             </div>
           </div>
 
           {/* Visual POS share */}
-          <div className="mt-3.5 pt-2.5 border-t border-stone-100 dark:border-stone-800/80">
-            <div className="flex justify-between text-[10px] font-bold text-stone-500 dark:text-stone-400 mb-1">
+          <div className="mt-2.5 pt-2 border-t border-stone-100 dark:border-stone-800/80">
+            <div className="flex justify-between text-[9px] sm:text-[10px] font-bold text-stone-500 dark:text-stone-400 mb-1">
               <span>Banka Payı</span>
-              <span className="text-blue-600 dark:text-blue-400">%{posPercent} Ciro</span>
+              <span className="text-blue-600 dark:text-blue-400">%{posPercent}</span>
             </div>
             <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
               <div style={{ width: `${posPercent}%` }} className="bg-blue-500 h-full transition-all duration-500" />
@@ -803,31 +806,31 @@ export default function ReportsPage() {
         </div>
 
         {/* 4. KASADAN ÇIKAN MASRAFLAR */}
-        <div className="bg-red-50/50 dark:bg-red-950/20 rounded-3xl p-5 border border-red-200 dark:border-red-900/50 shadow-xs flex flex-col justify-between">
+        <div className="bg-red-50/50 dark:bg-red-950/20 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-red-200 dark:border-red-900/50 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-red-800 dark:text-red-400 uppercase tracking-wider">
-                Masraflar & Çıkışlar
+              <span className="text-[10px] sm:text-xs font-black text-red-800 dark:text-red-400 uppercase tracking-wider">
+                Masraflar
               </span>
-              <div className="w-8 h-8 rounded-xl bg-red-600/20 text-red-600 flex items-center justify-center">
-                <ArrowUpRight size={18} />
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-red-600/20 text-red-600 flex items-center justify-center">
+                <ArrowUpRight size={16} />
               </div>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl sm:text-3xl font-mono font-black text-red-900 dark:text-red-300">
+            <div className="mt-2 sm:mt-3">
+              <div className="text-base sm:text-2xl font-mono font-black text-red-900 dark:text-red-300 truncate">
                 {formatCurrency(metrics.cashOutTotal)}
               </div>
-              <div className="text-xs text-red-700/80 dark:text-red-400/80 mt-1">
-                {filteredCash.filter(t => t.type === 'out').length} kalem gider / masraf kaydı
+              <div className="text-[10px] sm:text-xs text-red-700/80 dark:text-red-400/80 mt-0.5 truncate">
+                {filteredCash.filter(t => t.type === 'out').length} gider kalemi
               </div>
             </div>
           </div>
 
           {/* Visual Expense share */}
-          <div className="mt-3.5 pt-2.5 border-t border-red-200/60 dark:border-red-900/60">
-            <div className="flex justify-between text-[10px] font-bold text-red-800 dark:text-red-400 mb-1">
+          <div className="mt-2.5 pt-2 border-t border-red-200/60 dark:border-red-900/60">
+            <div className="flex justify-between text-[9px] sm:text-[10px] font-bold text-red-800 dark:text-red-400 mb-1">
               <span>Gider Yükü</span>
-              <span>%{expenseRatio} Gelir</span>
+              <span>%{expenseRatio}</span>
             </div>
             <div className="w-full h-1.5 bg-red-200/50 dark:bg-red-900/50 rounded-full overflow-hidden">
               <div style={{ width: `${Math.min(100, expenseRatio)}%` }} className="bg-red-500 h-full transition-all duration-500" />
@@ -838,20 +841,21 @@ export default function ReportsPage() {
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex border-b border-stone-200 dark:border-stone-800 overflow-x-auto gap-2">
+      <div className="flex border-b border-stone-200 dark:border-stone-800 overflow-x-auto gap-2 no-scrollbar">
         <button
           type="button"
           onClick={() => setActiveTab('SUMMARY')}
           className={cn(
-            "pb-3 px-3.5 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer",
+            "pb-2.5 sm:pb-3 px-3 sm:px-3.5 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
             activeTab === 'SUMMARY'
               ? "border-orange-600 text-orange-600 dark:text-orange-400"
               : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
           )}
         >
-          <BarChart3 size={17} />
-          <span>Grafikler & Görsel Kasa Tablosu</span>
-          <span className="text-[10px] bg-orange-100 dark:bg-orange-950/80 text-orange-700 dark:text-orange-300 px-2 py-0.5 rounded-full font-bold">
+          <BarChart3 size={16} />
+          <span className="sm:hidden">Grafikler</span>
+          <span className="hidden sm:inline">Grafikler & Görsel Kasa</span>
+          <span className="text-[10px] bg-orange-100 dark:bg-orange-950/80 text-orange-700 dark:text-orange-300 px-1.5 py-0.5 rounded-full font-bold">
             Canlı
           </span>
         </button>
@@ -860,15 +864,16 @@ export default function ReportsPage() {
           type="button"
           onClick={() => setActiveTab('CASH_REGISTER')}
           className={cn(
-            "pb-3 px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer",
+            "pb-2.5 sm:pb-3 px-2.5 sm:px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
             activeTab === 'CASH_REGISTER'
               ? "border-orange-600 text-orange-600 dark:text-orange-400"
               : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
           )}
         >
-          <Banknote size={17} />
-          <span>Kasa Defteri (Giren / Çıkan Para)</span>
-          <span className="text-[10px] bg-stone-200 dark:bg-stone-800 px-2 py-0.5 rounded-full font-mono">
+          <Banknote size={16} />
+          <span className="sm:hidden">Kasa Defteri</span>
+          <span className="hidden sm:inline">Kasa Defteri (Giriş / Çıkış)</span>
+          <span className="text-[10px] bg-stone-200 dark:bg-stone-800 px-1.5 py-0.5 rounded-full font-mono">
             {filteredCash.length}
           </span>
         </button>
@@ -877,15 +882,16 @@ export default function ReportsPage() {
           type="button"
           onClick={() => setActiveTab('ORDERS')}
           className={cn(
-            "pb-3 px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer",
+            "pb-2.5 sm:pb-3 px-2.5 sm:px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
             activeTab === 'ORDERS'
               ? "border-orange-600 text-orange-600 dark:text-orange-400"
               : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
           )}
         >
-          <Receipt size={17} />
-          <span>Adisyon & Garson Sipariş Geçmişi</span>
-          <span className="text-[10px] bg-stone-200 dark:bg-stone-800 px-2 py-0.5 rounded-full font-mono">
+          <Receipt size={16} />
+          <span className="sm:hidden">Adisyonlar</span>
+          <span className="hidden sm:inline">Adisyon & Garson Geçmişi</span>
+          <span className="text-[10px] bg-stone-200 dark:bg-stone-800 px-1.5 py-0.5 rounded-full font-mono">
             {filteredOrders.length}
           </span>
         </button>
@@ -894,42 +900,45 @@ export default function ReportsPage() {
           type="button"
           onClick={() => setActiveTab('STAFF')}
           className={cn(
-            "pb-3 px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer",
+            "pb-2.5 sm:pb-3 px-2.5 sm:px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
             activeTab === 'STAFF'
               ? "border-orange-600 text-orange-600 dark:text-orange-400"
               : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
           )}
         >
-          <Users size={17} />
-          <span>Garson Satış Dağılımı</span>
+          <Users size={16} />
+          <span className="sm:hidden">Garsonlar</span>
+          <span className="hidden sm:inline">Garson Satış Dağılımı</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('PAYMENTS')}
           className={cn(
-            "pb-3 px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer",
+            "pb-2.5 sm:pb-3 px-2.5 sm:px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
             activeTab === 'PAYMENTS'
               ? "border-orange-600 text-orange-600 dark:text-orange-400"
               : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
           )}
         >
-          <CreditCard size={17} />
-          <span>Tahsilat & Ödeme Türleri</span>
+          <CreditCard size={16} />
+          <span className="sm:hidden">Tahsilat</span>
+          <span className="hidden sm:inline">Tahsilat Kanalları</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('PRODUCTS')}
           className={cn(
-            "pb-3 px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-2 cursor-pointer",
+            "pb-2.5 sm:pb-3 px-2.5 sm:px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
             activeTab === 'PRODUCTS'
               ? "border-orange-600 text-orange-600 dark:text-orange-400"
               : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
           )}
         >
-          <PieChartIcon size={17} />
-          <span>En Çok Satan Ürünler</span>
+          <PieChartIcon size={16} />
+          <span className="sm:hidden">Ürünler</span>
+          <span className="hidden sm:inline">En Çok Satanlar</span>
         </button>
       </div>
 
@@ -1164,8 +1173,69 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            {/* Visual Table */}
-            <div className="overflow-x-auto">
+            {/* Mobile Cards for Reconciliation (md:hidden) */}
+            <div className="md:hidden divide-y divide-stone-100 dark:divide-stone-800">
+              {visualReconciliationRows.map((row) => {
+                const Icon = row.icon;
+                return (
+                  <div 
+                    key={row.id}
+                    className={cn(
+                      "p-3.5 space-y-2.5",
+                      row.id === 'net_cash' && "bg-amber-50/40 dark:bg-amber-950/20",
+                      row.id === 'total_ciro' && "bg-orange-50/40 dark:bg-orange-950/20"
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={cn(
+                          "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border",
+                          row.type === 'in' ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 border-emerald-200 dark:border-emerald-800" :
+                          row.type === 'out' ? "bg-red-50 dark:bg-red-950/50 text-red-600 border-red-200 dark:border-red-800" :
+                          row.type === 'total' ? "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700" :
+                          row.type === 'grand_total' ? "bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-700" :
+                          "bg-blue-50 dark:bg-blue-950/50 text-blue-600 border-blue-200 dark:border-blue-800"
+                        )}>
+                          <Icon size={16} />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-extrabold text-stone-900 dark:text-stone-100 text-xs truncate">{row.title}</h4>
+                          <span className={cn("px-2 py-0.5 rounded-md text-[9px] font-bold inline-block mt-0.5", row.channelBadge)}>
+                            {row.channel}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0 font-mono">
+                        <span className={cn("font-black text-sm", row.amountColor)}>
+                          {row.prefix} {formatCurrency(row.amount)}
+                        </span>
+                        <div className="text-[10px] text-stone-400 font-bold">{row.count}</div>
+                      </div>
+                    </div>
+
+                    {/* Progress bar & Status pill */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-[10px] font-mono text-stone-500">
+                        <span>Hacim Payı: %{row.percent}</span>
+                        <span className={cn("px-2 py-0.5 rounded-lg text-[9px] font-extrabold border", row.statusBadge)}>
+                          {row.status}
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
+                        <div 
+                          className={cn("h-full rounded-full transition-all duration-500", row.barColor)}
+                          style={{ width: `${Math.min(100, Math.max(3, row.percent))}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-100/60 dark:bg-stone-950 text-stone-600 dark:text-stone-400 font-extrabold uppercase tracking-wider text-[11px]">
@@ -1364,7 +1434,137 @@ export default function ReportsPage() {
             </div>
           ) : (
             <div className="bg-white dark:bg-stone-900 rounded-3xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-xs">
-              <div className="overflow-x-auto">
+              {/* Mobile Orders Card List (md:hidden) */}
+              <div className="md:hidden divide-y divide-stone-100 dark:divide-stone-800">
+                {displayedOrders.map(o => {
+                  const payment = paymentsByOrderId.get(o.id);
+                  const tickets = ticketsByOrderId.get(o.id) || [];
+                  const isPaid = o.status === 'paid' || !!o.paidAt || !!payment;
+
+                  const startStr = o.createdAt ? new Date(o.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '-';
+                  const paidTimeStr = o.paidAt || payment?.paidAt;
+                  const paidByStr = o.paidBy || payment?.processedBy || 'Kasiyer';
+
+                  let totalMins = o.durationMinutes || payment?.durationMinutes;
+                  if (!totalMins) {
+                    if (paidTimeStr && o.createdAt) {
+                      totalMins = Math.max(1, Math.round((new Date(paidTimeStr).getTime() - new Date(o.createdAt).getTime()) / 60000));
+                    } else if (o.createdAt) {
+                      totalMins = Math.max(1, Math.round((Date.now() - new Date(o.createdAt).getTime()) / 60000));
+                    } else {
+                      totalMins = 1;
+                    }
+                  }
+
+                  let kitchenMins = o.kitchenDurationMinutes;
+                  const isTicketCompleted = tickets.length > 0 && tickets.every(t => t.status === 'completed' || t.status === 'ready');
+                  if (!kitchenMins) {
+                    if (o.kitchenReadyAt && o.sentToKitchenAt) {
+                      kitchenMins = Math.max(1, Math.round((new Date(o.kitchenReadyAt).getTime() - new Date(o.sentToKitchenAt).getTime()) / 60000));
+                    } else if (tickets.length > 0) {
+                      const latestTicket = tickets[0];
+                      if (latestTicket.completedAt && latestTicket.createdAt) {
+                        kitchenMins = Math.max(1, Math.round((new Date(latestTicket.completedAt).getTime() - new Date(latestTicket.createdAt).getTime()) / 60000));
+                      }
+                    }
+                  }
+                  if (!kitchenMins && (isTicketCompleted || isPaid)) {
+                    kitchenMins = 1;
+                  }
+
+                  const methodNames: Record<string, string> = {
+                    cash: 'Nakit TL',
+                    credit_card: 'Kredi Kartı',
+                    debit_card: 'Banka Kartı',
+                    sodexo: 'Sodexo',
+                    multinet: 'Multinet',
+                    ticket: 'Ticket Edenred',
+                    metropol: 'Metropol Card',
+                    ikram: 'Yetkili İkram'
+                  };
+                  let paymentMethodDisplay = o.paymentMethod;
+                  if (!paymentMethodDisplay && payment) {
+                    paymentMethodDisplay = payment.parts?.map(p => methodNames[p.method] || p.method).join(' + ') || 'Nakit TL';
+                  }
+                  if (!paymentMethodDisplay && isPaid) {
+                    paymentMethodDisplay = 'Nakit TL';
+                  }
+
+                  const enrichedOrder: Order = {
+                    ...o,
+                    status: isPaid ? 'paid' : o.status,
+                    paidAt: paidTimeStr,
+                    paidBy: paidByStr,
+                    paymentMethod: paymentMethodDisplay,
+                    durationMinutes: totalMins,
+                    kitchenDurationMinutes: kitchenMins || undefined,
+                  };
+
+                  return (
+                    <div 
+                      key={o.id} 
+                      onClick={() => setSelectedTimelineOrder(enrichedOrder)}
+                      className="p-3.5 space-y-2 hover:bg-stone-50/80 dark:hover:bg-stone-800/40 transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="bg-orange-50 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400 px-2 py-0.5 rounded-lg border border-orange-200 dark:border-orange-800 font-black text-xs">
+                            Masa {o.tableLabel}
+                          </span>
+                          <span className="text-xs font-bold text-stone-700 dark:text-stone-300 flex items-center gap-1">
+                            <Users size={12} className="text-orange-600" />
+                            {o.waiterName || 'Garson'}
+                          </span>
+                        </div>
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase border ${
+                          isPaid
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                            : o.status === 'ready'
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border-blue-300 dark:border-blue-800'
+                            : o.status === 'sent'
+                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+                            : 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300 border-orange-300 dark:border-orange-800'
+                        }`}>
+                          {isPaid ? 'Ödendi' : o.status === 'ready' ? 'Hazır' : o.status === 'sent' ? 'Mutfakta' : 'Açık'}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px] text-stone-500 font-mono">
+                        <div className="flex items-center gap-2">
+                          <span>Saat: <strong className="text-stone-700 dark:text-stone-300">{startStr}</strong></span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <Timer size={11} className="text-purple-500" />
+                            {totalMins} dk
+                          </span>
+                        </div>
+                        {kitchenMins ? (
+                          <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                            Mutfak: {kitchenMins} dk
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1 border-t border-stone-100 dark:border-stone-800/80">
+                        <div className="text-[11px] text-stone-500">
+                          {paymentMethodDisplay || 'Ödeme Bekliyor'}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-black text-sm text-stone-950 dark:text-white">
+                            {formatCurrency(o.total)}
+                          </span>
+                          <span className="text-xs font-bold text-orange-600 dark:text-orange-400">
+                            Detay →
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-500 font-bold uppercase tracking-wider">
@@ -1639,7 +1839,52 @@ export default function ReportsPage() {
             </div>
           ) : (
             <div className="bg-white dark:bg-stone-900 rounded-3xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-xs">
-              <div className="overflow-x-auto">
+              {/* Mobile Cash Transaction Cards (md:hidden) */}
+              <div className="md:hidden divide-y divide-stone-100 dark:divide-stone-800">
+                {filteredCash.slice().reverse().map(t => (
+                  <div key={t.id} className="p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase ${
+                        t.type === 'in' 
+                          ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800' 
+                          : 'bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border border-red-300 dark:border-red-800'
+                      }`}>
+                        {t.type === 'in' ? <ArrowDownRight size={12} /> : <ArrowUpRight size={12} />}
+                        <span>{t.type === 'in' ? 'KASAYA GİRİŞ' : 'MASRAF / ÇIKIŞ'}</span>
+                      </span>
+
+                      <span className={cn(
+                        "font-mono font-black text-sm",
+                        t.type === 'in' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                      )}>
+                        {t.type === 'in' ? '+' : '-'}{formatCurrency(t.amount)}
+                      </span>
+                    </div>
+
+                    <div>
+                      <div className="font-bold text-xs text-stone-900 dark:text-stone-100">{t.category}</div>
+                      {t.description && (
+                        <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">{t.description}</div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1 border-t border-stone-100 dark:border-stone-800/80 text-[10px] text-stone-400 font-mono">
+                      <span>{t.processedBy} • {new Date(t.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCashTransaction(t.id)}
+                        className="p-1.5 text-stone-400 hover:text-red-600 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                        title="Kaydı Sil"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table (hidden md:block) */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-500 font-bold uppercase tracking-wider">
@@ -1714,7 +1959,37 @@ export default function ReportsPage() {
             </p>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Mobile Staff Card List (md:hidden) */}
+          <div className="md:hidden divide-y divide-stone-100 dark:divide-stone-800">
+            {staffBreakdown.length === 0 ? (
+              <div className="py-8 text-center text-stone-400 text-xs">
+                Bu tarih aralığında henüz satış bulunmuyor
+              </div>
+            ) : (
+              staffBreakdown.map((s, idx) => (
+                <div key={idx} className="p-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-xs text-stone-900 dark:text-stone-100">{s.name}</span>
+                      <span className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold text-[10px]">
+                        {s.role}
+                      </span>
+                    </div>
+                    <span className="font-mono font-black text-sm text-stone-950 dark:text-white">
+                      {formatCurrency(s.totalRevenue)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-stone-500 font-mono">
+                    <span>Masa Sayısı: <strong className="text-stone-700 dark:text-stone-300">{s.orderCount} Adet</strong></span>
+                    <span>Ort. Masa: <strong className="text-stone-700 dark:text-stone-300">{formatCurrency(s.avgCheck)}</strong></span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop Table (hidden md:block) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-500 font-bold uppercase tracking-wider">
@@ -1855,7 +2130,39 @@ export default function ReportsPage() {
             </p>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Mobile Products Card List (md:hidden) */}
+          <div className="md:hidden divide-y divide-stone-100 dark:divide-stone-800">
+            {topProducts.length === 0 ? (
+              <div className="py-8 text-center text-stone-400 text-xs">
+                Bu dönemde henüz ürün satışı kaydedilmedi
+              </div>
+            ) : (
+              topProducts.map((p, idx) => (
+                <div key={idx} className="p-3.5 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-mono font-bold text-[10px] flex items-center justify-center shrink-0">
+                        {idx + 1}
+                      </span>
+                      <span className="font-bold text-xs text-stone-900 dark:text-stone-100">{p.name}</span>
+                      <span className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-medium text-[10px]">
+                        {p.category}
+                      </span>
+                    </div>
+                    <span className="font-mono font-black text-sm text-stone-950 dark:text-white">
+                      {formatCurrency(p.revenue)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-stone-500 font-mono pl-7">
+                    <span>Satış Adedi: <strong className="text-stone-700 dark:text-stone-300">{p.count} Adet</strong></span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop Table (hidden md:block) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-500 font-bold uppercase tracking-wider">

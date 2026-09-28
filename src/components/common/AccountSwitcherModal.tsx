@@ -18,6 +18,7 @@ import {
   Coffee
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { disconnectLocalClient } from '@/lib/localNetwork';
 
 interface AccountSwitcherModalProps {
   isOpen: boolean;
@@ -34,7 +35,7 @@ export default function AccountSwitcherModal({ isOpen, onClose }: AccountSwitche
   const dbStaff = useLiveQuery(() => db.staff.toArray());
   const allStaff: Staff[] = (dbStaff && dbStaff.length > 0) ? dbStaff : fallbackStaff;
 
-  if (!isOpen) return null;
+  if (!isOpen || !state.currentUser) return null;
 
   const currentUser = state.currentUser;
   const originalManager = state.originalManager;
@@ -67,6 +68,10 @@ export default function AccountSwitcherModal({ isOpen, onClose }: AccountSwitche
       return;
     }
 
+    if (currentUser?.id) {
+      disconnectLocalClient(currentUser.id);
+    }
+
     dispatch({ type: 'SWITCH_ACCOUNT', user: staff });
 
     // Intelligently route to selected staff's primary workspace
@@ -82,6 +87,9 @@ export default function AccountSwitcherModal({ isOpen, onClose }: AccountSwitche
   };
 
   const handleRestoreManager = () => {
+    if (currentUser?.id) {
+      disconnectLocalClient(currentUser.id);
+    }
     dispatch({ type: 'RESTORE_MANAGER' });
     navigate('/dashboard');
     onClose();
@@ -133,12 +141,12 @@ export default function AccountSwitcherModal({ isOpen, onClose }: AccountSwitche
         </div>
 
         {/* Switched Session Banner (if not currently on manager account) */}
-        {originalManager && currentUser.id !== originalManager.id && (
+        {originalManager && currentUser && currentUser.id !== originalManager.id && (
           <div className="p-3 bg-amber-500/15 border-b border-amber-500/30 flex items-center justify-between gap-2 px-4 sm:px-5">
             <div className="flex items-center gap-2 text-xs font-bold text-amber-800 dark:text-amber-300">
               <ShieldCheck size={16} className="text-amber-600 dark:text-amber-400 shrink-0" />
               <span>
-                Şu an <strong>{currentUser.name}</strong> olarak aktifsini̇z.
+                Şu an <strong>{currentUser?.name}</strong> olarak aktifsini̇z.
               </span>
             </div>
             <button
@@ -196,7 +204,7 @@ export default function AccountSwitcherModal({ isOpen, onClose }: AccountSwitche
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {filteredStaff.map((staff) => {
-                const isCurrent = staff.id === currentUser.id;
+                const isCurrent = staff.id === currentUser?.id;
                 const isOrigManager = originalManager && staff.id === originalManager.id;
 
                 return (

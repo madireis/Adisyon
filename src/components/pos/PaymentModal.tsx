@@ -210,7 +210,7 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex justify-center items-end sm:items-center p-0 sm:p-4 z-50 select-none overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-stone-900 dark:border-stone-800 dark:text-stone-100 w-full max-h-[96vh] sm:max-h-[92vh] max-w-4xl rounded-t-[32px] sm:rounded-[32px] flex flex-col md:flex-row overflow-y-auto sm:overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.25)] border border-stone-200/80 animate-in slide-in-from-bottom duration-250">
+      <div className="bg-white dark:bg-stone-900 dark:border-stone-800 dark:text-stone-100 w-full max-h-[96vh] sm:max-h-[92vh] max-w-4xl rounded-t-[32px] sm:rounded-[32px] flex flex-col md:flex-row overflow-y-auto sm:overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.25)] border border-stone-200/80 animate-in slide-in-from-bottom duration-250 pb-safe">
         
         {/* Mobile Centered Grab Handle Pill */}
         <div className="sm:hidden w-full pt-3 pb-1 flex justify-center bg-white dark:bg-stone-900 shrink-0">
@@ -303,7 +303,7 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
             )}
           </div>
 
-          <div className="p-4 bg-white dark:bg-stone-900 border-t border-stone-100 dark:border-stone-800 shrink-0">
+          <div className="p-4 bg-white dark:bg-stone-900 border-t border-stone-100 dark:border-stone-800 shrink-0 pb-safe sm:pb-4">
             <button
               onClick={handleConfirm}
               disabled={totalPaid < order.total}

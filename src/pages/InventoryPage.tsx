@@ -157,7 +157,7 @@ export default function InventoryPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col dark:bg-stone-950 dark:text-stone-100">
+    <div className="p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col dark:bg-stone-950 dark:text-stone-100">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 dark:text-stone-100 tracking-tight">Hammadde Stok & Reçeteler</h1>
@@ -201,8 +201,79 @@ export default function InventoryPage() {
 
       <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 flex-1 overflow-hidden">
         {activeTab === 'STOCK' ? (
-          <div className="overflow-x-auto h-full">
-            <table className="w-full text-left border-collapse">
+          <div className="h-full flex flex-col overflow-hidden">
+            {/* Mobile Cards (md:hidden) */}
+            <div className="md:hidden divide-y divide-stone-100 dark:divide-stone-800 overflow-y-auto flex-1">
+              {inventoryItems.map((item: InventoryItem) => {
+                const isLow = item.currentStock <= item.minimumStock;
+                return (
+                  <div key={item.id} className="p-3.5 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-sm text-stone-900 dark:text-stone-100">{item.name}</span>
+                        {isLow && (
+                          <span className="flex items-center gap-1 text-[10px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-900/60 px-1.5 py-0.5 rounded-md">
+                            <AlertTriangle size={11} />
+                            Kritik
+                          </span>
+                        )}
+                      </div>
+                      <button 
+                        onClick={() => handleDeleteItem(item)}
+                        className="p-1 text-stone-400 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
+                        title="Malzemeyi Sil"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs text-stone-500 font-mono">
+                        <div>Birim: <strong className="text-stone-800 dark:text-stone-200">{formatCurrency(item.purchaseCost)} / {item.unit}</strong></div>
+                        <div className="text-[10px] text-stone-400">Min. {item.minimumStock} {item.unit} • {item.supplier || '-'}</div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className={cn(
+                          "font-mono font-bold px-2.5 py-1 rounded-lg text-xs border",
+                          isLow 
+                            ? "bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900" 
+                            : "bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200 border-stone-200 dark:border-stone-700"
+                        )}>
+                          {item.currentStock} {item.unit}
+                        </span>
+
+                        <div className="flex items-center gap-1 text-stone-400">
+                          <button 
+                            onClick={() => handleStockAdjust(item.id, item.currentStock, -1)} 
+                            className="p-1 hover:text-red-500 active:bg-stone-100 dark:active:bg-stone-800 rounded-md transition-colors cursor-pointer"
+                            title="1 Azalt"
+                          >
+                            <MinusCircle size={20} />
+                          </button>
+                          <button 
+                            onClick={() => handleStockAdjust(item.id, item.currentStock, 1)} 
+                            className="p-1 hover:text-emerald-500 active:bg-stone-100 dark:active:bg-stone-800 rounded-md transition-colors cursor-pointer"
+                            title="1 Ekle"
+                          >
+                            <PlusCircle size={20} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {inventoryItems.length === 0 && (
+                <div className="p-8 text-center text-stone-400 text-xs">
+                  Depoda henüz hammadde malzemesi tanımlı değil.
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Table (hidden md:block) */}
+            <div className="hidden md:block overflow-x-auto h-full flex-1">
+              <table className="w-full text-left border-collapse">
               <thead className="bg-stone-50 dark:bg-stone-950/80 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-300 border-b border-stone-200 dark:border-stone-800 sticky top-0">
                 <tr>
                   <th className="py-3 sm:py-3.5 px-3 sm:px-6">Hammadde Malzeme</th>
@@ -288,7 +359,8 @@ export default function InventoryPage() {
               </tbody>
             </table>
           </div>
-        ) : (
+        </div>
+      ) : (
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-auto h-full">
             {recipes.map((recipe: Recipe) => {
               const menuItem = menuItems.find(m => m.id === recipe.menuItemId);

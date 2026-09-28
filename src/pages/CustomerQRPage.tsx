@@ -67,7 +67,7 @@ export default function CustomerQRPage() {
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-100 pb-28 select-none">
       {/* Brand Header */}
-      <header className="bg-stone-900 text-white p-5 sticky top-0 z-30 shadow-md">
+      <header className="bg-stone-900 text-white px-4 py-3 sm:p-5 sticky top-0 z-30 shadow-md pt-[max(env(safe-area-inset-top),0.75rem)]">
         <div className="max-w-md mx-auto flex justify-between items-center">
           <div>
             <h1 className="text-xl font-black text-orange-400 tracking-tight">WOT'S CAFE</h1>
@@ -80,7 +80,7 @@ export default function CustomerQRPage() {
       </header>
 
       {/* Action Call Banner */}
-      <div className="max-w-md mx-auto p-4 space-y-3">
+      <div className="max-w-md mx-auto p-3 sm:p-4 space-y-3">
         {callAlert && (
           <div className="bg-emerald-600 text-white p-3 rounded-2xl text-xs font-bold text-center flex items-center justify-center gap-2 shadow-lg animate-bounce">
             <CheckCircle2 size={16} />
@@ -92,24 +92,24 @@ export default function CustomerQRPage() {
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => handleCall('Garson Çağrıldı')}
-            className="p-3 bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300 rounded-2xl flex flex-col items-center gap-1 shadow-xs transition-colors cursor-pointer"
+            className="p-2.5 sm:p-3 bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300 rounded-2xl flex flex-col items-center justify-center gap-1 shadow-xs transition-colors cursor-pointer"
           >
-            <Bell size={20} className="text-orange-600 dark:text-orange-600" />
-            <span className="text-[11px] font-extrabold text-stone-950 dark:text-stone-950">Garson Çağır</span>
+            <Bell size={18} className="text-orange-600 dark:text-orange-600" />
+            <span className="text-[10px] sm:text-[11px] font-extrabold text-stone-950 dark:text-stone-950 text-center leading-tight">Garson Çağır</span>
           </button>
           <button
             onClick={() => handleCall('Hesap İstendi')}
-            className="p-3 bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300 rounded-2xl flex flex-col items-center gap-1 shadow-xs transition-colors cursor-pointer"
+            className="p-2.5 sm:p-3 bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300 rounded-2xl flex flex-col items-center justify-center gap-1 shadow-xs transition-colors cursor-pointer"
           >
-            <Receipt size={20} className="text-emerald-600 dark:text-emerald-600" />
-            <span className="text-[11px] font-extrabold text-stone-950 dark:text-stone-950">Hesap İste</span>
+            <Receipt size={18} className="text-emerald-600 dark:text-emerald-600" />
+            <span className="text-[10px] sm:text-[11px] font-extrabold text-stone-950 dark:text-stone-950 text-center leading-tight">Hesap İste</span>
           </button>
           <button
             onClick={() => handleCall('Su İstendi')}
-            className="p-3 bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300 rounded-2xl flex flex-col items-center gap-1 shadow-xs transition-colors cursor-pointer"
+            className="p-2.5 sm:p-3 bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300 rounded-2xl flex flex-col items-center justify-center gap-1 shadow-xs transition-colors cursor-pointer"
           >
-            <Droplets size={20} className="text-sky-600 dark:text-sky-600" />
-            <span className="text-[11px] font-extrabold text-stone-950 dark:text-stone-950">Su İste</span>
+            <Droplets size={18} className="text-sky-600 dark:text-sky-600" />
+            <span className="text-[10px] sm:text-[11px] font-extrabold text-stone-950 dark:text-stone-950 text-center leading-tight">Su İste</span>
           </button>
         </div>
 
@@ -180,10 +180,10 @@ export default function CustomerQRPage() {
 
       {/* Floating Cart Button */}
       {cart.length > 0 && (
-        <div className="fixed bottom-4 left-4 right-4 max-w-md mx-auto z-40">
+        <div className="fixed bottom-safe bottom-4 left-3 right-3 max-w-md mx-auto z-40">
           <button
             onClick={() => setIsCartOpen(true)}
-            className="w-full bg-stone-900 dark:bg-stone-800 text-white p-4 rounded-2xl shadow-xl flex justify-between items-center border border-stone-700 dark:border-stone-700 cursor-pointer"
+            className="w-full bg-stone-900 dark:bg-stone-800 text-white p-4 rounded-2xl shadow-xl flex justify-between items-center border border-stone-700 dark:border-stone-700 cursor-pointer active:scale-98 transition-all"
           >
             <div className="flex items-center gap-2">
               <div className="bg-orange-600 w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs">
@@ -199,7 +199,7 @@ export default function CustomerQRPage() {
       {/* Cart Drawer */}
       {isCartOpen && (
         <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs flex justify-end z-50">
-          <div className="bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 w-full max-w-md h-full flex flex-col p-5 shadow-2xl border-l border-stone-200 dark:border-stone-800">
+          <div className="bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 w-full max-w-md h-full flex flex-col p-4 sm:p-5 shadow-2xl border-l border-stone-200 dark:border-stone-800 pb-safe">
             <div className="flex justify-between items-center pb-4 border-b border-stone-200 dark:border-stone-800">
               <h2 className="text-lg font-black text-stone-900 dark:text-stone-100">Masa {table?.label || '12'} Siparişi</h2>
               <button onClick={() => setIsCartOpen(false)} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 text-sm font-bold cursor-pointer">

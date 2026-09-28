@@ -42,8 +42,17 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
         : '192.168.1.33');
 
   const effectiveIp = customIp.trim() || detectedIp;
-  const path = targetType === 'customer' ? '/qr' : '';
-  const joinUrl = `http://${effectiveIp}:${selectedPort}${path}`;
+  const isWebHosted = window.location.hostname.includes('github.io') || 
+                      (!/^(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(window.location.hostname) && window.location.hostname.includes('.'));
+
+  let joinUrl = '';
+  if (isWebHosted && !customIp.trim()) {
+    const hashTarget = targetType === 'customer' ? '#/qr' : '#/login';
+    joinUrl = `${window.location.origin}${window.location.pathname}${hashTarget}`;
+  } else {
+    const hashTarget = targetType === 'customer' ? '#/qr' : '#/login';
+    joinUrl = `http://${effectiveIp}:${selectedPort}/${hashTarget}`;
+  }
 
   const qrSvg = generateQRCodeSVG(joinUrl, 230);
 
@@ -302,54 +311,66 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
             </div>
 
             <div className="bg-white dark:bg-stone-950 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-2xs">
-              <div className="divide-y divide-stone-100 dark:divide-stone-800">
-                {connectedGarsons.map((garson) => (
-                  <div 
-                    key={garson.id}
-                    className="p-3.5 flex items-center justify-between gap-4 hover:bg-stone-50 dark:hover:bg-stone-900/60 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-orange-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
-                        {garson.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-stone-900 dark:text-stone-100">
-                            {garson.name}
-                          </span>
-                          <span className="text-[10px] font-extrabold px-2 py-0.2 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-stone-700 uppercase">
-                            {garson.role === 'waiter' ? 'Garson' : garson.role === 'kitchen' ? 'Mutfak' : 'Yönetici'}
-                          </span>
-                        </div>
-                        <div className="text-[11px] font-semibold text-stone-500 dark:text-stone-400 flex items-center gap-2 mt-0.5">
-                          <span className="flex items-center gap-1">
-                            <Smartphone size={12} /> {garson.deviceName}
-                          </span>
-                          <span>•</span>
-                          <span>IP: {garson.ip}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <span className="relative flex h-2 w-2">
-                          {garson.isOnline && (
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          )}
-                          <span className={cn("relative inline-flex rounded-full h-2 w-2", garson.isOnline ? "bg-emerald-500" : "bg-stone-400")}></span>
-                        </span>
-                        <span className={cn("text-xs font-extrabold", garson.isOnline ? "text-emerald-600 dark:text-emerald-400" : "text-stone-400")}>
-                          {garson.isOnline ? 'Ağda Bağlı' : 'Koptu'}
-                        </span>
-                      </div>
-                      <span className="text-[10px] text-stone-400 font-semibold block mt-0.5">
-                        {garson.pingMs} ms • Canlı Ping
-                      </span>
-                    </div>
+              {connectedGarsons.filter(g => g.isOnline).length === 0 ? (
+                <div className="p-8 text-center space-y-2">
+                  <div className="w-12 h-12 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-400 mx-auto flex items-center justify-center">
+                    <Smartphone size={24} />
                   </div>
-                ))}
-              </div>
+                  <p className="text-sm font-bold text-stone-800 dark:text-stone-200">
+                    Şu an aktif bağlı garson cihazı bulunmuyor
+                  </p>
+                  <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                    Garsonlar telefonlarından giriş yaptıklarında burada anlık olarak canlı görünecektir. Uygulamayı veya tarayıcıyı kapattıklarında durumları otomatik sonlanır.
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-stone-100 dark:divide-stone-800">
+                  {connectedGarsons.filter(g => g.isOnline).map((garson) => (
+                    <div 
+                      key={garson.id}
+                      className="p-3.5 flex items-center justify-between gap-4 hover:bg-stone-50 dark:hover:bg-stone-900/60 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-orange-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+                          {garson.name.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-stone-900 dark:text-stone-100">
+                              {garson.name}
+                            </span>
+                            <span className="text-[10px] font-extrabold px-2 py-0.2 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-stone-700 uppercase">
+                              {garson.role === 'waiter' ? 'Garson' : garson.role === 'kitchen' ? 'Mutfak' : garson.role === 'owner' ? 'Patron' : 'Yönetici'}
+                            </span>
+                          </div>
+                          <div className="text-[11px] font-semibold text-stone-500 dark:text-stone-400 flex items-center gap-2 mt-0.5">
+                            <span className="flex items-center gap-1">
+                              <Smartphone size={12} /> {garson.deviceName}
+                            </span>
+                            <span>•</span>
+                            <span>{garson.ip}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                          </span>
+                          <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
+                            Aktif & Bağlı
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-stone-400 font-semibold block mt-0.5">
+                          {garson.pingMs} ms • Canlı Ping
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

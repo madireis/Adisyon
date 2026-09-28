@@ -101,7 +101,7 @@ export default function CustomersPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto dark:bg-stone-950 dark:text-stone-100">
+    <div className="p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto dark:bg-stone-950 dark:text-stone-100">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 w-full">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 dark:text-stone-100 tracking-tight">Müşteri CRM & Sadakat</h1>
@@ -128,20 +128,79 @@ export default function CustomersPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 overflow-x-auto">
-        <table className="w-full text-left">
-          <thead className="bg-stone-50 dark:bg-stone-950/80 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-300 border-b border-stone-200 dark:border-stone-800">
-            <tr>
-              <th className="py-3 sm:py-3.5 px-3 sm:px-6">Müşteri Adı</th>
-              <th className="py-3 sm:py-3.5 px-3 sm:px-6">Telefon</th>
-              <th className="py-3 sm:py-3.5 px-3 sm:px-6">Sadakat Puanı</th>
-              <th className="py-3 sm:py-3.5 px-3 sm:px-6">Toplam Ziyaret</th>
-              <th className="py-3 sm:py-3.5 px-3 sm:px-6">Toplam Harcama</th>
-              <th className="py-3 sm:py-3.5 px-3 sm:px-6">Ortalama Hesap</th>
-              <th className="py-3 sm:py-3.5 px-3 sm:px-6 text-right">İşlemler</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-sm">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 overflow-hidden">
+        {/* Mobile Customer Cards (md:hidden) */}
+        <div className="md:hidden divide-y divide-stone-100 dark:divide-stone-800">
+          {filtered.length === 0 ? (
+            <div className="p-8 text-center text-stone-400 text-xs">
+              Müşteri bulunamadı
+            </div>
+          ) : (
+            filtered.map((customer: Customer) => (
+              <div key={customer.id} className="p-3.5 space-y-2.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100">{customer.name}</h3>
+                    <p className="text-xs text-stone-500 dark:text-stone-400 font-mono mt-0.5 flex items-center gap-1">
+                      <Phone size={11} className="text-orange-600" />
+                      {customer.phone}
+                    </p>
+                    {customer.notes && (
+                      <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5">{customer.notes}</p>
+                    )}
+                  </div>
+
+                  <span className="flex items-center gap-1 text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 px-2 py-0.5 rounded-lg text-xs shrink-0">
+                    <Star size={12} className="fill-amber-400 text-amber-500" />
+                    {customer.loyaltyPoints} P
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs pt-1 border-t border-stone-100 dark:border-stone-800/80">
+                  <div className="text-stone-500 font-mono">
+                    <span>{customer.totalVisits} ziyaret</span> • <span>Ort. {formatCurrency(customer.averageOrder)}</span>
+                  </div>
+                  <div className="font-mono font-black text-stone-900 dark:text-white">
+                    {formatCurrency(customer.totalSpend)}
+                  </div>
+                </div>
+
+                <div className="flex justify-end items-center gap-2 pt-1 border-t border-stone-100 dark:border-stone-800/80">
+                  <button 
+                    onClick={() => openEditModal(customer)}
+                    className="p-1.5 text-stone-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-stone-800 rounded-lg transition-colors cursor-pointer text-xs font-bold flex items-center gap-1"
+                  >
+                    <Edit2 size={13} />
+                    <span>Düzenle</span>
+                  </button>
+                  <button 
+                    onClick={() => handleDeleteCustomer(customer)}
+                    className="p-1.5 text-stone-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-stone-800 rounded-lg transition-colors cursor-pointer text-xs font-bold flex items-center gap-1"
+                  >
+                    <Trash2 size={13} />
+                    <span>Sil</span>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table (hidden md:block) */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-stone-50 dark:bg-stone-950/80 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-300 border-b border-stone-200 dark:border-stone-800">
+              <tr>
+                <th className="py-3 sm:py-3.5 px-3 sm:px-6">Müşteri Adı</th>
+                <th className="py-3 sm:py-3.5 px-3 sm:px-6">Telefon</th>
+                <th className="py-3 sm:py-3.5 px-3 sm:px-6">Sadakat Puanı</th>
+                <th className="py-3 sm:py-3.5 px-3 sm:px-6">Toplam Ziyaret</th>
+                <th className="py-3 sm:py-3.5 px-3 sm:px-6">Toplam Harcama</th>
+                <th className="py-3 sm:py-3.5 px-3 sm:px-6">Ortalama Hesap</th>
+                <th className="py-3 sm:py-3.5 px-3 sm:px-6 text-right">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-sm">
             {filtered.map((customer: Customer) => (
               <tr key={customer.id} className="hover:bg-stone-50/70 dark:hover:bg-stone-800/50 transition-colors">
                 <td className="py-3 sm:py-4 px-3 sm:px-6">
@@ -190,6 +249,7 @@ export default function CustomersPage() {
           </tbody>
         </table>
       </div>
+    </div>
 
       {/* Add Customer Modal */}
       {isAddModalOpen && (

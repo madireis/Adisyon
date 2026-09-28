@@ -125,14 +125,23 @@ const connectedClients = new Map();
 
 function cleanupInactiveClients() {
   const now = Date.now();
+  let changed = false;
   for (const [id, client] of connectedClients.entries()) {
-    if (now - client.lastSeen > 15000) {
+    // If no heartbeat received in last 8 seconds, client has closed app / lost connection
+    if (now - client.lastSeen > 8000) {
       connectedClients.delete(id);
+      changed = true;
     }
+  }
+  if (changed) {
+    broadcastSync({
+      type: 'presence_update',
+      activeCount: connectedClients.size,
+    });
   }
 }
 
-setInterval(cleanupInactiveClients, 5000);
+setInterval(cleanupInactiveClients, 3000);
 
 // ─────────────────────────────────────────────────────────────
 // HTTP SERVER & ROUTING
@@ -364,31 +373,43 @@ const server = http.createServer((req, res) => {
   // 8. Garsons List
   if (url.pathname === '/api/garsons') {
     cleanupInactiveClients();
-    const garsonsList = Array.from(connectedClients.values()).map((c) => ({
-      ...c,
-      isOnline: Date.now() - c.lastSeen < 12000,
-    }));
+    const now = Date.now();
+    const garsonsList = Array.from(connectedClients.values())
+      .filter((c) => now - c.lastSeen < 8000)
+      .map((c) => ({
+        ...c,
+        isOnline: true,
+      }));
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ garsons: garsonsList }));
     return;
   }
 
-  // 9. Heartbeat from Garson Phone / Tablet / Browser
+  // 9. Heartbeat from Garson Phone / Tablet / Browser (Only for authenticated staff)
   if (url.pathname === '/api/heartbeat' && req.method === 'POST') {
     let body = '';
     req.on('data', (chunk) => { body += chunk; });
     req.on('end', () => {
       try {
         const data = JSON.parse(body || '{}');
+        const staffId = data.staffId;
+
+        // Do not register anonymous visitors or unauthenticated tabs as active garsons
+        if (!staffId) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, reason: 'unauthenticated' }));
+          return;
+        }
+
         const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
         const cleanIp = String(clientIp).replace(/^.*:/, '') || localIp;
 
-        const staffId = data.staffId || `device-${cleanIp}`;
+        const isNew = !connectedClients.has(staffId);
         const existing = connectedClients.get(staffId);
 
         const updatedClient = {
           id: staffId,
-          name: data.staffName || 'Garson (Mobil)',
+          name: data.staffName || 'Garson',
           role: data.role || 'waiter',
           deviceName: data.deviceName || 'Telefon (WiFi)',
           ip: cleanIp,
@@ -398,6 +419,14 @@ const server = http.createServer((req, res) => {
         };
 
         connectedClients.set(staffId, updatedClient);
+
+        if (isNew) {
+          broadcastSync({
+            type: 'presence_update',
+            activeCount: connectedClients.size,
+            addedStaff: updatedClient,
+          });
+        }
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(
@@ -412,6 +441,42 @@ const server = http.createServer((req, res) => {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Invalid JSON body' }));
       }
+    });
+    return;
+  }
+
+  // 9b. Disconnect Endpoint (App closed, tab closed, logout, beforeunload/pagehide)
+  if (url.pathname === '/api/disconnect') {
+    const handleDisconnectId = (staffId) => {
+      if (staffId && connectedClients.has(staffId)) {
+        connectedClients.delete(staffId);
+        broadcastSync({
+          type: 'presence_update',
+          activeCount: connectedClients.size,
+          removedStaffId: staffId,
+        });
+      }
+    };
+
+    const queryStaffId = url.searchParams.get('staffId');
+    if (queryStaffId) {
+      handleDisconnectId(queryStaffId);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, activeWaitersCount: connectedClients.size }));
+      return;
+    }
+
+    let body = '';
+    req.on('data', (chunk) => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body || '{}');
+        if (data.staffId) {
+          handleDisconnectId(data.staffId);
+        }
+      } catch {}
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, activeWaitersCount: connectedClients.size }));
     });
     return;
   }
