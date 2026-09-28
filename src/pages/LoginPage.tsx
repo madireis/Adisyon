@@ -132,7 +132,7 @@ export default function LoginPage() {
           <div className="w-16 h-16 rounded-2xl bg-black p-2 shadow-md border border-stone-800 mb-3 flex items-center justify-center">
             <img 
               src={wotsLogo} 
-              alt="WOT'S" 
+              alt="WOT'S CAFE" 
               className="w-full h-full object-contain rounded-xl" 
             />
           </div>

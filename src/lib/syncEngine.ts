@@ -1,5 +1,5 @@
 import type { PosDatabase } from '@/lib/db';
-import { getLocalServerBaseUrl } from '@/lib/localNetwork';
+import { getLocalServerBaseUrl, isTestEnv } from '@/lib/localNetwork';
 
 // ─────────────────────────────────────────────────────────────
 // CLIENT IDENTIFICATION
@@ -264,11 +264,13 @@ function requestNetworkSnapshot() {
     } catch {}
   }
 
-  fetch(CLOUD_SYNC_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(req),
-  }).catch(() => {});
+  if (!isTestEnv()) {
+    fetch(CLOUD_SYNC_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req),
+    }).catch(() => {});
+  }
 }
 
 /**
@@ -305,11 +307,13 @@ async function respondToSnapshotRequest(db: PosDatabase, targetId: string) {
         } catch {}
       }
 
-      fetch(CLOUD_SYNC_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(resPayload),
-      }).catch(() => {});
+      if (!isTestEnv()) {
+        fetch(CLOUD_SYNC_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(resPayload),
+        }).catch(() => {});
+      }
     }
   } catch (e) {
     console.warn('[Sync Engine] Error sending snapshot response:', e);
@@ -324,6 +328,7 @@ let cloudEventSource: EventSource | null = null;
 
 function setupCloudSyncSSE(db: PosDatabase) {
   if (typeof window === 'undefined' || !window.EventSource) return;
+  if (isTestEnv()) return;
 
   try {
     // ?since=5s drops stale messages and connects directly to live stream
@@ -456,16 +461,18 @@ async function flushPendingChanges() {
   }
 
   // 2. Broadcast via Cloud HTTPS stream (ntfy.sh - works across devices anywhere)
-  try {
-    const jsonStr = JSON.stringify(payload);
-    if (jsonStr.length < 3800) {
-      fetch(CLOUD_SYNC_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: jsonStr,
-      }).catch(() => {});
-    }
-  } catch {}
+  if (!isTestEnv()) {
+    try {
+      const jsonStr = JSON.stringify(payload);
+      if (jsonStr.length < 3800) {
+        fetch(CLOUD_SYNC_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: jsonStr,
+        }).catch(() => {});
+      }
+    } catch {}
+  }
 
   // 3. Push to local WiFi Node server if running
   try {

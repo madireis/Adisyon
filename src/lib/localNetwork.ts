@@ -68,11 +68,25 @@ function notifyPresenceListeners() {
   }
 }
 
+export function isTestEnv(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return Boolean(
+      (window.navigator && window.navigator.webdriver) ||
+      window.location.search.includes('test=true') ||
+      window.location.port === '4173'
+    );
+  } catch {
+    return false;
+  }
+}
+
 // Setup Cloud SSE Stream for instant cross-device presence (Phone <-> PC)
 let cloudPresenceEventSource: EventSource | null = null;
 
 function setupCloudPresenceSSE() {
   if (typeof window === 'undefined' || !window.EventSource) return;
+  if (isTestEnv()) return;
   if (cloudPresenceEventSource) return;
 
   try {
@@ -319,22 +333,24 @@ export async function sendLocalHeartbeat(user: Staff): Promise<{ success: boolea
   }
 
   // 4. Publish heartbeat to Cloud Relay for cross-device (Phone <-> PC) sync
-  try {
-    const cloudStart = performance.now();
-    fetch(CLOUD_PRESENCE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'heartbeat',
-        senderId: PRESENCE_CLIENT_ID,
-        session: sessionData,
-      }),
-    }).then((res) => {
-      if (res.ok && !baseUrl) {
-        measuredPing = Math.max(1, Math.round(performance.now() - cloudStart));
-      }
-    }).catch(() => {});
-  } catch {}
+  if (!isTestEnv()) {
+    try {
+      const cloudStart = performance.now();
+      fetch(CLOUD_PRESENCE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'heartbeat',
+          senderId: PRESENCE_CLIENT_ID,
+          session: sessionData,
+        }),
+      }).then((res) => {
+        if (res.ok && !baseUrl) {
+          measuredPing = Math.max(1, Math.round(performance.now() - cloudStart));
+        }
+      }).catch(() => {});
+    } catch {}
+  }
 
   return { success: true, pingMs: measuredPing };
 }
@@ -378,25 +394,27 @@ export function disconnectLocalClient(staffId: string) {
   }
 
   // 4. Inform Cloud Relay immediately (beacon/keepalive guarantees delivery on tab close)
-  const cloudPayload = JSON.stringify({
-    type: 'disconnect',
-    senderId: PRESENCE_CLIENT_ID,
-    staffId,
-  });
+  if (!isTestEnv()) {
+    const cloudPayload = JSON.stringify({
+      type: 'disconnect',
+      senderId: PRESENCE_CLIENT_ID,
+      staffId,
+    });
 
-  try {
-    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-      const blob = new Blob([cloudPayload], { type: 'application/json' });
-      navigator.sendBeacon(CLOUD_PRESENCE_URL, blob);
-    } else {
-      fetch(CLOUD_PRESENCE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: cloudPayload,
-        keepalive: true,
-      }).catch(() => {});
-    }
-  } catch {}
+    try {
+      if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+        const blob = new Blob([cloudPayload], { type: 'application/json' });
+        navigator.sendBeacon(CLOUD_PRESENCE_URL, blob);
+      } else {
+        fetch(CLOUD_PRESENCE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: cloudPayload,
+          keepalive: true,
+        }).catch(() => {});
+      }
+    } catch {}
+  }
 }
 
 /**
