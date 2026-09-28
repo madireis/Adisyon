@@ -217,7 +217,7 @@ export async function applyRemoteSync(
 }
 
 /**
- * Handle incoming messages from Cloud SSE
+ * Handle incoming messages from Cloud SSE or BroadcastChannel
  */
 function handleIncomingNetworkMessage(db: PosDatabase, payload: any) {
   if (!payload || payload.senderId === CLIENT_ID) return;
@@ -227,8 +227,92 @@ function handleIncomingNetworkMessage(db: PosDatabase, payload: any) {
     return;
   }
 
+  // 1. Regular database mutation
   if (payload.changes || payload.deleted) {
     applyRemoteSync(db, payload.changes, payload.deleted, payload.senderId);
+    return;
+  }
+
+  // 2. Snapshot Request from newly joined device
+  if (payload.type === 'REQUEST_SNAPSHOT') {
+    respondToSnapshotRequest(db, payload.senderId);
+    return;
+  }
+
+  // 3. Snapshot Response received from an existing peer
+  if (payload.type === 'SNAPSHOT_RESPONSE' && payload.targetId === CLIENT_ID && payload.data) {
+    console.log('[Sync Engine] Applying snapshot from peer:', payload.senderId);
+    applyRemoteSync(db, payload.data, undefined, payload.senderId);
+    return;
+  }
+}
+
+/**
+ * Request latest active state from existing peers
+ */
+function requestNetworkSnapshot() {
+  const req = {
+    msgId: 'req_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8),
+    type: 'REQUEST_SNAPSHOT',
+    senderId: CLIENT_ID,
+    timestamp: Date.now(),
+  };
+
+  if (broadcastChannel) {
+    try {
+      broadcastChannel.postMessage(req);
+    } catch {}
+  }
+
+  fetch(CLOUD_SYNC_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  }).catch(() => {});
+}
+
+/**
+ * Respond to a snapshot request with active orders, tables, and tickets
+ */
+async function respondToSnapshotRequest(db: PosDatabase, targetId: string) {
+  if (!targetId || targetId === CLIENT_ID) return;
+
+  try {
+    const activeTables = await db.table('tables').where('status').notEqual('available').toArray();
+    const activeOrders = await db.orders.where('status').anyOf(['open', 'sent', 'preparing', 'ready', 'served']).toArray();
+    const activeTickets = await db.kitchenTickets.where('status').anyOf(['new', 'preparing', 'ready']).toArray();
+
+    if (activeTables.length > 0 || activeOrders.length > 0 || activeTickets.length > 0) {
+      const msgId = 'res_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+      markAndCheckProcessed(msgId);
+
+      const resPayload = {
+        msgId,
+        type: 'SNAPSHOT_RESPONSE',
+        targetId,
+        senderId: CLIENT_ID,
+        data: {
+          tables: activeTables,
+          orders: activeOrders,
+          kitchenTickets: activeTickets,
+        },
+        timestamp: Date.now(),
+      };
+
+      if (broadcastChannel) {
+        try {
+          broadcastChannel.postMessage(resPayload);
+        } catch {}
+      }
+
+      fetch(CLOUD_SYNC_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(resPayload),
+      }).catch(() => {});
+    }
+  } catch (e) {
+    console.warn('[Sync Engine] Error sending snapshot response:', e);
   }
 }
 
@@ -253,6 +337,13 @@ function setupCloudSyncSSE(db: PosDatabase) {
           handleIncomingNetworkMessage(db, payload);
         }
       } catch {}
+    };
+
+    cloudEventSource.onopen = () => {
+      // Request active state from peers when connected
+      setTimeout(() => {
+        requestNetworkSnapshot();
+      }, 600);
     };
 
     cloudEventSource.onerror = () => {
@@ -405,8 +496,7 @@ export function initSyncEngine(db: PosDatabase) {
     broadcastChannel.onmessage = (event) => {
       const data = event.data;
       if (data && data.senderId !== CLIENT_ID) {
-        if (data.msgId && markAndCheckProcessed(data.msgId)) return;
-        applyRemoteSync(db, data.changes, data.deleted, data.senderId);
+        handleIncomingNetworkMessage(db, data);
       }
     };
   }
