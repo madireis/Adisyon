@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
-import { Bell, Droplets, Receipt, CheckCircle2, ShoppingBag, Plus, Minus, Search, Sparkles } from 'lucide-react';
-import { cn, formatCurrency } from '@/lib/utils';
+import { Bell, Droplets, Receipt, CheckCircle2, ShoppingBag, Plus, Minus, Search, Sparkles, Check } from 'lucide-react';
+import { cn, formatCurrency, generateId } from '@/lib/utils';
 import PosIcon from '@/components/common/PosIcon';
-import type { MenuItem, Category, Table } from '@/types/pos';
+import type { MenuItem, Category, Table, Order, KitchenTicket, KitchenStation, OrderItem } from '@/types/pos';
 
 export default function CustomerQRPage() {
   const { tableId } = useParams<{ tableId: string }>();
@@ -14,6 +14,8 @@ export default function CustomerQRPage() {
   const [callAlert, setCallAlert] = useState<string | null>(null);
   const [cart, setCart] = useState<{ item: MenuItem; quantity: number }[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderSuccessBanner, setOrderSuccessBanner] = useState<string | null>(null);
 
   const table = useLiveQuery(async () => {
     if (!tableId) return null;
@@ -37,9 +39,164 @@ export default function CustomerQRPage() {
     return matchesCategory && matchesSearch;
   });
 
-  const handleCall = (action: string) => {
+  const handleCall = async (action: string) => {
     setCallAlert(action);
-    setTimeout(() => setCallAlert(null), 3500);
+    const tableLabel = table?.label || (tableId ? `Masa ${tableId}` : 'Masa');
+    try {
+      await db.auditLogs.add({
+        id: generateId(),
+        userId: 'qr_customer',
+        userName: `${tableLabel} (QR)`,
+        action: action,
+        details: `${tableLabel} müşterisi talepte bulundu: "${action}"`,
+        entityType: 'table',
+        entityId: table?.id || tableId || '',
+        timestamp: new Date().toISOString(),
+      });
+    } catch {}
+    setTimeout(() => setCallAlert(null), 4000);
+  };
+
+  const handleConfirmOrder = async () => {
+    if (cart.length === 0 || isSubmitting) return;
+    setIsSubmitting(true);
+
+    try {
+      // 1. Resolve table
+      const targetTable = table || (tableId ? await db.table<Table>('tables').get(tableId) : null) || (await db.table<Table>('tables').toCollection().first());
+      const resolvedTableId = targetTable?.id || tableId || 't-1';
+      const tableLabel = targetTable?.label || (tableId ? `M${tableId}` : 'Masa 1');
+      const nowIso = new Date().toISOString();
+
+      // 2. Check if active order already exists for this table
+      const existingOrder = await db.orders.where('tableId').equals(resolvedTableId)
+        .filter((o: Order) => o.status !== 'paid' && o.status !== 'cancelled')
+        .first();
+
+      let orderId = existingOrder?.id;
+
+      // 3. Map cart items to OrderItem
+      const newOrderItems: OrderItem[] = cart.map(c => ({
+        id: generateId(),
+        orderId: orderId || '',
+        menuItemId: c.item.id,
+        name: c.item.name,
+        quantity: c.quantity,
+        unitPrice: c.item.price,
+        modifiers: [],
+        notes: '',
+        status: 'sent',
+        station: c.item.station || 'kitchen',
+        addedAt: nowIso,
+        addedBy: 'qr_customer',
+      }));
+
+      const cartSubtotal = cart.reduce((acc, c) => acc + c.item.price * c.quantity, 0);
+      const cartTax = Math.round(cartSubtotal * 0.08);
+
+      if (existingOrder) {
+        orderId = existingOrder.id;
+        const updatedItems = [
+          ...existingOrder.items,
+          ...newOrderItems.map(i => ({ ...i, orderId: existingOrder.id })),
+        ];
+        const newSubtotal = existingOrder.subtotal + cartSubtotal;
+        const newTotal = newSubtotal;
+
+        await db.orders.update(existingOrder.id, {
+          items: updatedItems,
+          subtotal: newSubtotal,
+          total: newTotal,
+          status: 'sent',
+          sentToKitchenAt: nowIso,
+          updatedAt: nowIso,
+        });
+
+        await db.table<Table>('tables').update(resolvedTableId, {
+          status: 'occupied',
+        });
+      } else {
+        orderId = generateId();
+        const newOrder: Order = {
+          id: orderId,
+          tableId: resolvedTableId,
+          tableLabel,
+          waiterId: 'qr-customer',
+          waiterName: 'QR Menü',
+          status: 'sent',
+          items: newOrderItems.map(i => ({ ...i, orderId: orderId! })),
+          subtotal: cartSubtotal,
+          discount: 0,
+          tax: cartTax,
+          total: cartSubtotal,
+          guestCount: targetTable?.guestCount || 2,
+          createdAt: nowIso,
+          startedTakingAt: nowIso,
+          sentToKitchenAt: nowIso,
+          updatedAt: nowIso,
+          notes: 'Müşteri QR Menü Siparişi',
+        };
+
+        await db.orders.add(newOrder);
+        await db.table<Table>('tables').update(resolvedTableId, {
+          status: 'occupied',
+          currentOrderId: orderId,
+          occupiedAt: nowIso,
+          guestCount: targetTable?.guestCount || 2,
+        });
+      }
+
+      // 4. Group new items into kitchen tickets by station
+      const itemsByStation = new Map<KitchenStation, OrderItem[]>();
+      for (const item of newOrderItems) {
+        const station = item.station || 'kitchen';
+        const existing = itemsByStation.get(station) || [];
+        existing.push(item);
+        itemsByStation.set(station, existing);
+      }
+
+      for (const [station, items] of itemsByStation.entries()) {
+        const ticket: KitchenTicket = {
+          id: generateId(),
+          orderId: orderId!,
+          tableLabel,
+          station,
+          items: items.map(i => ({
+            name: i.name,
+            quantity: i.quantity,
+            modifiers: [],
+            notes: '',
+          })),
+          status: 'new',
+          createdAt: nowIso,
+          priority: false,
+        };
+        await db.kitchenTickets.add(ticket);
+      }
+
+      // 5. Add Audit Log
+      await db.auditLogs.add({
+        id: generateId(),
+        userId: 'qr_customer',
+        userName: `Masa ${tableLabel} (Müşteri)`,
+        action: 'QR Sipariş Mutfağa İletildi',
+        details: `${tableLabel} için ${cart.length} çeşit sipariş mutfak ekranına aktarıldı.`,
+        entityType: 'order',
+        entityId: orderId,
+        timestamp: nowIso,
+      });
+
+      // 6. Success Feedback
+      setOrderSuccessBanner(`${tableLabel} siparişiniz alındı ve mutfağa iletildi! Hazırlanmaya başlanıyor.`);
+      setCart([]);
+      setIsCartOpen(false);
+      setTimeout(() => setOrderSuccessBanner(null), 6000);
+    } catch (err: any) {
+      console.error('QR Sipariş Hatası:', err);
+      alert('Sipariş kaydedilirken bir hata oluştu: ' + (err?.message || err));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const addToCart = (item: MenuItem) => {
@@ -81,6 +238,13 @@ export default function CustomerQRPage() {
 
       {/* Action Call Banner */}
       <div className="max-w-md mx-auto p-3 sm:p-4 space-y-3">
+        {orderSuccessBanner && (
+          <div className="bg-emerald-600 text-white p-3.5 rounded-2xl text-xs font-bold text-center flex items-center justify-center gap-2 shadow-lg animate-in slide-in-from-top duration-300">
+            <CheckCircle2 size={18} className="shrink-0" />
+            <span>{orderSuccessBanner}</span>
+          </div>
+        )}
+
         {callAlert && (
           <div className="bg-emerald-600 text-white p-3 rounded-2xl text-xs font-bold text-center flex items-center justify-center gap-2 shadow-lg animate-bounce">
             <CheckCircle2 size={16} />
@@ -233,14 +397,18 @@ export default function CustomerQRPage() {
                 <span className="text-xl font-black text-orange-600 dark:text-orange-400">{formatCurrency(cartTotal)}</span>
               </div>
               <button
-                onClick={() => {
-                  alert('Siparişiniz masanıza kaydedildi ve mutfağa iletildi!');
-                  setCart([]);
-                  setIsCartOpen(false);
-                }}
-                className="w-full py-4 bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white rounded-2xl font-bold text-sm shadow-md transition-colors cursor-pointer"
+                onClick={handleConfirmOrder}
+                disabled={isSubmitting || cart.length === 0}
+                className="w-full py-4 bg-orange-600 hover:bg-orange-700 active:bg-orange-800 disabled:opacity-50 text-white rounded-2xl font-bold text-sm shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
               >
-                SİPARİŞİ ONAYLA
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>MUTFAĞA İLETİLİYOR...</span>
+                  </>
+                ) : (
+                  <span>SİPARİŞİ ONAYLA</span>
+                )}
               </button>
             </div>
           </div>

@@ -139,8 +139,13 @@ export default function OrderPage() {
       
       // Split new items into kitchen tickets by station
       const newItems = localItems.filter(i => i.status === 'open');
+      if (newItems.length === 0 && order && (order.status === 'sent' || order.status === 'preparing' || order.status === 'ready')) {
+        const resend = window.confirm('Bu adisyondaki ürünler zaten mutfağa iletilmiştir. Tekrar yeni mutfak fişi oluşturmak istiyor musunuz?');
+        if (!resend) return;
+      }
+      const itemsToTicket = newItems.length > 0 ? newItems : localItems;
       const itemsByStation = new Map<KitchenStation, OrderItem[]>();
-      for (const item of (newItems.length > 0 ? newItems : localItems)) {
+      for (const item of itemsToTicket) {
         const station = item.station || 'kitchen';
         const existing = itemsByStation.get(station) || [];
         existing.push(item);

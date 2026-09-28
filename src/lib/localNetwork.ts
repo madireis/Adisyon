@@ -24,6 +24,20 @@ export interface LocalNetworkInfo {
 
 const LOCAL_PRESENCE_KEY = 'wots_presence_sessions';
 const PRESENCE_CHANNEL_NAME = 'wots_presence_channel';
+const CLOUD_PRESENCE_URL = 'https://ntfy.sh/wots_pos_presence_madireis_restaurant';
+
+// Generate or retrieve persistent presence client identifier
+const PRESENCE_CLIENT_ID: string = (() => {
+  if (typeof sessionStorage !== 'undefined') {
+    let id = sessionStorage.getItem('wots_presence_client_id');
+    if (!id) {
+      id = 'pres_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now();
+      sessionStorage.setItem('wots_presence_client_id', id);
+    }
+    return id;
+  }
+  return 'pres_' + Math.random().toString(36).substring(2, 9);
+})();
 
 // Cross-tab broadcast channel for instantaneous zero-latency presence sync
 let presenceChannel: BroadcastChannel | null = null;
@@ -33,6 +47,82 @@ if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
   } catch {
     // Unsupported context
   }
+}
+
+// Presence listeners for instant UI updates when cloud SSE or local broadcast arrives
+type PresenceListener = () => void;
+const presenceListeners = new Set<PresenceListener>();
+
+export function subscribeToPresenceUpdates(listener: PresenceListener): () => void {
+  presenceListeners.add(listener);
+  return () => {
+    presenceListeners.delete(listener);
+  };
+}
+
+function notifyPresenceListeners() {
+  for (const listener of presenceListeners) {
+    try {
+      listener();
+    } catch {}
+  }
+}
+
+// Setup Cloud SSE Stream for instant cross-device presence (Phone <-> PC)
+let cloudPresenceEventSource: EventSource | null = null;
+
+function setupCloudPresenceSSE() {
+  if (typeof window === 'undefined' || !window.EventSource) return;
+  if (cloudPresenceEventSource) return;
+
+  try {
+    // ?since=10s drops stale messages and connects directly to live stream
+    cloudPresenceEventSource = new EventSource(`${CLOUD_PRESENCE_URL}/sse?since=10s`);
+
+    cloudPresenceEventSource.onmessage = (e) => {
+      try {
+        const ntfyData = JSON.parse(e.data);
+        if (ntfyData.event === 'message' && ntfyData.message) {
+          const payload = JSON.parse(ntfyData.message);
+          if (payload.senderId === PRESENCE_CLIENT_ID) return; // Ignore self echo
+
+          const now = Date.now();
+          const sessions = getLocalPresenceSessions();
+
+          if (payload.type === 'heartbeat' && payload.session && payload.session.id) {
+            // Drop stale heartbeats older than 8 seconds
+            if (now - (payload.session.lastSeen || 0) < 8000) {
+              sessions[payload.session.id] = {
+                ...payload.session,
+                lastSeen: now,
+                isOnline: true,
+              };
+              saveLocalPresenceSessions(sessions);
+              notifyPresenceListeners();
+            }
+          } else if (payload.type === 'disconnect' && payload.staffId) {
+            if (sessions[payload.staffId]) {
+              delete sessions[payload.staffId];
+              saveLocalPresenceSessions(sessions);
+              notifyPresenceListeners();
+            }
+          }
+        }
+      } catch {
+        // Parse error ignored
+      }
+    };
+
+    cloudPresenceEventSource.onerror = () => {
+      // Native EventSource auto-reconnects
+    };
+  } catch {
+    // Cloud SSE unsupported in this environment
+  }
+}
+
+if (typeof window !== 'undefined') {
+  setupCloudPresenceSSE();
 }
 
 /**
@@ -142,23 +232,26 @@ export async function fetchLocalNetworkInfo(): Promise<LocalNetworkInfo> {
     }
   }
 
-  // Fallback info derived from current browser URL or machine IP
+  const isWebHosted = hostname.includes('github.io') || 
+                      (!/^(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(hostname) && hostname.includes('.'));
   const fallbackIp = hostname === 'localhost' || hostname === '127.0.0.1' ? '192.168.1.33' : hostname;
   const fallbackPort = window.location.port ? parseInt(window.location.port, 10) : 3001;
   
   return {
-    status: baseUrl ? 'offline' : 'online',
-    serverName: 'Adisyon Yerel Ağ',
+    status: 'online',
+    serverName: isWebHosted ? 'Adisyon Bulut & Web Ağı' : 'Adisyon Yerel Ağ',
     localIp: fallbackIp,
     port: 3001,
     appPort: fallbackPort,
-    joinUrl: `http://${fallbackIp}:${fallbackPort}`,
+    joinUrl: isWebHosted 
+      ? `${window.location.origin}${window.location.pathname}#/login`
+      : `http://${fallbackIp}:${fallbackPort}/#/login`,
     activeCount: Object.keys(getLocalPresenceSessions()).length,
   };
 }
 
 /**
- * Send periodic heartbeat ping to local server & update presence store
+ * Send periodic heartbeat ping to local server & cloud relay
  * ONLY called if staff member is genuinely signed in!
  */
 export async function sendLocalHeartbeat(user: Staff): Promise<{ success: boolean; pingMs: number }> {
@@ -167,10 +260,10 @@ export async function sendLocalHeartbeat(user: Staff): Promise<{ success: boolea
   }
 
   const now = Date.now();
-  let measuredPing = 8;
+  let measuredPing = 12;
   const baseUrl = getLocalServerBaseUrl();
 
-  // 1. Try sending heartbeat to server if available
+  // 1. Try sending heartbeat to local Node.js server if available
   if (baseUrl) {
     const startTime = performance.now();
     try {
@@ -199,7 +292,7 @@ export async function sendLocalHeartbeat(user: Staff): Promise<{ success: boolea
     }
   }
 
-  // 2. Update local presence store (ensures cross-tab / local accuracy)
+  // 2. Update local presence store (ensures cross-tab & standalone accuracy)
   const sessions = getLocalPresenceSessions();
   const existing = sessions[user.id];
 
@@ -218,12 +311,30 @@ export async function sendLocalHeartbeat(user: Staff): Promise<{ success: boolea
   sessions[user.id] = sessionData;
   saveLocalPresenceSessions(sessions);
 
-  // 3. Notify sibling tabs
+  // 3. Notify sibling tabs on same device
   if (presenceChannel) {
     try {
       presenceChannel.postMessage({ type: 'heartbeat', staffId: user.id, session: sessionData });
     } catch {}
   }
+
+  // 4. Publish heartbeat to Cloud Relay for cross-device (Phone <-> PC) sync
+  try {
+    const cloudStart = performance.now();
+    fetch(CLOUD_PRESENCE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'heartbeat',
+        senderId: PRESENCE_CLIENT_ID,
+        session: sessionData,
+      }),
+    }).then((res) => {
+      if (res.ok && !baseUrl) {
+        measuredPing = Math.max(1, Math.round(performance.now() - cloudStart));
+      }
+    }).catch(() => {});
+  } catch {}
 
   return { success: true, pingMs: measuredPing };
 }
@@ -265,17 +376,40 @@ export function disconnectLocalClient(staffId: string) {
       }
     } catch {}
   }
+
+  // 4. Inform Cloud Relay immediately (beacon/keepalive guarantees delivery on tab close)
+  const cloudPayload = JSON.stringify({
+    type: 'disconnect',
+    senderId: PRESENCE_CLIENT_ID,
+    staffId,
+  });
+
+  try {
+    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+      const blob = new Blob([cloudPayload], { type: 'application/json' });
+      navigator.sendBeacon(CLOUD_PRESENCE_URL, blob);
+    } else {
+      fetch(CLOUD_PRESENCE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: cloudPayload,
+        keepalive: true,
+      }).catch(() => {});
+    }
+  } catch {}
 }
 
 /**
- * Fetch active garsons connected to local WiFi / Web App.
+ * Fetch active garsons connected to local WiFi / Cloud Web App.
  * Returns ONLY real, genuinely signed-in staff members.
- * Never returns fake / mock demo data.
+ * Supports BOTH local Node.js server AND cloud relay seamlessly.
  */
 export async function fetchConnectedGarsonsList(currentUser?: Staff | null): Promise<ConnectedGarson[]> {
   const baseUrl = getLocalServerBaseUrl();
+  const now = Date.now();
+  const mergedMap = new Map<string, ConnectedGarson>();
 
-  // 1. Try to fetch live list from Node.js server
+  // 1. Fetch live list from Node.js server if local server is active
   if (baseUrl) {
     try {
       const controller = new AbortController();
@@ -289,8 +423,11 @@ export async function fetchConnectedGarsonsList(currentUser?: Staff | null): Pro
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data.garsons)) {
-          // If server returned valid array, return it directly!
-          return data.garsons;
+          for (const g of data.garsons) {
+            if (g && g.id) {
+              mergedMap.set(g.id, { ...g, isOnline: true });
+            }
+          }
         }
       }
     } catch {
@@ -298,25 +435,25 @@ export async function fetchConnectedGarsonsList(currentUser?: Staff | null): Pro
     }
   }
 
-  // 2. Local fallback from presence sessions store (cross-tab / standalone)
-  const now = Date.now();
+  // 2. Merge sessions from presence sessions store (Cloud SSE + BroadcastChannel updates)
   const sessions = getLocalPresenceSessions();
-  const activeList: ConnectedGarson[] = [];
   let hasPruned = false;
 
   for (const [id, session] of Object.entries(sessions)) {
     // If no heartbeat in last 8 seconds, mark as closed/inactive
     if (now - session.lastSeen < 8000) {
-      activeList.push({ ...session, isOnline: true });
+      const existing = mergedMap.get(id);
+      if (!existing || session.lastSeen > existing.lastSeen) {
+        mergedMap.set(id, { ...session, isOnline: true });
+      }
     } else {
       delete sessions[id];
       hasPruned = true;
     }
   }
 
-  // If currentUser is signed in and not yet recorded or outdated, ensure active
+  // 3. If currentUser is signed in and not yet recorded or outdated, ensure self is active
   if (currentUser && currentUser.id) {
-    const existingIndex = activeList.findIndex((g) => g.id === currentUser.id);
     const selfSession: ConnectedGarson = {
       id: currentUser.id,
       name: currentUser.name,
@@ -328,12 +465,7 @@ export async function fetchConnectedGarsonsList(currentUser?: Staff | null): Pro
       lastSeen: now,
       isOnline: true,
     };
-
-    if (existingIndex >= 0) {
-      activeList[existingIndex] = { ...activeList[existingIndex], lastSeen: now, isOnline: true };
-    } else {
-      activeList.push(selfSession);
-    }
+    mergedMap.set(currentUser.id, selfSession);
     sessions[currentUser.id] = selfSession;
     hasPruned = true;
   }
@@ -342,5 +474,5 @@ export async function fetchConnectedGarsonsList(currentUser?: Staff | null): Pro
     saveLocalPresenceSessions(sessions);
   }
 
-  return activeList;
+  return Array.from(mergedMap.values());
 }

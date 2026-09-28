@@ -5,6 +5,7 @@ import {
   fetchConnectedGarsonsList,
   sendLocalHeartbeat,
   disconnectLocalClient,
+  subscribeToPresenceUpdates,
   type LocalNetworkInfo,
   type ConnectedGarson,
 } from '@/lib/localNetwork';
@@ -48,7 +49,7 @@ export function useLocalNetwork() {
     }
   }, [currentUser]);
 
-  // Hook lifecycle: Periodic refresh, BroadcastChannel, beforeunload & pagehide
+  // Hook lifecycle: Periodic refresh, Cloud SSE, BroadcastChannel, beforeunload & pagehide
   useEffect(() => {
     refresh();
 
@@ -57,7 +58,12 @@ export function useLocalNetwork() {
       refresh();
     }, 3000);
 
-    // 2. Real-time BroadcastChannel listener for instantaneous updates
+    // 2. Real-time Cloud SSE & presence updates listener (instant cross-device notify)
+    const unsubPresence = subscribeToPresenceUpdates(() => {
+      fetchConnectedGarsonsList(currentUser).then(setConnectedGarsons);
+    });
+
+    // 3. Real-time BroadcastChannel listener for instantaneous same-machine tab updates
     let channel: BroadcastChannel | null = null;
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       try {
@@ -68,7 +74,7 @@ export function useLocalNetwork() {
       } catch {}
     }
 
-    // 3. Immediate disconnect on window close / page hide / tab close
+    // 4. Immediate disconnect on window close / page hide / tab close
     const handleClose = () => {
       const id = currentUserIdRef.current;
       if (id) {
@@ -88,6 +94,7 @@ export function useLocalNetwork() {
 
     return () => {
       clearInterval(intervalId);
+      unsubPresence();
       if (channel) {
         channel.close();
       }
@@ -104,6 +111,6 @@ export function useLocalNetwork() {
     pingMs,
     loading,
     refresh,
-    activeGarsonCount: connectedGarsons.filter((g) => g.isOnline).length,
+    activeGarsonCount: connectedGarsons.filter((g) => g.isOnline && g.role === 'waiter').length,
   };
 }
