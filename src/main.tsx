@@ -4,17 +4,24 @@ import { HashRouter } from 'react-router-dom';
 import App from './App';
 import { AppProvider } from './lib/store';
 import { ThemeProvider } from './lib/theme';
+import { initDevLogger } from './lib/devLogger';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import './index.css';
+
+// Immediately boot global developer logger and error capture
+initDevLogger();
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <AppProvider>
-        <HashRouter>
-          <App />
-        </HashRouter>
-      </AppProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AppProvider>
+          <HashRouter>
+            <App />
+          </HashRouter>
+        </AppProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );
 

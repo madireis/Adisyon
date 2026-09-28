@@ -1,5 +1,5 @@
 // ─── Core Enums ───────────────────────────────────────────────
-export type UserRole = 'owner' | 'manager' | 'cashier' | 'waiter' | 'kitchen' | 'bar'
+export type UserRole = 'owner' | 'manager' | 'cashier' | 'waiter' | 'kitchen' | 'bar' | 'developer'
 
 export type TableStatus = 'available' | 'occupied' | 'payment_waiting' | 'reserved' | 'cleaning' | 'offline'
 
@@ -302,3 +302,40 @@ export interface AppNotification {
   timestamp: string
   read: boolean
 }
+
+// ─── Developer Diagnostics & Error Logging ────────────────────
+export type DevLogLevel = 'error' | 'warn' | 'info' | 'network' | 'sync' | 'db'
+
+export interface DevLogEntry {
+  id: string
+  timestamp: string
+  level: DevLogLevel
+  category: string
+  message: string
+  stack?: string
+  data?: unknown
+  route?: string
+  userRole?: string
+  userAgent?: string
+}
+
+export interface SystemDiagnosticInfo {
+  os: string
+  osVersion: string
+  browser: string
+  browserVersion: string
+  deviceType: 'mobile' | 'tablet' | 'desktop'
+  touchSupported: boolean
+  screenWidth: number
+  screenHeight: number
+  viewportWidth: number
+  viewportHeight: number
+  pixelRatio: number
+  isPwaStandalone: boolean
+  isOnline: boolean
+  networkType?: string
+  storageEstimate?: { usage: number; quota: number; percent: number }
+  memoryUsage?: { usedJSHeapSize: number; totalJSHeapSize: number }
+  dexieStatus: { isReady: boolean; tableCounts: Record<string, number> }
+}
+

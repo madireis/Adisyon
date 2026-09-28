@@ -63,7 +63,7 @@ const initialState: AppState = {
 function appReducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'LOGIN': {
-      const isManager = action.user.role === 'owner' || action.user.role === 'manager';
+      const isManager = action.user.role === 'owner' || action.user.role === 'manager' || action.user.role === 'developer';
       const origManager = action.managerSession !== undefined 
         ? action.managerSession 
         : (isManager ? action.user : null);

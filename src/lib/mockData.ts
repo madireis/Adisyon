@@ -510,6 +510,7 @@ export const staffMembers: Staff[] = [
   { id: 'staff-5', name: 'Elif Şahin', username: '1005', role: 'bar', pin: '5678', active: true },
   { id: 'staff-6', name: 'Murat Bey', username: '1006', role: 'manager', pin: '7890', active: true },
   { id: 'staff-7', name: 'Patron', username: '1007', role: 'owner', pin: '9999', active: true },
+  { id: 'staff-dev', name: 'Sistem Geliştirici (Dev)', username: 'developer', role: 'developer', pin: '0000', active: true },
 ]
 
 // ─── SAMPLE ORDERS (Empty for production) ────────────────────────────
@@ -681,6 +682,18 @@ export async function seedDatabase(db: import('@/lib/db').PosDatabase) {
         const fallbackUsername = match ? match.username : `100${s.id.replace(/\D/g, '') || Math.floor(Math.random() * 900 + 100)}`
         await db.staff.update(s.id, { username: fallbackUsername })
       }
+    }
+    // Ensure staff-dev exists in db
+    const devUser = await db.staff.get('staff-dev')
+    if (!devUser) {
+      await db.staff.put({
+        id: 'staff-dev',
+        name: 'Sistem Geliştirici (Dev)',
+        username: 'developer',
+        role: 'developer',
+        pin: '0000',
+        active: true
+      })
     }
   } catch {
     // ignore

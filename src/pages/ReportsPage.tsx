@@ -733,40 +733,42 @@ export default function ReportsPage() {
         </div>
 
         {/* 2. KASADAKİ NET NAKİT (DRAWER BALANCE) */}
-        <div className="bg-emerald-50/60 dark:bg-emerald-950/20 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-emerald-200 dark:border-emerald-900/50 shadow-xs flex flex-col justify-between">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-stone-200 dark:border-stone-800 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] sm:text-xs font-black text-emerald-800 dark:text-emerald-400 uppercase tracking-wider">
+              <span className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider">
                 Kasadaki Nakit
               </span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 flex items-center justify-center">
                 <Banknote size={16} />
               </div>
             </div>
             <div className="mt-2 sm:mt-3">
-              <div className="text-base sm:text-2xl font-mono font-black text-emerald-900 dark:text-emerald-300 truncate">
+              <div className="text-base sm:text-2xl font-mono font-black text-stone-950 dark:text-white truncate">
                 {formatCurrency(metrics.expectedDrawerCash)}
               </div>
-              <div className="text-[10px] sm:text-[11px] text-emerald-700/80 dark:text-emerald-400/80 mt-0.5 truncate">
-                Nakit: {formatCurrency(metrics.cashRevenue)}
+              <div className="text-[10px] sm:text-xs text-stone-500 mt-0.5 truncate">
+                Nakit Satış: {formatCurrency(metrics.cashRevenue)}
               </div>
             </div>
           </div>
 
           {/* Visual Liquidity Ratio */}
-          <div className="mt-2.5 pt-2 border-t border-emerald-200/60 dark:border-emerald-900/60">
-            <div className="flex justify-between text-[9px] sm:text-[10px] font-bold text-emerald-800 dark:text-emerald-400 mb-1">
-              <span>Kasa Dengesi</span>
-              <span>{metrics.expectedDrawerCash >= 0 ? '✓ Pozitif' : '⚠️ Açık'}</span>
+          <div className="mt-2.5 pt-2 border-t border-stone-100 dark:border-stone-800/80">
+            <div className="flex justify-between text-[9px] sm:text-[10px] font-bold text-stone-500 dark:text-stone-400 mb-1">
+              <span>Kasa Durumu</span>
+              <span className={metrics.expectedDrawerCash >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"}>
+                {metrics.expectedDrawerCash >= 0 ? 'Dengeli' : 'Açık'}
+              </span>
             </div>
-            <div className="w-full h-1.5 bg-emerald-200/50 dark:bg-emerald-900/50 rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
               <div 
                 style={{ 
                   width: `${metrics.cashRevenue + metrics.cashInTotal > 0 
                     ? Math.min(100, Math.round((Math.max(0, metrics.expectedDrawerCash) / (metrics.cashRevenue + metrics.cashInTotal)) * 100)) 
                     : 100}%` 
                 }} 
-                className="bg-emerald-600 h-full transition-all duration-500" 
+                className="bg-orange-600 h-full transition-all duration-500" 
               />
             </div>
           </div>
@@ -779,7 +781,7 @@ export default function ReportsPage() {
               <span className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider">
                 Banka / POS
               </span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-blue-100 dark:bg-blue-950/50 text-blue-600 flex items-center justify-center">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 flex items-center justify-center">
                 <CreditCard size={16} />
               </div>
             </div>
@@ -797,43 +799,43 @@ export default function ReportsPage() {
           <div className="mt-2.5 pt-2 border-t border-stone-100 dark:border-stone-800/80">
             <div className="flex justify-between text-[9px] sm:text-[10px] font-bold text-stone-500 dark:text-stone-400 mb-1">
               <span>Banka Payı</span>
-              <span className="text-blue-600 dark:text-blue-400">%{posPercent}</span>
+              <span className="text-orange-600 dark:text-orange-400">%{posPercent}</span>
             </div>
             <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
-              <div style={{ width: `${posPercent}%` }} className="bg-blue-500 h-full transition-all duration-500" />
+              <div style={{ width: `${posPercent}%` }} className="bg-orange-600 h-full transition-all duration-500" />
             </div>
           </div>
         </div>
 
         {/* 4. KASADAN ÇIKAN MASRAFLAR */}
-        <div className="bg-red-50/50 dark:bg-red-950/20 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-red-200 dark:border-red-900/50 shadow-xs flex flex-col justify-between">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-stone-200 dark:border-stone-800 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] sm:text-xs font-black text-red-800 dark:text-red-400 uppercase tracking-wider">
+              <span className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider">
                 Masraflar
               </span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-red-600/20 text-red-600 flex items-center justify-center">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 flex items-center justify-center">
                 <ArrowUpRight size={16} />
               </div>
             </div>
             <div className="mt-2 sm:mt-3">
-              <div className="text-base sm:text-2xl font-mono font-black text-red-900 dark:text-red-300 truncate">
+              <div className="text-base sm:text-2xl font-mono font-black text-stone-950 dark:text-white truncate">
                 {formatCurrency(metrics.cashOutTotal)}
               </div>
-              <div className="text-[10px] sm:text-xs text-red-700/80 dark:text-red-400/80 mt-0.5 truncate">
+              <div className="text-[10px] sm:text-xs text-stone-500 mt-0.5 truncate">
                 {filteredCash.filter(t => t.type === 'out').length} gider kalemi
               </div>
             </div>
           </div>
 
           {/* Visual Expense share */}
-          <div className="mt-2.5 pt-2 border-t border-red-200/60 dark:border-red-900/60">
-            <div className="flex justify-between text-[9px] sm:text-[10px] font-bold text-red-800 dark:text-red-400 mb-1">
-              <span>Gider Yükü</span>
-              <span>%{expenseRatio}</span>
+          <div className="mt-2.5 pt-2 border-t border-stone-100 dark:border-stone-800/80">
+            <div className="flex justify-between text-[9px] sm:text-[10px] font-bold text-stone-500 dark:text-stone-400 mb-1">
+              <span>Gider Oranı</span>
+              <span className="text-stone-600 dark:text-stone-400">%{expenseRatio}</span>
             </div>
-            <div className="w-full h-1.5 bg-red-200/50 dark:bg-red-900/50 rounded-full overflow-hidden">
-              <div style={{ width: `${Math.min(100, expenseRatio)}%` }} className="bg-red-500 h-full transition-all duration-500" />
+            <div className="w-full h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
+              <div style={{ width: `${Math.min(100, expenseRatio)}%` }} className="bg-stone-500 h-full transition-all duration-500" />
             </div>
           </div>
         </div>
@@ -846,33 +848,28 @@ export default function ReportsPage() {
           type="button"
           onClick={() => setActiveTab('SUMMARY')}
           className={cn(
-            "pb-2.5 sm:pb-3 px-3 sm:px-3.5 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
+            "pb-2.5 sm:pb-3 px-3 sm:px-3.5 text-xs sm:text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
             activeTab === 'SUMMARY'
               ? "border-orange-600 text-orange-600 dark:text-orange-400"
               : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
           )}
         >
           <BarChart3 size={16} />
-          <span className="sm:hidden">Grafikler</span>
-          <span className="hidden sm:inline">Grafikler & Görsel Kasa</span>
-          <span className="text-[10px] bg-orange-100 dark:bg-orange-950/80 text-orange-700 dark:text-orange-300 px-1.5 py-0.5 rounded-full font-bold">
-            Canlı
-          </span>
+          <span>Özet</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('CASH_REGISTER')}
           className={cn(
-            "pb-2.5 sm:pb-3 px-2.5 sm:px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
+            "pb-2.5 sm:pb-3 px-2.5 sm:px-3 text-xs sm:text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
             activeTab === 'CASH_REGISTER'
               ? "border-orange-600 text-orange-600 dark:text-orange-400"
               : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
           )}
         >
           <Banknote size={16} />
-          <span className="sm:hidden">Kasa Defteri</span>
-          <span className="hidden sm:inline">Kasa Defteri (Giriş / Çıkış)</span>
+          <span>Kasa Defteri</span>
           <span className="text-[10px] bg-stone-200 dark:bg-stone-800 px-1.5 py-0.5 rounded-full font-mono">
             {filteredCash.length}
           </span>
@@ -882,15 +879,14 @@ export default function ReportsPage() {
           type="button"
           onClick={() => setActiveTab('ORDERS')}
           className={cn(
-            "pb-2.5 sm:pb-3 px-2.5 sm:px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
+            "pb-2.5 sm:pb-3 px-2.5 sm:px-3 text-xs sm:text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
             activeTab === 'ORDERS'
               ? "border-orange-600 text-orange-600 dark:text-orange-400"
               : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
           )}
         >
           <Receipt size={16} />
-          <span className="sm:hidden">Adisyonlar</span>
-          <span className="hidden sm:inline">Adisyon & Garson Geçmişi</span>
+          <span>Adisyonlar</span>
           <span className="text-[10px] bg-stone-200 dark:bg-stone-800 px-1.5 py-0.5 rounded-full font-mono">
             {filteredOrders.length}
           </span>
@@ -900,45 +896,42 @@ export default function ReportsPage() {
           type="button"
           onClick={() => setActiveTab('STAFF')}
           className={cn(
-            "pb-2.5 sm:pb-3 px-2.5 sm:px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
+            "pb-2.5 sm:pb-3 px-2.5 sm:px-3 text-xs sm:text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
             activeTab === 'STAFF'
               ? "border-orange-600 text-orange-600 dark:text-orange-400"
               : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
           )}
         >
           <Users size={16} />
-          <span className="sm:hidden">Garsonlar</span>
-          <span className="hidden sm:inline">Garson Satış Dağılımı</span>
+          <span>Personel</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('PAYMENTS')}
           className={cn(
-            "pb-2.5 sm:pb-3 px-2.5 sm:px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
+            "pb-2.5 sm:pb-3 px-2.5 sm:px-3 text-xs sm:text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
             activeTab === 'PAYMENTS'
               ? "border-orange-600 text-orange-600 dark:text-orange-400"
               : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
           )}
         >
           <CreditCard size={16} />
-          <span className="sm:hidden">Tahsilat</span>
-          <span className="hidden sm:inline">Tahsilat Kanalları</span>
+          <span>Ödemeler</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('PRODUCTS')}
           className={cn(
-            "pb-2.5 sm:pb-3 px-2.5 sm:px-3 text-xs sm:text-sm font-black transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
+            "pb-2.5 sm:pb-3 px-2.5 sm:px-3 text-xs sm:text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2 cursor-pointer",
             activeTab === 'PRODUCTS'
               ? "border-orange-600 text-orange-600 dark:text-orange-400"
               : "border-transparent text-stone-500 hover:text-stone-800 dark:hover:text-stone-300"
           )}
         >
           <PieChartIcon size={16} />
-          <span className="sm:hidden">Ürünler</span>
-          <span className="hidden sm:inline">En Çok Satanlar</span>
+          <span>Ürünler</span>
         </button>
       </div>
 

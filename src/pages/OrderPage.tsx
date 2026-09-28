@@ -327,13 +327,13 @@ export default function OrderPage() {
             key={cat.id}
             onClick={() => setActiveCategoryId(cat.id)}
             className={cn(
-              "flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-extrabold whitespace-nowrap transition-all shrink-0 active:scale-95 cursor-pointer ios-spring shadow-xs",
+              "flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-colors shrink-0 cursor-pointer shadow-xs",
               activeCategoryId === cat.id
-                ? "bg-orange-600 text-white shadow-sm"
-                : "bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300"
+                ? "bg-orange-600 text-white shadow-xs"
+                : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-800"
             )}
           >
-            <PosIcon name={cat.icon} className={cn("w-3.5 h-3.5 shrink-0", activeCategoryId === cat.id ? "text-white" : "text-stone-950 dark:text-stone-950")} />
+            <PosIcon name={cat.icon} className={cn("w-3.5 h-3.5 shrink-0", activeCategoryId === cat.id ? "text-white" : "text-stone-500 dark:text-stone-400")} />
             <span>{cat.name}</span>
           </button>
         ))}
@@ -341,28 +341,28 @@ export default function OrderPage() {
 
       {/* Desktop Left Panel: Categories (hidden on mobile, visible lg:flex) */}
       <div className="hidden lg:flex w-52 bg-white dark:bg-stone-900 border-r border-stone-200 dark:border-stone-800 flex-col h-full overflow-y-auto shrink-0">
-        <div className="p-3.5 border-b border-stone-200 dark:border-stone-800 shrink-0">
+        <div className="p-3 border-b border-stone-200 dark:border-stone-800 shrink-0">
            <button 
              onClick={() => navigate('/tables')} 
-             className="flex items-center gap-2 text-stone-900 dark:text-stone-100 hover:text-orange-600 dark:hover:text-orange-400 font-bold text-sm px-2 py-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors w-full cursor-pointer"
+             className="flex items-center gap-2 text-stone-700 dark:text-stone-300 hover:text-orange-600 dark:hover:text-orange-400 font-bold text-xs px-2.5 py-2 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors w-full cursor-pointer"
            >
-             <ChevronLeft className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+             <ChevronLeft className="w-4 h-4 text-orange-600" />
              <span>Masalara Dön</span>
            </button>
         </div>
-        <div className="flex-1 py-2 space-y-1.5 px-2">
+        <div className="flex-1 py-2 space-y-1 px-2">
           {categories.map(cat => (
             <button
               key={cat.id}
               onClick={() => setActiveCategoryId(cat.id)}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left text-sm font-bold cursor-pointer",
+                "w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors text-left text-xs font-semibold cursor-pointer",
                 activeCategoryId === cat.id
-                  ? "bg-orange-600 text-white shadow-sm font-extrabold"
-                  : "bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-200 dark:border-stone-300 shadow-2xs"
+                  ? "bg-orange-600 text-white font-bold shadow-xs"
+                  : "bg-transparent text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800"
               )}
             >
-              <PosIcon name={cat.icon} className={cn("w-5 h-5 shrink-0", activeCategoryId === cat.id ? "text-white" : "text-stone-950 dark:text-stone-950")} />
+              <PosIcon name={cat.icon} className={cn("w-4 h-4 shrink-0", activeCategoryId === cat.id ? "text-white" : "text-stone-500 dark:text-stone-400")} />
               <span className="truncate">{cat.name}</span>
             </button>
           ))}
@@ -727,10 +727,10 @@ export default function OrderPage() {
                     setIsPaymentModalOpen(true);
                   }}
                   disabled={!order && localItems.length === 0}
-                  className="py-3 px-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
+                  className="py-3 px-2 bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
                 >
                   <CreditCard className="w-3.5 h-3.5" />
-                  <span>Hesabı Al</span>
+                  <span>Ödeme Al</span>
                 </button>
               </div>
             </div>
@@ -923,19 +923,19 @@ export default function OrderPage() {
                 setIsSlipModalOpen(true);
               }} 
               disabled={!order && localItems.length === 0}
-              className="w-full py-3 px-3 rounded-xl font-black text-xs bg-white text-stone-950 hover:bg-stone-100 border border-stone-300 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
+              className="w-full py-2.5 px-3 rounded-xl font-bold text-xs bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50 transition-colors"
             >
-              <Printer className="w-4 h-4 text-stone-950" />
-              <span>HESAP / ADİSYON FİŞİ YAZDIR</span>
+              <Printer className="w-4 h-4 text-stone-300" />
+              <span>Fiş Yazdır</span>
             </button>
             <button 
               type="button"
               onClick={() => setIsPaymentModalOpen(true)} 
               disabled={!order && localItems.length === 0}
-              className="w-full py-3.5 px-4 rounded-xl font-black text-sm bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all"
+              className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-orange-600 text-white hover:bg-orange-500 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-colors"
             >
-              <CreditCard className="w-5 h-5" />
-              <span>HESABI AL & ÖDEME</span>
+              <CreditCard className="w-4 h-4" />
+              <span>Ödeme Al</span>
             </button>
           </div>
         </div>

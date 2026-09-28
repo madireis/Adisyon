@@ -41,19 +41,19 @@ export default function StaffPage() {
   const roleBadge = (role: UserRole) => {
     switch (role) {
       case 'owner':
-        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 flex items-center gap-1 w-max"><Shield size={12} /> Patron</span>;
+        return <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 flex items-center gap-1 w-max"><Shield size={12} /> Patron</span>;
       case 'manager':
-        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 flex items-center gap-1 w-max"><Shield size={12} /> Müdür</span>;
+        return <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-stone-800 text-stone-200 dark:bg-stone-200 dark:text-stone-800 flex items-center gap-1 w-max"><Shield size={12} /> Müdür</span>;
       case 'cashier':
-        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 w-max">Kasiyer</span>;
+        return <span className="px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 w-max">Kasiyer</span>;
       case 'waiter':
-        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/60 w-max">Garson</span>;
+        return <span className="px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-900/60 w-max">Garson</span>;
       case 'kitchen':
-        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 w-max">Mutfak Şefi</span>;
+        return <span className="px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 w-max">Mutfak Şefi</span>;
       case 'bar':
-        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800/60 w-max">Bar & Kahve</span>;
+        return <span className="px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 w-max">Bar & Kahve</span>;
       default:
-        return <span className="px-3 py-1 rounded-full text-xs font-bold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 w-max">{role}</span>;
+        return <span className="px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 w-max">{role}</span>;
     }
   };
 
@@ -210,22 +210,22 @@ export default function StaffPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 dark:text-stone-100 tracking-tight">Personel Yönetimi</h1>
-          <p className="text-stone-500 text-sm mt-1">Wot's Cafe çalışan hesapları, PIN kodları, yetkilendirme ve Yerel WiFi bağlantıları</p>
+          <p className="text-stone-500 text-sm mt-1">Personel hesapları, PIN kodları ve yetkilendirme</p>
         </div>
         <div className="flex items-center gap-2">
           <button 
             onClick={() => setIsNetworkModalOpen(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+            className="bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 border border-stone-200 dark:border-stone-700 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 shadow-2xs transition-colors cursor-pointer"
           >
-            <Wifi size={18} className="animate-pulse" />
-            <span>Garson WiFi QR & Bağlantılar</span>
+            <Wifi size={16} />
+            <span>WiFi & Ağ</span>
           </button>
           <button 
             onClick={openAddModal}
-            className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
           >
-            <UserPlus size={18} />
-            Yeni Personel Ekle
+            <UserPlus size={16} />
+            <span>Yeni Personel</span>
           </button>
         </div>
       </div>

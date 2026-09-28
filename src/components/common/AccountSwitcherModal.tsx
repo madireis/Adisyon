@@ -75,12 +75,14 @@ export default function AccountSwitcherModal({ isOpen, onClose }: AccountSwitche
     dispatch({ type: 'SWITCH_ACCOUNT', user: staff });
 
     // Intelligently route to selected staff's primary workspace
-    if (staff.role === 'waiter' || staff.role === 'cashier') {
+    if (staff.role === 'developer') {
+      navigate('/developer');
+    } else if (staff.role === 'waiter' || staff.role === 'cashier') {
       navigate('/tables');
     } else if (staff.role === 'kitchen' || staff.role === 'bar') {
       navigate('/kitchen');
     } else {
-      navigate('/dashboard');
+      navigate('/tables');
     }
 
     onClose();
@@ -91,12 +93,18 @@ export default function AccountSwitcherModal({ isOpen, onClose }: AccountSwitche
       disconnectLocalClient(currentUser.id);
     }
     dispatch({ type: 'RESTORE_MANAGER' });
-    navigate('/dashboard');
+    if (originalManager?.role === 'developer') {
+      navigate('/developer');
+    } else {
+      navigate('/reports');
+    }
     onClose();
   };
 
   const getRoleBadge = (role: UserRole) => {
     switch (role) {
+      case 'developer':
+        return <span className="bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 text-[10px] font-black px-2 py-0.5 rounded-full uppercase border border-rose-200 dark:border-rose-800">Geliştirici</span>;
       case 'owner':
         return <span className="bg-purple-100 dark:bg-purple-950/80 text-purple-800 dark:text-purple-300 text-[10px] font-black px-2 py-0.5 rounded-full uppercase border border-purple-200 dark:border-purple-800">Patron</span>;
       case 'manager':

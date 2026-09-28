@@ -38,16 +38,16 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with App Branding */}
-        <div className="relative p-6 bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 text-white text-center">
+        <div className="relative p-6 bg-stone-950 text-white text-center border-b border-stone-800">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-black/20 hover:bg-black/30 text-white transition-colors cursor-pointer"
+            className="absolute top-4 right-4 p-2 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 transition-colors cursor-pointer"
             title="Kapat"
           >
             <X size={18} />
           </button>
 
-          <div className="w-20 h-20 mx-auto rounded-2xl bg-black p-2 shadow-lg mb-3 flex items-center justify-center border-2 border-white/40">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-black p-1.5 shadow-lg mb-3 flex items-center justify-center border border-stone-800">
             <img
               src={wotsLogo}
               alt="Wot's Cafe Logo"
@@ -55,15 +55,10 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
             />
           </div>
 
-          <h2 className="text-xl font-black tracking-tight">WOT'S CAFE ADİSYON</h2>
-          <p className="text-xs text-orange-100 font-semibold mt-1">
-            Telefona Yükleyin • Uygulama Gibi Kullanın
+          <h2 className="text-lg font-black tracking-tight">Uygulamayı Telefona İndir</h2>
+          <p className="text-xs text-stone-400 font-medium mt-1">
+            Tarayıcı çubuğu olmadan tam ekran ve hızlı kullanım
           </p>
-
-          <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/20 text-white text-[11px] font-bold backdrop-blur-xs">
-            <Sparkles size={12} className="text-amber-300" />
-            <span>PWA • Tam Ekran Deneyimi</span>
-          </div>
         </div>
 
         {/* Content Body */}
@@ -154,26 +149,26 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
 
           {/* Advantages List */}
           <div className="pt-2 border-t border-stone-100 dark:border-stone-800 space-y-2">
-            <span className="text-[10px] font-black uppercase tracking-wider text-stone-400 dark:text-stone-500 block mb-1">
-              Uygulamanın Avantajları:
+            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 block mb-1">
+              Özellikler:
             </span>
 
-            <div className="grid grid-cols-2 gap-2 text-[11px] font-semibold text-stone-600 dark:text-stone-300">
-              <div className="flex items-center gap-1.5 p-2 rounded-xl bg-stone-50 dark:bg-stone-950">
+            <div className="grid grid-cols-2 gap-2 text-[11px] font-medium text-stone-600 dark:text-stone-300">
+              <div className="flex items-center gap-1.5 p-2 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
                 <Smartphone size={14} className="text-orange-600 shrink-0" />
-                <span>Tam Ekran Modu</span>
+                <span>Tam Ekran</span>
               </div>
-              <div className="flex items-center gap-1.5 p-2 rounded-xl bg-stone-50 dark:bg-stone-950">
-                <Zap size={14} className="text-amber-500 shrink-0" />
-                <span>Anında Hızlı Açılış</span>
+              <div className="flex items-center gap-1.5 p-2 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
+                <Zap size={14} className="text-orange-600 shrink-0" />
+                <span>Hızlı Açılış</span>
               </div>
-              <div className="flex items-center gap-1.5 p-2 rounded-xl bg-stone-50 dark:bg-stone-950">
-                <WifiOff size={14} className="text-emerald-500 shrink-0" />
-                <span>Çevrimdışı Çalışma</span>
+              <div className="flex items-center gap-1.5 p-2 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
+                <WifiOff size={14} className="text-orange-600 shrink-0" />
+                <span>Çevrimdışı Mod</span>
               </div>
-              <div className="flex items-center gap-1.5 p-2 rounded-xl bg-stone-50 dark:bg-stone-950">
-                <CheckCircle2 size={14} className="text-blue-500 shrink-0" />
-                <span>Sıfır Hafıza Yükü</span>
+              <div className="flex items-center gap-1.5 p-2 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
+                <CheckCircle2 size={14} className="text-orange-600 shrink-0" />
+                <span>Hafif Yapı</span>
               </div>
             </div>
           </div>

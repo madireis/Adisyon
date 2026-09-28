@@ -89,15 +89,15 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
         {/* Header */}
         <div className="p-5 border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-              <Wifi size={22} className="animate-pulse" />
+            <div className="w-10 h-10 rounded-2xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold">
+              <Wifi size={20} />
             </div>
             <div>
               <h2 className="font-black text-lg text-stone-900 dark:text-stone-100 tracking-tight leading-snug">
-                Yerel Ağ (WiFi) & Garson Bağlantı Paneli
+                WiFi & Ağ Bağlantısı
               </h2>
               <p className="text-xs font-semibold text-stone-500 dark:text-stone-400">
-                Adisyon Ana PC ve Garson Telefonları Aynı WiFi Ağında Canlı Bağlı
+                Yerel ağ ve bağlı garson cihazları
               </p>
             </div>
           </div>
@@ -115,22 +115,19 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
           <div className={cn(
             "p-3.5 rounded-2xl border flex items-center justify-between transition-colors",
             isWifiConnected 
-              ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200"
+              ? "bg-stone-50 dark:bg-stone-950 border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-200"
               : "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200"
           )}>
             <div className="flex items-center gap-3">
-              <div className="relative flex h-3 w-3 shrink-0">
-                {isWifiConnected && (
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                )}
-                <span className={cn("relative inline-flex rounded-full h-3 w-3", isWifiConnected ? "bg-emerald-500" : "bg-amber-500")}></span>
+              <div className="relative flex h-2.5 w-2.5 shrink-0">
+                <span className={cn("relative inline-flex rounded-full h-2.5 w-2.5", isWifiConnected ? "bg-emerald-500" : "bg-amber-500")}></span>
               </div>
               <div>
-                <span className="font-extrabold text-sm block">
-                  {isWifiConnected ? "Yerel WiFi Ağı Aktif & Sunucu Bağlı" : "Yerel Ağ Bağlantısı Aranıyor..."}
+                <span className="font-bold text-sm block">
+                  {isWifiConnected ? "Yerel Ağ Bağlı" : "Yerel Ağ Aranıyor..."}
                 </span>
-                <span className="text-xs opacity-80 font-medium">
-                  Ana PC Yerel IP: <code className="font-bold bg-white/70 dark:bg-stone-900/70 px-1.5 py-0.5 rounded">{effectiveIp}</code> • Port: {selectedPort} (Gecikme: {pingMs} ms)
+                <span className="text-xs text-stone-500 font-medium">
+                  IP: <code className="font-bold bg-white/70 dark:bg-stone-900/70 px-1.5 py-0.5 rounded">{effectiveIp}</code> • Port: {selectedPort} ({pingMs} ms)
                 </span>
               </div>
             </div>

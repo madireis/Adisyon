@@ -1,34 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import { useApp, defaultUser } from '@/lib/store';
+import { useApp } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { 
-  LayoutDashboard, 
   Grid2X2, 
   ChefHat, 
   MenuSquare, 
-  PackageSearch, 
   Users, 
-  UserCircle, 
-  CalendarClock, 
-  BarChart3, 
-  Globe, 
-  History, 
   Settings, 
   Menu,
   ChevronLeft,
-  Smartphone,
   LogOut,
-  UtensilsCrossed,
-  ShieldCheck,
   Sun,
   Moon,
-  Wifi,
   Banknote,
-  QrCode,
   ArrowLeftRight,
   BookOpen,
   Download,
+  Terminal,
 } from 'lucide-react';
 import type { UserRole } from '@/types/pos';
 import { useTheme } from '@/lib/theme';
@@ -57,7 +46,7 @@ export default function Layout() {
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false);
   const [isPwaModalOpen, setIsPwaModalOpen] = useState(false);
   
-  const { isWifiConnected, activeGarsonCount } = useLocalNetwork();
+  const { activeGarsonCount } = useLocalNetwork();
   const { isInstalled } = usePwaInstall();
   const [isAccountSwitcherOpen, setIsAccountSwitcherOpen] = useState(false);
 
@@ -72,74 +61,60 @@ export default function Layout() {
   }
 
   const user = state.currentUser;
-  const isManager = user.role === 'owner' || user.role === 'manager';
+  const isManager = user.role === 'owner' || user.role === 'manager' || user.role === 'developer';
   const hasManagerSession = Boolean(state.originalManager || isManager);
   const isSwitchedToAnotherUser = Boolean(state.originalManager && user.id !== state.originalManager.id);
 
+  // Clean, short navigation items without yapping
   const allNavItems: NavItem[] = [
-    // Garson, Kasiyer & Yetkili
-    { path: '/tables', label: 'Masa & Sipariş', icon: Grid2X2, roles: ['waiter', 'cashier', 'owner', 'manager'] },
-    
-    // Mutfak, Bar & Yetkili
-    { path: '/kitchen', label: 'Mutfak Ekranı (KDS)', icon: ChefHat, roles: ['kitchen', 'bar', 'owner', 'manager'] },
-
-    // Kasa & Gün Sonu Ciro
-    { path: '/reports', label: 'Kasa & Gün Sonu Ciro', icon: Banknote, roles: ['cashier', 'owner', 'manager'] },
-
-    // Menü Yönetimi
-    { path: '/menu', label: 'Menü & Fiyatlar', icon: MenuSquare, roles: ['owner', 'manager'] },
-
-    // Garson & Personel
-    { path: '/staff', label: 'Garsonlar & Personel', icon: Users, roles: ['owner', 'manager'] },
-
-    // Sistem Ayarları & Yazıcı
-    { path: '/settings', label: 'Ayarlar & Yazıcı', icon: Settings, roles: ['owner', 'manager'] },
-
-    // Patron Rehberi & İş Akış Kılavuzu
-    { path: '/guide', label: 'Patron Rehberi & Akış', icon: BookOpen, roles: ['owner', 'manager'] },
+    { path: '/tables', label: 'Masalar', icon: Grid2X2, roles: ['waiter', 'cashier', 'owner', 'manager', 'developer'] },
+    { path: '/kitchen', label: 'Mutfak', icon: ChefHat, roles: ['kitchen', 'bar', 'owner', 'manager', 'developer'] },
+    { path: '/reports', label: 'Kasa', icon: Banknote, roles: ['cashier', 'owner', 'manager', 'developer'] },
+    { path: '/menu', label: 'Menü', icon: MenuSquare, roles: ['owner', 'manager', 'developer'] },
+    { path: '/staff', label: 'Personel', icon: Users, roles: ['owner', 'manager', 'developer'] },
+    { path: '/settings', label: 'Ayarlar', icon: Settings, roles: ['owner', 'manager', 'developer'] },
+    { path: '/guide', label: 'Rehber', icon: BookOpen, roles: ['owner', 'manager', 'developer'] },
+    { path: '/developer', label: 'Geliştirici', icon: Terminal, roles: ['developer'] },
   ];
 
   // Mobile Bottom Navigation Shortcuts
   const getMobileBottomNav = () => {
-    if (user.role === 'waiter') {
+    if (user.role === 'developer') {
       return [
         { path: '/tables', label: 'Masalar', icon: Grid2X2 },
+        { path: '/kitchen', label: 'Mutfak', icon: ChefHat },
+        { path: '/reports', label: 'Kasa', icon: Banknote },
+        { path: '/developer', label: 'Dev Log', icon: Terminal },
       ];
     }
+    if (user.role === 'waiter') {
+      return [{ path: '/tables', label: 'Masalar', icon: Grid2X2 }];
+    }
     if (user.role === 'kitchen' || user.role === 'bar') {
-      return [
-        { path: '/kitchen', label: 'Mutfak', icon: ChefHat },
-      ];
+      return [{ path: '/kitchen', label: 'Mutfak', icon: ChefHat }];
     }
     return [
       { path: '/tables', label: 'Masalar', icon: Grid2X2 },
       { path: '/kitchen', label: 'Mutfak', icon: ChefHat },
-      { path: '/reports', label: 'Kasa & Ciro', icon: Banknote },
-      { path: '/guide', label: 'Rehber', icon: BookOpen },
+      { path: '/reports', label: 'Kasa', icon: Banknote },
+      { path: '/menu', label: 'Menü', icon: MenuSquare },
     ];
   };
 
-  // Filter nav items strictly for current role
   const visibleNavItems = allNavItems.filter(item => item.roles.includes(user.role));
-
-  // Check if current route is an order detail page
   const isOrderPage = location.pathname.startsWith('/order/');
 
-  // Route protection: prevent unauthorized access
   const isAuthorized = () => {
+    if (user.role === 'developer') return true;
     const currentPath = location.pathname;
-    
-    // Order pages accessible to waiter, cashier and owner
     if (currentPath.startsWith('/order/')) {
       return user.role === 'waiter' || user.role === 'cashier' || user.role === 'owner' || user.role === 'manager';
     }
-    
     const matchedItem = allNavItems.find(item => item.path === currentPath);
-    if (!matchedItem) return true; // generic routes
+    if (!matchedItem) return true;
     return matchedItem.roles.includes(user.role);
   };
 
-  // Redirect if unauthorized for current role
   useEffect(() => {
     if (!isAuthorized()) {
       if (user.role === 'waiter') navigate('/tables', { replace: true });
@@ -161,297 +136,188 @@ export default function Layout() {
     navigate('/login');
   };
 
-  const getRoleHeaderInfo = () => {
+  const getRoleBadge = () => {
     switch (user.role) {
-      case 'waiter':
-        return {
-          title: "GARSON TERMİNALİ",
-          badge: "Sipariş & Masa Modu",
-          badgeColor: "bg-orange-100 text-orange-800 border-orange-200",
-        };
-      case 'kitchen':
-        return {
-          title: "MUTFAK & BAR KDS",
-          badge: "Hazırlık & İstasyon Modu",
-          badgeColor: "bg-blue-100 text-blue-800 border-blue-200",
-        };
-      case 'owner':
-      case 'manager':
-      default:
-        return {
-          title: "YETKİLİ & PATRON PANELİ",
-          badge: "Tam Yönetim Modu",
-          badgeColor: "bg-stone-900 text-white border-stone-800",
-        };
+      case 'developer': return 'Geliştirici';
+      case 'waiter': return 'Garson';
+      case 'kitchen': return 'Mutfak';
+      case 'bar': return 'Bar';
+      case 'cashier': return 'Kasiyer';
+      case 'owner': return 'Patron';
+      default: return 'Yönetici';
     }
   };
 
-  const roleInfo = getRoleHeaderInfo();
-
   return (
     <div className="flex h-screen bg-stone-50 dark:bg-stone-950 overflow-hidden text-stone-800 dark:text-stone-100 select-none">
-      {/* Desktop Sidebar (hidden on mobile) */}
+      {/* Desktop Sidebar */}
       <aside 
         className={cn(
-          "hidden md:flex bg-white dark:bg-stone-900 border-r border-stone-200 dark:border-stone-800 transition-all duration-300 flex-col shrink-0 z-20 shadow-xs",
-          sidebarOpen ? "w-64" : "w-20"
+          "hidden md:flex bg-white dark:bg-stone-900 border-r border-stone-200 dark:border-stone-800 transition-all duration-200 flex-col shrink-0 z-20",
+          sidebarOpen ? "w-56" : "w-16"
         )}
       >
         {/* Brand Bar */}
-        <div className="h-16 flex items-center justify-between px-3.5 border-b border-stone-200 dark:border-stone-800 shrink-0">
+        <div className="h-14 flex items-center justify-between px-3 border-b border-stone-200 dark:border-stone-800 shrink-0">
           {sidebarOpen ? (
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
               <img 
                 src={wotsLogo} 
                 alt="WOT'S" 
-                className="w-9 h-9 rounded-xl object-contain bg-black shadow-xs border border-orange-500/20 shrink-0" 
+                className="w-7 h-7 rounded-lg object-contain bg-black shrink-0" 
               />
-              <div className="min-w-0">
-                <h1 className="font-black text-base text-orange-600 dark:text-orange-500 tracking-tight leading-none truncate">WOT'S CAFE</h1>
-                <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400 block tracking-wider uppercase mt-0.5">Adisyon & POS</span>
-              </div>
+              <span className="font-black text-sm tracking-tight text-stone-900 dark:text-white">
+                WOT'S <span className="text-orange-600">POS</span>
+              </span>
             </div>
           ) : (
-            <div className="mx-auto flex items-center justify-center">
-              <img 
-                src={wotsLogo} 
-                alt="WOT'S" 
-                className="w-9 h-9 rounded-xl object-contain bg-black shadow-xs border border-orange-500/20" 
-              />
-            </div>
+            <img 
+              src={wotsLogo} 
+              alt="WOT'S" 
+              className="w-7 h-7 rounded-lg object-contain bg-black mx-auto" 
+            />
           )}
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer shrink-0"
+            className="p-1 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
           >
-            {sidebarOpen ? <ChevronLeft size={18} /> : <Menu size={18} />}
+            {sidebarOpen ? <ChevronLeft size={16} /> : <Menu size={16} />}
           </button>
         </div>
 
-        {/* Current Active Mode Badge in Sidebar */}
-        {sidebarOpen && (
-          <div className="px-4 py-3 bg-stone-50 dark:bg-stone-950/60 border-b border-stone-200/80 dark:border-stone-800">
-            <span className="text-[10px] font-extrabold text-stone-400 dark:text-stone-500 uppercase tracking-wider block mb-1">
-              Aktif Çalışma Modu
-            </span>
-            <div className="flex items-center justify-between">
-              <span className="font-black text-xs text-stone-800 dark:text-stone-200">{roleInfo.title}</span>
-              <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-md border", roleInfo.badgeColor)}>
-                {user.role.toUpperCase()}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Nav Links strictly filtered for this role */}
-        <div className="flex-1 overflow-y-auto py-3 px-3 space-y-1">
+        {/* Navigation Items */}
+        <div className="flex-1 overflow-y-auto py-2 px-2 space-y-1">
           {visibleNavItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               className={({ isActive }) => cn(
-                "flex items-center px-3 py-2.5 rounded-xl transition-all font-semibold text-xs min-h-[44px]",
+                "flex items-center px-3 py-2 rounded-xl transition-colors font-medium text-xs min-h-[38px]",
                 isActive 
-                  ? "bg-orange-600 text-white shadow-xs font-bold" 
-                  : "text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-100"
+                  ? "bg-orange-600 text-white font-bold" 
+                  : "text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-white"
               )}
             >
-              <item.icon className={cn("shrink-0", sidebarOpen ? "mr-3" : "mx-auto")} size={18} />
+              <item.icon className={cn("shrink-0", sidebarOpen ? "mr-2.5" : "mx-auto")} size={16} />
               {sidebarOpen && <span className="truncate">{item.label}</span>}
             </NavLink>
           ))}
         </div>
 
-        {/* Account Switcher & Logout Footer */}
-        <div className="p-3 border-t border-stone-200 dark:border-stone-800 shrink-0 bg-stone-50 dark:bg-stone-950">
+        {/* Sidebar Footer */}
+        <div className="p-2 border-t border-stone-200 dark:border-stone-800 shrink-0 space-y-1">
           {sidebarOpen ? (
-            <div className="space-y-2">
-              {hasManagerSession && (
-                <div className="space-y-1.5">
-                  <span className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider block">
-                    Yönetici Hızlı Geçiş:
-                  </span>
-                  <button
-                    onClick={() => setIsAccountSwitcherOpen(true)}
-                    className="w-full py-2.5 px-3 bg-orange-600 hover:bg-orange-700 text-white text-xs font-extrabold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs min-h-[40px]"
-                  >
-                    <ArrowLeftRight size={15} />
-                    <span>Hesaplar Arası Geçiş</span>
-                  </button>
-                  {isSwitchedToAnotherUser && state.originalManager && (
-                    <button
-                      onClick={handleRestoreManager}
-                      className="w-full py-2 px-2 bg-stone-900 dark:bg-stone-800 hover:bg-stone-800 dark:hover:bg-stone-700 text-amber-400 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 border border-amber-400/30"
-                    >
-                      <ShieldCheck size={14} />
-                      <span>{state.originalManager.name} Dön</span>
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* PWA App Install Button */}
-              {!isInstalled && (
-                <button
-                  onClick={() => setIsPwaModalOpen(true)}
-                  className="w-full py-2 px-3 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs min-h-[38px]"
-                >
-                  <Download size={14} />
-                  <span>Uygulamayı İndir</span>
-                </button>
-              )}
-
-              <button
-                onClick={handleLogout}
-                className="w-full mt-1 py-2.5 bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 min-h-[40px]"
-              >
-                <LogOut size={14} />
-                <span>Çıkış Yap</span>
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
+            <>
               {hasManagerSession && (
                 <button
                   onClick={() => setIsAccountSwitcherOpen(true)}
-                  className="p-2.5 text-orange-600 hover:text-white hover:bg-orange-600 rounded-xl min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors cursor-pointer"
-                  title="Hesaplar Arası Geçiş Yap"
+                  className="w-full py-2 px-2.5 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-medium rounded-xl transition-colors cursor-pointer flex items-center gap-2"
                 >
-                  <ArrowLeftRight size={18} />
+                  <ArrowLeftRight size={14} className="text-orange-600" />
+                  <span>Hesap Değiştir</span>
                 </button>
               )}
-              {!isInstalled && (
+              {isSwitchedToAnotherUser && state.originalManager && (
                 <button
-                  onClick={() => setIsPwaModalOpen(true)}
-                  className="p-2.5 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/50 rounded-xl min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors cursor-pointer"
-                  title="Uygulamayı Telefona İndir"
+                  onClick={handleRestoreManager}
+                  className="w-full py-2 px-2.5 bg-stone-900 text-white dark:bg-stone-800 hover:bg-stone-800 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  <Download size={18} />
+                  <span>{state.originalManager.name} Dön</span>
                 </button>
               )}
-              <button 
+              <button
                 onClick={handleLogout}
-                className="p-2.5 text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 rounded-xl hover:bg-stone-200 dark:hover:bg-stone-800 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors cursor-pointer"
-                title="Çıkış Yap"
+                className="w-full py-2 px-2.5 text-stone-500 hover:text-red-600 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-medium rounded-xl transition-colors cursor-pointer flex items-center gap-2"
               >
-                <LogOut size={18} />
+                <LogOut size={14} />
+                <span>Çıkış</span>
               </button>
-            </div>
+            </>
+          ) : (
+            <button 
+              onClick={handleLogout}
+              className="p-2 text-stone-400 hover:text-red-600 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl mx-auto flex items-center justify-center transition-colors cursor-pointer"
+              title="Çıkış"
+            >
+              <LogOut size={16} />
+            </button>
           )}
         </div>
       </aside>
 
-      {/* Mobile Slide-over Drawer */}
+      {/* Mobile Drawer */}
       {isMobileDrawerOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div 
-            className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs transition-opacity animate-in fade-in"
+            className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs transition-opacity"
             onClick={() => setIsMobileDrawerOpen(false)}
           />
-          <div className="relative w-4/5 max-w-xs bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-200 border-r border-stone-200 dark:border-stone-800">
-            {/* Drawer Header */}
-            <div className="p-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between bg-stone-50 dark:bg-stone-950">
-              <div className="flex items-center gap-2.5">
-                <img 
-                  src={wotsLogo} 
-                  alt="WOT'S CAFE" 
-                  className="w-9 h-9 rounded-xl object-contain bg-black shadow-xs border border-orange-500/20 shrink-0" 
-                />
-                <div>
-                  <h2 className="font-black text-lg text-orange-600 dark:text-orange-500 leading-none">WOT'S CAFE</h2>
-                  <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400 block tracking-wider uppercase mt-0.5">Adisyon & POS</span>
-                </div>
+          <div className="relative w-64 bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 h-full shadow-2xl flex flex-col z-10 border-r border-stone-200 dark:border-stone-800">
+            <div className="p-3.5 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <img src={wotsLogo} alt="WOT'S" className="w-7 h-7 rounded-lg object-contain bg-black" />
+                <span className="font-black text-sm text-stone-900 dark:text-white">WOT'S <span className="text-orange-600">POS</span></span>
               </div>
               <button 
                 onClick={() => setIsMobileDrawerOpen(false)}
-                className="p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-800 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="p-1 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"
               >
-                <ChevronLeft size={20} />
+                <ChevronLeft size={18} />
               </button>
             </div>
 
-            {/* Active Mode Banner */}
-            <div className="p-3 bg-stone-100 dark:bg-stone-950/60 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
-              <span className="text-xs font-black text-stone-800 dark:text-stone-200">{roleInfo.title}</span>
-              <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-md border", roleInfo.badgeColor)}>
-                {user.role.toUpperCase()}
-              </span>
-            </div>
-
-            {/* Navigation items list */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-1">
+            <div className="flex-1 overflow-y-auto p-2 space-y-1">
               {visibleNavItems.map((item) => (
                 <NavLink
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMobileDrawerOpen(false)}
                   className={({ isActive }) => cn(
-                    "flex items-center px-3.5 py-3 rounded-xl transition-all font-semibold text-sm min-h-[48px]",
+                    "flex items-center px-3 py-2.5 rounded-xl font-medium text-xs",
                     isActive 
-                      ? "bg-orange-600 text-white shadow-xs font-bold" 
-                      : "text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800"
+                      ? "bg-orange-600 text-white font-bold" 
+                      : "text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800"
                   )}
                 >
-                  <item.icon className="shrink-0 mr-3 text-current" size={20} />
+                  <item.icon className="shrink-0 mr-2.5" size={16} />
                   <span>{item.label}</span>
                 </NavLink>
               ))}
             </div>
 
-            {/* Account Switcher inside mobile drawer */}
-            <div className="p-3 border-t border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 space-y-2">
+            <div className="p-3 border-t border-stone-200 dark:border-stone-800 space-y-2">
               {hasManagerSession && (
-                <div className="space-y-1.5">
-                  <span className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider block">
-                    Yönetici Hızlı Geçiş:
-                  </span>
-                  <button
-                    onClick={() => {
-                      setIsMobileDrawerOpen(false);
-                      setIsAccountSwitcherOpen(true);
-                    }}
-                    className="w-full py-2.5 px-3 bg-orange-600 hover:bg-orange-700 text-white text-xs font-extrabold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs min-h-[44px]"
-                  >
-                    <ArrowLeftRight size={16} />
-                    <span>Hesaplar Arası Geçiş</span>
-                  </button>
-                  {isSwitchedToAnotherUser && state.originalManager && (
-                    <button
-                      onClick={() => {
-                        setIsMobileDrawerOpen(false);
-                        handleRestoreManager();
-                      }}
-                      className="w-full py-2 px-2 bg-stone-900 text-amber-400 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 border border-amber-400/30 min-h-[40px]"
-                    >
-                      <ShieldCheck size={14} />
-                      <span>{state.originalManager.name} Dön</span>
-                    </button>
-                  )}
-                </div>
+                <button
+                  onClick={() => {
+                    setIsMobileDrawerOpen(false);
+                    setIsAccountSwitcherOpen(true);
+                  }}
+                  className="w-full py-2 px-3 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 border border-stone-200 dark:border-stone-700"
+                >
+                  <ArrowLeftRight size={14} className="text-orange-600" />
+                  <span>Hesap Değiştir</span>
+                </button>
               )}
-
-              {/* PWA Mobile Drawer Install Button */}
               {!isInstalled && (
                 <button
                   onClick={() => {
                     setIsMobileDrawerOpen(false);
                     setIsPwaModalOpen(true);
                   }}
-                  className="w-full py-2.5 px-3 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs min-h-[44px]"
+                  className="w-full py-2 px-3 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 text-stone-700 dark:text-stone-200 text-xs font-semibold rounded-xl flex items-center justify-center gap-2"
                 >
-                  <Download size={16} />
-                  <span>Uygulamayı Telefona İndir</span>
+                  <Download size={14} />
+                  <span>Uygulamayı İndir</span>
                 </button>
               )}
-
               <button
                 onClick={() => {
                   setIsMobileDrawerOpen(false);
                   handleLogout();
                 }}
-                className="w-full mt-1 py-2.5 bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 min-h-[44px]"
+                className="w-full py-2 px-3 text-stone-500 hover:text-red-600 text-xs font-medium rounded-xl flex items-center justify-center gap-1.5"
               >
-                <LogOut size={16} />
+                <LogOut size={14} />
                 <span>Çıkış Yap</span>
               </button>
             </div>
@@ -463,128 +329,101 @@ export default function Layout() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Header */}
         <header className={cn(
-          "h-12 sm:h-13 bg-[#f8f7f5]/90 dark:bg-stone-950/90 backdrop-blur-md border-b border-stone-200/50 dark:border-stone-800/60 flex items-center justify-between px-2.5 sm:px-6 shrink-0 z-20 sticky top-0 transition-colors",
+          "h-12 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between px-3 sm:px-6 shrink-0 z-20 sticky top-0 transition-colors",
           isOrderPage && "hidden md:flex"
         )}>
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Mobile Hamburger Menu button */}
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setIsMobileDrawerOpen(true)}
-              className="md:hidden p-1.5 sm:p-2 rounded-xl text-stone-600 dark:text-stone-300 hover:bg-stone-200/60 dark:hover:bg-stone-800/60 active:scale-95 min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer transition-all"
-              title="Menüyü Aç"
+              className="md:hidden p-1.5 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 active:scale-95 cursor-pointer"
+              title="Menü"
             >
-              <Menu size={19} />
+              <Menu size={18} />
             </button>
 
-            <div className="flex items-center gap-1.5 md:hidden">
-              <img 
-                src={wotsLogo} 
-                alt="WOT'S" 
-                className="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-contain bg-black border border-orange-500/20 shrink-0" 
-              />
-              <span className="font-black text-orange-600 dark:text-orange-500 text-xs sm:text-sm tracking-tight">
-                WOT'S CAFE
-              </span>
-            </div>
+            <span className="font-black text-stone-900 dark:text-white text-sm tracking-tight md:hidden">
+              WOT'S <span className="text-orange-600">POS</span>
+            </span>
 
-            {/* Subtle role indicator */}
-            <span className={cn("text-[9px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full border shadow-2xs", roleInfo.badgeColor)}>
-              {user.role === 'waiter' ? 'Garson' : user.role === 'kitchen' ? 'Mutfak' : 'Yönetici'}
+            {/* Clean neutral role indicator */}
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
+              {getRoleBadge()}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2.5">
-            {/* PWA Install Button in Header */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* WiFi & Garson Badge */}
+            <button
+              onClick={() => setIsNetworkModalOpen(true)}
+              className="px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700"
+              title="Ağ ve Garson Bağlantıları"
+            >
+              <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", activeGarsonCount > 0 ? "bg-emerald-500" : "bg-stone-400")} />
+              <span>{activeGarsonCount > 0 ? `${activeGarsonCount} Garson` : 'Bağlantı'}</span>
+            </button>
+
+            {/* PWA Install Button */}
             {!isInstalled && (
               <button
                 onClick={() => setIsPwaModalOpen(true)}
-                className="px-2 sm:px-2.5 py-1 rounded-full text-xs font-extrabold flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer border shadow-2xs active:scale-95 bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800 hover:bg-orange-100"
-                title="WOT'S POS Uygulamasını Telefona/Bilgisayara İndir"
+                className="p-1.5 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer border border-stone-200 dark:border-stone-800"
+                title="Uygulamayı İndir"
               >
-                <Download size={13} />
-                <span className="hidden xs:inline">Uygulama İndir</span>
+                <Download size={15} />
               </button>
             )}
 
-            {/* Local WiFi Network & Garson Presence Badge */}
-            <button
-              onClick={() => setIsNetworkModalOpen(true)}
-              className={cn(
-                "px-2 sm:px-2.5 py-1 rounded-full text-xs font-extrabold flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer border shadow-2xs active:scale-95",
-                activeGarsonCount > 0
-                  ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100"
-                  : "bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 border-stone-300 dark:border-stone-700 hover:bg-stone-200"
-              )}
-              title="Garson WiFi Ağ Durumu & Canlı Bağlantıları Göster"
-            >
-              <div className="relative flex h-2 w-2">
-                {activeGarsonCount > 0 && (
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                )}
-                <span className={cn("relative inline-flex rounded-full h-2 w-2", activeGarsonCount > 0 ? "bg-emerald-500" : "bg-stone-400")}></span>
-              </div>
-              <Wifi size={13} />
-              <span className="hidden sm:inline">
-                {activeGarsonCount > 0 ? `${activeGarsonCount} Garson Aktif` : 'Garsonlar Çevrimdışı'}
-              </span>
-            </button>
-
-            {/* Theme Toggle Button (Sun / Moon) */}
+            {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-1.5 sm:p-2 rounded-full text-stone-600 dark:text-amber-400 hover:bg-stone-200/60 dark:hover:bg-stone-800/80 active:scale-90 transition-all cursor-pointer border border-stone-200/60 dark:border-stone-800/60 shadow-2xs min-h-[34px] min-w-[34px] flex items-center justify-center"
-              title={resolvedTheme === 'dark' ? 'Açık Moduna Geç' : 'Koyu Moduna Geç'}
+              className="p-1.5 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer border border-stone-200 dark:border-stone-800"
+              title={resolvedTheme === 'dark' ? 'Açık Mod' : 'Koyu Mod'}
             >
-              {resolvedTheme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-stone-700" />}
+              {resolvedTheme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
             </button>
 
-            {/* Current user avatar */}
+            {/* Current user */}
             <div 
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs cursor-default select-none border border-orange-500/40 shrink-0"
-              title={`${user.name} (${user.role === 'waiter' ? 'Garson' : user.role === 'kitchen' ? 'Mutfak' : 'Yönetici'})`}
+              className="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold border border-stone-200 dark:border-stone-700 cursor-default"
+              title={user.name}
             >
-              {user.name.split(' ').map(n => n[0]).join('')}
+              {user.name.split(' ')[0]}
             </div>
           </div>
         </header>
 
-        {/* Manager impersonation / switched session notification banner */}
+        {/* Manager impersonation banner */}
         {isSwitchedToAnotherUser && state.originalManager && (
-          <div className="bg-amber-500 dark:bg-amber-600 text-stone-950 px-3 sm:px-6 py-2 text-xs font-black flex items-center justify-between shrink-0 shadow-xs z-10 border-b border-amber-600">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="w-2.5 h-2.5 rounded-full bg-stone-950 animate-ping shrink-0" />
-              <span className="truncate">
-                Yönetici Oturumu Aktif: <u>{user.name}</u> ({user.role}) olarak görüntülüyorsunuz.
-              </span>
-            </div>
-            <div className="flex items-center gap-2 shrink-0 ml-2">
+          <div className="bg-stone-900 text-stone-200 px-3 sm:px-6 py-1.5 text-xs font-medium flex items-center justify-between shrink-0 border-b border-stone-800">
+            <span className="truncate">
+              Görüntülenen: <strong className="text-white">{user.name}</strong> ({user.role})
+            </span>
+            <div className="flex items-center gap-1.5 shrink-0 ml-2">
               <button
                 onClick={() => setIsAccountSwitcherOpen(true)}
-                className="px-2.5 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+                className="px-2 py-0.5 bg-stone-800 hover:bg-stone-700 text-white rounded text-[11px] font-medium transition-colors cursor-pointer"
               >
-                <ArrowLeftRight size={12} />
-                <span className="hidden sm:inline">Hesap</span> Değiştir
+                Değiştir
               </button>
               <button
                 onClick={handleRestoreManager}
-                className="px-2.5 py-1 bg-white hover:bg-stone-100 text-stone-950 rounded-lg text-[11px] font-black transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
+                className="px-2 py-0.5 bg-orange-600 hover:bg-orange-500 text-white rounded text-[11px] font-bold transition-colors cursor-pointer"
               >
-                <ShieldCheck size={13} className="text-orange-600" />
-                <span>Yöneticiye Dön</span>
+                Yöneticiye Dön
               </button>
             </div>
           </div>
         )}
 
         {/* Page Content */}
-        <main className={cn("flex-1 overflow-x-hidden overflow-y-auto bg-[#f8f7f5] dark:bg-stone-950 relative text-stone-800 dark:text-stone-100", !isOrderPage ? "pb-28 md:pb-0" : "pb-0")}>
+        <main className={cn("flex-1 overflow-x-hidden overflow-y-auto bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-100", !isOrderPage ? "pb-24 md:pb-0" : "pb-0")}>
           <Outlet />
         </main>
 
-        {/* iOS Floating Island Tab Bar for Mobile (hidden on dedicated order page) */}
+        {/* Mobile Bottom Bar (hidden on order page) */}
         {!isOrderPage && (
           <div className="md:hidden fixed bottom-safe left-3 right-3 z-40 max-w-md mx-auto pointer-events-none">
-            <nav className="pointer-events-auto bg-white/90 dark:bg-stone-900/90 backdrop-blur-xl border border-stone-200/80 dark:border-stone-800 shadow-[0_8px_32px_rgba(0,0,0,0.15)] rounded-3xl p-1.5 flex items-center justify-around">
+            <nav className="pointer-events-auto bg-white/95 dark:bg-stone-900/95 backdrop-blur-xl border border-stone-200 dark:border-stone-800 shadow-lg rounded-2xl p-1 flex items-center justify-around">
               {getMobileBottomNav().map((item) => {
                 const isActive = location.pathname === item.path;
                 const Icon = item.icon;
@@ -593,43 +432,38 @@ export default function Layout() {
                     key={item.path}
                     to={item.path}
                     className={cn(
-                      "flex-1 flex flex-col items-center justify-center py-1.5 rounded-2xl transition-all min-h-[46px] cursor-pointer active:scale-90",
+                      "flex-1 flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors min-h-[44px] cursor-pointer",
                       isActive 
-                        ? "bg-orange-600 text-white shadow-xs font-bold" 
+                        ? "bg-orange-600 text-white font-bold" 
                         : "text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 font-medium"
                     )}
                   >
-                    <Icon size={18} className={cn(isActive && "scale-105 transition-transform")} />
-                    <span className="text-[10px] tracking-tight mt-0.5 font-bold">{item.label}</span>
+                    <Icon size={18} />
+                    <span className="text-[10px] mt-0.5">{item.label}</span>
                   </NavLink>
                 );
               })}
-              {/* Quick Drawer Opener */}
               <button
                 onClick={() => setIsMobileDrawerOpen(true)}
-                className="flex-1 flex flex-col items-center justify-center py-1.5 rounded-2xl text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 font-medium min-h-[46px] cursor-pointer active:scale-90 transition-all"
+                className="flex-1 flex flex-col items-center justify-center py-1.5 rounded-xl text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 font-medium min-h-[44px] cursor-pointer"
               >
                 <Menu size={18} />
-                <span className="text-[10px] tracking-tight mt-0.5 font-bold">Menü</span>
+                <span className="text-[10px] mt-0.5">Menü</span>
               </button>
             </nav>
           </div>
         )}
       </div>
 
-      {/* Yerel WiFi Ağ & Garson Bağlantı Modalı */}
+      {/* Modals */}
       <LocalNetworkModal 
         isOpen={isNetworkModalOpen} 
         onClose={() => setIsNetworkModalOpen(false)} 
       />
-
-      {/* Hesaplar Arası Hızlı Geçiş Modalı */}
       <AccountSwitcherModal 
         isOpen={isAccountSwitcherOpen}
         onClose={() => setIsAccountSwitcherOpen(false)}
       />
-
-      {/* PWA Uygulama İndirme Modalı */}
       <PwaInstallModal
         isOpen={isPwaModalOpen}
         onClose={() => setIsPwaModalOpen(false)}

@@ -94,10 +94,10 @@ export default function KitchenPage() {
 
     return (
       <div className={cn(
-        "bg-stone-800/95 rounded-2xl p-4 border-l-4 shadow-md flex flex-col gap-3 transition-all",
+        "bg-stone-800/95 rounded-2xl p-4 border-l-4 shadow-sm flex flex-col gap-3 transition-all border-stone-700",
         isUrgent && ticket.status !== 'completed' ? "border-l-red-500 ring-1 ring-red-500/30" : "border-l-stone-600",
-        ticket.status === 'ready' && "border-l-emerald-500",
-        ticket.status === 'preparing' && "border-l-orange-500"
+        ticket.status === 'preparing' && "border-l-orange-500",
+        ticket.status === 'ready' && "border-l-orange-400"
       )}>
         <div className="flex justify-between items-start">
           <div>
@@ -113,7 +113,7 @@ export default function KitchenPage() {
           </div>
           <div className={cn(
             "flex items-center gap-1 px-2.5 py-1 rounded-lg font-mono text-xs sm:text-sm font-bold",
-            isUrgent && ticket.status !== 'completed' ? "bg-red-500/25 text-red-300 animate-pulse" : "bg-stone-700 text-stone-200"
+            isUrgent && ticket.status !== 'completed' ? "bg-red-500/20 text-red-300" : "bg-stone-700 text-stone-200"
           )}>
             <Clock size={13} />
             {elapsedMinutes} dk
@@ -121,7 +121,7 @@ export default function KitchenPage() {
         </div>
 
         {ticket.priority && (
-          <div className="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">
+          <div className="bg-orange-500/20 text-orange-400 text-[10px] px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">
             ÖNCELİKLİ
           </div>
         )}
@@ -130,14 +130,14 @@ export default function KitchenPage() {
           {ticket.items.map((item, idx) => (
             <div key={idx} className="flex justify-between text-stone-200 border-b border-stone-700/50 pb-2 last:border-0">
               <div className="flex gap-2.5">
-                <span className="font-black text-orange-400 text-base">{item.quantity}x</span>
+                <span className="font-black text-orange-500 text-base">{item.quantity}x</span>
                 <div>
                   <div className="font-bold text-base text-stone-100 leading-snug">{item.name}</div>
                   {item.modifiers && item.modifiers.length > 0 && (
                     <div className="text-xs text-stone-400 mt-0.5">{item.modifiers.join(', ')}</div>
                   )}
                   {item.notes && (
-                    <div className="text-xs text-amber-300 italic mt-0.5 font-medium">Not: {item.notes}</div>
+                    <div className="text-xs text-orange-300 italic mt-0.5 font-medium">Not: {item.notes}</div>
                   )}
                 </div>
               </div>
@@ -148,10 +148,10 @@ export default function KitchenPage() {
         <div className="flex items-center gap-2 mt-2">
           <button
             onClick={() => setSelectedTicketForPrint(ticket)}
-            className="py-2.5 px-3 bg-white text-stone-950 font-black text-xs rounded-xl shadow-xs hover:bg-stone-100 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+            className="py-2.5 px-3 bg-stone-700 hover:bg-stone-600 text-stone-200 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 border border-stone-600"
             title="Mutfak Fişini Yazdır"
           >
-            <Printer size={15} className="text-stone-950" />
+            <Printer size={15} />
             <span>Fiş Yazdır</span>
           </button>
 
@@ -160,9 +160,9 @@ export default function KitchenPage() {
               onClick={() => advanceStatus(ticket)}
               className={cn(
                 "flex-1 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95",
-                ticket.status === 'new' ? "bg-blue-600 hover:bg-blue-700" : "",
-                ticket.status === 'preparing' ? "bg-emerald-600 hover:bg-emerald-700" : "",
-                ticket.status === 'ready' ? "bg-stone-600 hover:bg-stone-500" : ""
+                ticket.status === 'new' ? "bg-orange-600 hover:bg-orange-500" : "",
+                ticket.status === 'preparing' ? "bg-orange-600 hover:bg-orange-500" : "",
+                ticket.status === 'ready' ? "bg-stone-700 hover:bg-stone-600" : ""
               )}
             >
               {ticket.status === 'new' && <><Play size={15} /> Başla</>}
@@ -211,9 +211,9 @@ export default function KitchenPage() {
 
           <div className="hidden sm:flex items-center gap-3">
             {newTickets.length > 0 && (
-              <div className="flex items-center gap-1.5 text-amber-400 font-bold bg-amber-500/15 px-3 py-1.5 rounded-xl border border-amber-500/30 text-xs">
-                <BellRing size={15} className="animate-bounce" />
-                {newTickets.length} Yeni Fiş
+              <div className="flex items-center gap-1.5 text-orange-400 font-semibold bg-stone-900 px-3 py-1.5 rounded-xl border border-orange-500/30 text-xs">
+                <BellRing size={15} />
+                <span>{newTickets.length} Yeni Fiş</span>
               </div>
             )}
             <div className="text-base font-mono font-black text-white bg-stone-900 px-3.5 py-1.5 rounded-xl border border-stone-800">
@@ -224,73 +224,82 @@ export default function KitchenPage() {
       </div>
 
       {/* Mobile/Tablet Column Selector Tabs (lg:hidden) */}
-      <div className="lg:hidden flex bg-stone-950/80 p-2 border-b border-stone-800 gap-1.5 shrink-0 overflow-x-auto no-scrollbar">
+      <div className="lg:hidden flex bg-stone-950 p-2 border-b border-stone-800 gap-1.5 shrink-0 overflow-x-auto no-scrollbar">
         <button
           onClick={() => setMobileStatusTab('new')}
           className={cn(
             "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
             mobileStatusTab === 'new'
-              ? "bg-blue-600 text-white shadow-sm"
-              : "bg-stone-900 text-stone-400 hover:text-stone-200"
+              ? "bg-orange-600 text-white shadow-xs"
+              : "bg-stone-900 text-stone-400 hover:text-stone-200 border border-stone-800"
           )}
         >
           <span>YENİ</span>
-          <span className="bg-blue-900/60 text-blue-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono">{newTickets.length}</span>
+          <span className={cn(
+            "text-[10px] px-1.5 py-0.5 rounded-full font-mono font-semibold",
+            mobileStatusTab === 'new' ? "bg-orange-800 text-orange-100" : "bg-stone-800 text-stone-300"
+          )}>{newTickets.length}</span>
         </button>
         <button
           onClick={() => setMobileStatusTab('preparing')}
           className={cn(
             "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
             mobileStatusTab === 'preparing'
-              ? "bg-orange-600 text-white shadow-sm"
-              : "bg-stone-900 text-stone-400 hover:text-stone-200"
+              ? "bg-orange-600 text-white shadow-xs"
+              : "bg-stone-900 text-stone-400 hover:text-stone-200 border border-stone-800"
           )}
         >
           <span>HAZIRLANIYOR</span>
-          <span className="bg-orange-900/60 text-orange-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono">{preparingTickets.length}</span>
+          <span className={cn(
+            "text-[10px] px-1.5 py-0.5 rounded-full font-mono font-semibold",
+            mobileStatusTab === 'preparing' ? "bg-orange-800 text-orange-100" : "bg-stone-800 text-stone-300"
+          )}>{preparingTickets.length}</span>
         </button>
         <button
           onClick={() => setMobileStatusTab('ready')}
           className={cn(
             "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
             mobileStatusTab === 'ready'
-              ? "bg-emerald-600 text-white shadow-sm"
-              : "bg-stone-900 text-stone-400 hover:text-stone-200"
+              ? "bg-orange-600 text-white shadow-xs"
+              : "bg-stone-900 text-stone-400 hover:text-stone-200 border border-stone-800"
           )}
         >
           <span>HAZIR</span>
-          <span className="bg-emerald-900/60 text-emerald-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono">{readyTickets.length}</span>
+          <span className={cn(
+            "text-[10px] px-1.5 py-0.5 rounded-full font-mono font-semibold",
+            mobileStatusTab === 'ready' ? "bg-orange-800 text-orange-100" : "bg-stone-800 text-stone-300"
+          )}>{readyTickets.length}</span>
         </button>
         <button
           onClick={() => setMobileStatusTab('completed')}
           className={cn(
             "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap",
             mobileStatusTab === 'completed'
-              ? "bg-stone-700 text-white shadow-sm"
-              : "bg-stone-900 text-stone-400 hover:text-stone-200"
+              ? "bg-stone-700 text-white shadow-xs"
+              : "bg-stone-900 text-stone-400 hover:text-stone-200 border border-stone-800"
           )}
         >
-          <span>SERVİS EDİLDİ</span>
-          <span className="bg-stone-800 text-stone-300 text-[10px] px-1.5 py-0.5 rounded-full font-mono">{servedTickets.length}</span>
+          <span>SERVİS</span>
+          <span className="bg-stone-800 text-stone-300 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-semibold">{servedTickets.length}</span>
         </button>
       </div>
 
       {/* Mobile/Tablet Single Column Display (lg:hidden) */}
       <div className="lg:hidden flex-1 overflow-y-auto p-3 space-y-3 pb-20">
         {mobileStatusTab === 'new' && (
-          newTickets.length === 0 ? <div className="text-stone-600 text-center py-16 text-sm">Bekleyen yeni sipariş fişi yok.</div> :
+          newTickets.length === 0 ? <div className="text-stone-500 text-center py-16 text-sm">Bekleyen yeni sipariş yok.</div> :
           newTickets.map(ticket => <TicketCard key={ticket.id} ticket={ticket} />)
         )}
         {mobileStatusTab === 'preparing' && (
-          preparingTickets.length === 0 ? <div className="text-stone-600 text-center py-16 text-sm">Hazırlanan sipariş fişi yok.</div> :
+          preparingTickets.length === 0 ? <div className="text-stone-500 text-center py-16 text-sm">Hazırlanan sipariş yok.</div> :
           preparingTickets.map(ticket => <TicketCard key={ticket.id} ticket={ticket} />)
         )}
         {mobileStatusTab === 'ready' && (
-          readyTickets.length === 0 ? <div className="text-stone-600 text-center py-16 text-sm">Bekleyen hazır sipariş fişi yok.</div> :
+          readyTickets.length === 0 ? <div className="text-stone-500 text-center py-16 text-sm">Bekleyen hazır sipariş yok.</div> :
           readyTickets.map(ticket => <TicketCard key={ticket.id} ticket={ticket} />)
         )}
         {mobileStatusTab === 'completed' && (
-          servedTickets.length === 0 ? <div className="text-stone-600 text-center py-16 text-sm">Servis edilen kayıt yok.</div> :
+          servedTickets.length === 0 ? <div className="text-stone-500 text-center py-16 text-sm">Servis edilen kayıt yok.</div> :
           servedTickets.slice(0, 15).map(ticket => <TicketCard key={ticket.id} ticket={ticket} />)
         )}
       </div>
@@ -299,9 +308,9 @@ export default function KitchenPage() {
       <div className="hidden lg:grid flex-1 grid-cols-4 gap-4 p-4 overflow-hidden">
         {/* YENİ */}
         <div className="flex flex-col bg-stone-950/60 rounded-2xl border border-stone-800 overflow-hidden">
-          <div className="bg-blue-950/40 p-3.5 border-b border-blue-900/40 flex justify-between items-center">
-            <h2 className="font-bold text-base text-blue-400">YENİ</h2>
-            <span className="bg-blue-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">{newTickets.length}</span>
+          <div className="bg-stone-900/90 p-3.5 border-b border-stone-800 flex justify-between items-center">
+            <h2 className="font-bold text-sm text-stone-200 tracking-wide">YENİ</h2>
+            <span className="bg-stone-800 text-stone-200 text-xs font-bold px-2.5 py-0.5 rounded-full border border-stone-700">{newTickets.length}</span>
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
             {newTickets.map(ticket => <TicketCard key={ticket.id} ticket={ticket} />)}
@@ -311,8 +320,8 @@ export default function KitchenPage() {
 
         {/* HAZIRLANIYOR */}
         <div className="flex flex-col bg-stone-950/60 rounded-2xl border border-stone-800 overflow-hidden">
-          <div className="bg-orange-950/40 p-3.5 border-b border-orange-900/40 flex justify-between items-center">
-            <h2 className="font-bold text-base text-orange-400">HAZIRLANIYOR</h2>
+          <div className="bg-stone-900/90 p-3.5 border-b border-stone-800 flex justify-between items-center">
+            <h2 className="font-bold text-sm text-orange-400 tracking-wide">HAZIRLANIYOR</h2>
             <span className="bg-orange-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">{preparingTickets.length}</span>
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
@@ -323,9 +332,9 @@ export default function KitchenPage() {
 
         {/* HAZIR */}
         <div className="flex flex-col bg-stone-950/60 rounded-2xl border border-stone-800 overflow-hidden">
-          <div className="bg-emerald-950/40 p-3.5 border-b border-emerald-900/40 flex justify-between items-center">
-            <h2 className="font-bold text-base text-emerald-400">HAZIR</h2>
-            <span className="bg-emerald-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">{readyTickets.length}</span>
+          <div className="bg-stone-900/90 p-3.5 border-b border-stone-800 flex justify-between items-center">
+            <h2 className="font-bold text-sm text-stone-200 tracking-wide">HAZIR</h2>
+            <span className="bg-stone-800 text-stone-200 text-xs font-bold px-2.5 py-0.5 rounded-full border border-stone-700">{readyTickets.length}</span>
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
             {readyTickets.map(ticket => <TicketCard key={ticket.id} ticket={ticket} />)}
@@ -335,9 +344,9 @@ export default function KitchenPage() {
 
         {/* SERVİS EDİLDİ */}
         <div className="flex flex-col bg-stone-950/60 rounded-2xl border border-stone-800 overflow-hidden opacity-75">
-          <div className="bg-stone-900 p-3.5 border-b border-stone-800 flex justify-between items-center">
-            <h2 className="font-bold text-base text-stone-400">SERVİS EDİLDİ</h2>
-            <span className="bg-stone-700 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">{servedTickets.length}</span>
+          <div className="bg-stone-900/90 p-3.5 border-b border-stone-800 flex justify-between items-center">
+            <h2 className="font-bold text-sm text-stone-400 tracking-wide">SERVİS EDİLDİ</h2>
+            <span className="bg-stone-800 text-stone-400 text-xs font-bold px-2.5 py-0.5 rounded-full border border-stone-700">{servedTickets.length}</span>
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
             {servedTickets.slice(0, 10).map(ticket => <TicketCard key={ticket.id} ticket={ticket} />)}

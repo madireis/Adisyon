@@ -158,30 +158,30 @@ export default function MenuPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 dark:text-stone-100 tracking-tight">Menü Yönetimi</h1>
-          <p className="text-stone-500 dark:text-stone-400 text-sm mt-1">Wot's Cafe lezzetlerini, porsiyonlarını ve istasyonlarını yönetin</p>
+          <p className="text-stone-500 dark:text-stone-400 text-sm mt-1">Ürün, fiyat ve mutfak istasyonları</p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
           <button 
             onClick={openAddModal}
-            className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-sm transition-colors cursor-pointer"
+            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
           >
             <Plus size={18} />
-            Yeni Ürün Ekle
+            <span>Yeni Ürün Ekle</span>
           </button>
         </div>
       </div>
 
       <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 flex flex-col flex-1 overflow-hidden">
         {/* Toolbar */}
-        <div className="p-4 border-b border-stone-200 dark:border-stone-800 flex flex-col sm:flex-row gap-4 justify-between items-center bg-stone-50/50 dark:bg-stone-950/50">
-          <div className="flex gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+        <div className="p-3 sm:p-4 border-b border-stone-200 dark:border-stone-800 flex flex-col sm:flex-row gap-3 justify-between items-center bg-stone-50/50 dark:bg-stone-950/50">
+          <div className="flex gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 no-scrollbar">
             <button
               onClick={() => setActiveCategory('ALL')}
               className={cn(
-                "px-4 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-colors cursor-pointer shadow-xs",
+                "px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer",
                 activeCategory === 'ALL' 
-                  ? "bg-orange-600 text-white shadow-sm" 
-                  : "bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300"
+                  ? "bg-orange-600 text-white shadow-xs" 
+                  : "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 border border-stone-200 dark:border-stone-700"
               )}
             >
               Tümü ({menuItems.length})
@@ -191,13 +191,13 @@ export default function MenuPage() {
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
                 className={cn(
-                  "px-4 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs",
+                  "px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer",
                   activeCategory === cat.id 
-                    ? "bg-orange-600 text-white shadow-sm" 
-                    : "bg-white text-stone-950 dark:bg-white dark:text-stone-950 hover:bg-stone-100 hover:text-black dark:hover:bg-stone-100 dark:hover:text-black border border-stone-300 dark:border-stone-300"
+                    ? "bg-orange-600 text-white shadow-xs" 
+                    : "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 border border-stone-200 dark:border-stone-700"
                 )}
               >
-                <PosIcon name={cat.icon} className={cn("w-4 h-4 shrink-0", activeCategory === cat.id ? "text-white" : "text-stone-950 dark:text-stone-950")} />
+                <PosIcon name={cat.icon} className={cn("w-4 h-4 shrink-0", activeCategory === cat.id ? "text-white" : "text-stone-500 dark:text-stone-400")} />
                 <span>{cat.name}</span>
               </button>
             ))}

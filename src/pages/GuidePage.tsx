@@ -147,24 +147,20 @@ export default function GuidePage() {
         <div className="max-w-6xl mx-auto space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-3 sm:gap-4">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-black p-1 sm:p-1.5 shadow-xl border border-orange-500/30 shrink-0 flex items-center justify-center">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-black p-1 shadow-lg border border-orange-500/30 shrink-0 flex items-center justify-center">
                 <img src={wotsLogo} alt="WOT'S CAFE" className="w-full h-full object-contain rounded-xl" />
               </div>
               <div className="min-w-0">
-                <div className="inline-flex items-center gap-1.5 bg-orange-950/80 text-orange-400 border border-orange-800/80 px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider mb-1.5">
-                  <ShieldCheck size={13} className="shrink-0" />
-                  <span>Patron & Yönetici Başucu Kılavuzu</span>
-                </div>
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight leading-tight">
-                  Sistem Nasıl Çalışır? (Tüm Akış & Rehber)
+                <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
+                  Kullanım Rehberi
                 </h1>
-                <p className="text-xs sm:text-sm text-stone-300 mt-1 max-w-2xl leading-relaxed">
-                  Masaya müşteri oturduğu andan gün sonu kasa kapanışına kadar neyi, nereden yapacağınız en sade haliyle burada.
+                <p className="text-xs sm:text-sm text-stone-300 mt-0.5 max-w-2xl leading-relaxed">
+                  Sipariş alma, mutfak ekranı, kasa tahsilatı ve gün sonu işlemleri
                 </p>
               </div>
             </div>
 
-            {/* Fast Jump Shortcuts for Owner (Responsive 3-grid on mobile, flex on desktop) */}
+            {/* Fast Jump Shortcuts (Responsive 3-grid on mobile, flex on desktop) */}
             <div className="grid grid-cols-3 gap-1.5 sm:flex sm:items-center sm:gap-2 shrink-0">
               <button
                 onClick={() => navigate('/tables')}
@@ -182,7 +178,7 @@ export default function GuidePage() {
               </button>
               <button
                 onClick={() => navigate('/reports')}
-                className="px-2.5 sm:px-3 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-[11px] sm:text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer active:scale-95 text-center"
+                className="px-2.5 sm:px-3 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-xl text-[11px] sm:text-xs font-bold transition-all border border-stone-700 flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer active:scale-95 text-center"
               >
                 <Banknote size={14} className="shrink-0" />
                 <span className="truncate">Kasa & Ciro</span>

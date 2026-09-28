@@ -2,7 +2,7 @@ import Dexie, { type Table } from 'dexie'
 import type {
   Table as PosTable, Floor, Category, MenuItem, Order, Payment,
   CashTransaction, KitchenTicket, Staff, InventoryItem, Recipe, Customer,
-  Reservation, AuditLog, OnlineOrder, SyncQueueItem
+  Reservation, AuditLog, OnlineOrder, SyncQueueItem, DevLogEntry
 } from '@/types/pos'
 
 export class PosDatabase extends Dexie {
@@ -24,6 +24,7 @@ export class PosDatabase extends Dexie {
   auditLogs!: Table<AuditLog>
   onlineOrders!: Table<OnlineOrder>
   syncQueue!: Table<SyncQueueItem, number>
+  devLogs!: Table<DevLogEntry>
 
   constructor() {
     super('WotsCafePOS')
@@ -52,6 +53,10 @@ export class PosDatabase extends Dexie {
 
     this.version(3).stores({
       cashTransactions: 'id, type, createdAt',
+    })
+
+    this.version(4).stores({
+      devLogs: 'id, timestamp, level, category',
     })
 
     // Expose posTables helper on instance for easy and safe access to restaurant tables
