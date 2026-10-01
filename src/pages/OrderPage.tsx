@@ -4,10 +4,11 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { useApp } from '@/lib/store';
 import { cn, formatCurrency, generateId } from '@/lib/utils';
-import { ChevronLeft, ChevronRight, Plus, Minus, Trash2, CheckCircle2, Send, CreditCard, Utensils, Sparkles, X, Receipt, Search, Printer, Clock, Users, ChefHat, Timer } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Minus, Trash2, CheckCircle2, Send, CreditCard, Utensils, Sparkles, X, Receipt, Search, Printer, Clock, Users, ChefHat, Timer, ArrowRightLeft } from 'lucide-react';
 import ModifierModal from '@/components/pos/ModifierModal';
 import PaymentModal from '@/components/pos/PaymentModal';
 import ThermalSlipModal from '@/components/pos/ThermalSlipModal';
+import TableTransferModal from '@/components/pos/TableTransferModal';
 import PosIcon from '@/components/common/PosIcon';
 import type { OrderItem, MenuItem, Order, OrderItemModifier, KitchenTicket, KitchenStation, Table } from '@/types/pos';
 
@@ -22,10 +23,13 @@ export default function OrderPage() {
   const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isMobileTicketOpen, setIsMobileTicketOpen] = useState(false);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isSlipModalOpen, setIsSlipModalOpen] = useState(false);
   const [slipModalType, setSlipModalType] = useState<'kitchen' | 'receipt'>('receipt');
   const [notes, setNotes] = useState('');
   const [orderStartedAt] = useState<string>(() => new Date().toISOString());
+
+  const isCashierOrManager = state.currentUser?.role === 'cashier' || state.currentUser?.role === 'manager' || state.currentUser?.role === 'owner';
   
   const table = useLiveQuery(() => db.table<Table>('tables').get(tableId || ''), [tableId]);
   
@@ -75,7 +79,19 @@ export default function OrderPage() {
     return (item.unitPrice + modsCost) * item.quantity;
   };
 
+  const computeOrderWaiters = (existingWaiters?: string[], defaultWaiterName?: string) => {
+    const set = new Set<string>();
+    if (defaultWaiterName) set.add(defaultWaiterName);
+    if (existingWaiters) existingWaiters.forEach(w => w && set.add(w));
+    if (state.currentUser?.name) set.add(state.currentUser.name);
+    localItems.forEach(i => {
+      if (i.addedByWaiterName) set.add(i.addedByWaiterName);
+    });
+    return Array.from(set).filter(Boolean);
+  };
+
   const handleAddItem = (item: MenuItem, modifiers: OrderItemModifier[] = []) => {
+    const currentWaiterName = state.currentUser?.name || 'Garson';
     const newItem: OrderItem = {
       id: generateId(),
       orderId: order?.id || '',
@@ -89,9 +105,90 @@ export default function OrderPage() {
       station: item.station,
       addedAt: new Date().toISOString(),
       addedBy: state.currentUser?.id || 'staff-1',
+      addedByWaiterName: currentWaiterName,
     };
     
     setLocalItems(prev => [...prev, newItem]);
+  };
+
+  const handleCashierDeleteItem = async (item: OrderItem) => {
+    if (!isCashierOrManager) {
+      alert('Yalnızca kasiyer veya yöneticiler iletilmiş ürünleri silebilir.');
+      return;
+    }
+
+    const confirmMsg = `"${item.name}" ürününü (${item.quantity} adet) adisyondan silmek / iptal etmek istediğinize emin misiniz?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      const remainingItems = localItems.filter(i => i.id !== item.id);
+      setLocalItems(remainingItems);
+
+      if (order?.id) {
+        const nowIso = new Date().toISOString();
+        if (remainingItems.length === 0) {
+          const freeTable = window.confirm('Masadaki tüm ürünler silindi. Masa boşaltılsın ve kapatılsın mı?');
+          if (freeTable) {
+            await db.orders.update(order.id, {
+              items: [],
+              status: 'cancelled',
+              total: 0,
+              subtotal: 0,
+              updatedAt: nowIso,
+            });
+            await db.table<Table>('tables').update(tableId!, {
+              status: 'available',
+              currentOrderId: undefined,
+              occupiedAt: undefined,
+            });
+            await db.auditLogs.add({
+              id: generateId(),
+              userId: state.currentUser?.id || 'staff',
+              userName: state.currentUser?.name || 'Kasiyer',
+              action: 'Adisyon İptali / Masa Boşaltma',
+              details: `Masa ${table?.label || ''} adisyonundaki son ürün ("${item.name}") silindi ve masa kapatıldı.`,
+              entityType: 'order',
+              entityId: order.id,
+              timestamp: nowIso,
+            });
+            navigate('/tables');
+            return;
+          } else {
+            await db.orders.update(order.id, {
+              items: [],
+              subtotal: 0,
+              total: 0,
+              updatedAt: nowIso,
+            });
+          }
+        } else {
+          const newSubtotal = remainingItems.reduce((acc, i) => acc + getItemLineTotal(i), 0);
+          const newTax = Math.round(newSubtotal * 0.08);
+          const newTotal = newSubtotal;
+          await db.orders.update(order.id, {
+            items: remainingItems,
+            subtotal: newSubtotal,
+            tax: newTax,
+            total: newTotal,
+            updatedAt: nowIso,
+          });
+        }
+
+        await db.auditLogs.add({
+          id: generateId(),
+          userId: state.currentUser?.id || 'staff',
+          userName: state.currentUser?.name || 'Kasiyer',
+          action: 'Ürün İptali (Kasiyer)',
+          details: `Masa ${table?.label || ''} masasından "${item.name}" (${item.quantity} adet) silindi/iptal edildi.`,
+          entityType: 'order',
+          entityId: order.id,
+          timestamp: nowIso,
+        });
+      }
+    } catch (err: any) {
+      console.error('Ürün silme hatası:', err);
+      alert('Ürün silinirken bir hata oluştu: ' + (err?.message || err));
+    }
   };
 
   const handleProductClick = (item: MenuItem) => {
@@ -136,6 +233,7 @@ export default function OrderPage() {
       
       const nowIso = new Date().toISOString();
       let currentOrderId = order?.id;
+      const allContributingWaiters = computeOrderWaiters(order?.waiters, order?.waiterName || state.currentUser?.name);
       
       // Split new items into kitchen tickets by station
       const newItems = localItems.filter(i => i.status === 'open');
@@ -160,7 +258,13 @@ export default function OrderPage() {
           tableLabel,
           waiterId: state.currentUser?.id || 'staff-1',
           waiterName: state.currentUser?.name || 'Garson',
-          items: localItems.map(i => ({ ...i, orderId: currentOrderId!, status: 'sent' })),
+          waiters: allContributingWaiters,
+          items: localItems.map(i => ({
+            ...i,
+            orderId: currentOrderId!,
+            status: 'sent',
+            addedByWaiterName: i.addedByWaiterName || state.currentUser?.name || 'Garson'
+          })),
           status: 'sent',
           subtotal,
           discount: 0,
@@ -182,7 +286,12 @@ export default function OrderPage() {
         });
       } else {
         await db.orders.update(currentOrderId, {
-          items: localItems.map(i => ({ ...i, status: 'sent' })),
+          items: localItems.map(i => ({
+            ...i,
+            status: 'sent',
+            addedByWaiterName: i.addedByWaiterName || state.currentUser?.name || 'Garson'
+          })),
+          waiters: allContributingWaiters,
           status: 'sent',
           subtotal,
           total,
@@ -244,6 +353,7 @@ export default function OrderPage() {
       const tableLabel = currentTable?.label || 'Masa';
       const nowIso = new Date().toISOString();
       let currentOrderId = order?.id;
+      const allContributingWaiters = computeOrderWaiters(order?.waiters, order?.waiterName || state.currentUser?.name);
 
       if (!currentOrderId && localItems.length > 0) {
         currentOrderId = generateId();
@@ -253,7 +363,12 @@ export default function OrderPage() {
           tableLabel,
           waiterId: state.currentUser?.id || 'staff-1',
           waiterName: state.currentUser?.name || 'Garson',
-          items: localItems.map(i => ({ ...i, orderId: currentOrderId! })),
+          waiters: allContributingWaiters,
+          items: localItems.map(i => ({
+            ...i,
+            orderId: currentOrderId!,
+            addedByWaiterName: i.addedByWaiterName || state.currentUser?.name || 'Garson'
+          })),
           status: 'open',
           subtotal,
           discount: 0,
@@ -274,7 +389,11 @@ export default function OrderPage() {
         });
       } else if (currentOrderId) {
         await db.orders.update(currentOrderId, {
-          items: localItems,
+          items: localItems.map(i => ({
+            ...i,
+            addedByWaiterName: i.addedByWaiterName || state.currentUser?.name || 'Garson'
+          })),
+          waiters: allContributingWaiters,
           subtotal,
           total,
           updatedAt: nowIso,
@@ -306,18 +425,28 @@ export default function OrderPage() {
             {table?.guestCount || 2} Kişi
           </span>
         </div>
-        <button
-          onClick={() => setIsMobileTicketOpen(true)}
-          className={cn(
-            "flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold transition-all active:scale-95 ios-spring cursor-pointer min-h-[38px]",
-            localItems.length > 0
-              ? "bg-orange-600 text-white shadow-sm"
-              : "bg-stone-800 text-stone-400 border border-stone-700"
-          )}
-        >
-          <Receipt className="w-3.5 h-3.5" />
-          <span>{localItems.length} Kalem</span>
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setIsTransferModalOpen(true)}
+            className="flex items-center justify-center p-2 rounded-full bg-stone-800 text-stone-200 border border-stone-700 active:scale-95 cursor-pointer min-h-[38px] min-w-[38px]"
+            title="Masayı / Ürünleri Başka Masaya Taşı"
+          >
+            <ArrowRightLeft className="w-3.5 h-3.5 text-orange-400" />
+          </button>
+          <button
+            onClick={() => setIsMobileTicketOpen(true)}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold transition-all active:scale-95 ios-spring cursor-pointer min-h-[38px]",
+              localItems.length > 0
+                ? "bg-orange-600 text-white shadow-sm"
+                : "bg-stone-800 text-stone-400 border border-stone-700"
+            )}
+          >
+            <Receipt className="w-3.5 h-3.5" />
+            <span>{localItems.length} Kalem</span>
+          </button>
+        </div>
       </div>
 
       {/* Mobile Horizontal Category Bar (lg:hidden) */}
@@ -527,15 +656,35 @@ export default function OrderPage() {
                     {localItems.reduce((acc, i) => acc + i.quantity, 0)} Ürün
                   </span>
                 </div>
-                <p className="text-xs text-stone-400 font-medium mt-0.5">Garson: {order?.waiterName || state.currentUser?.name || 'Garson'}</p>
+                <p className="text-xs text-stone-400 font-medium mt-0.5">
+                  {order?.waiters && order.waiters.length > 1 ? (
+                    <span className="text-orange-300 font-semibold">Garsonlar: {order.waiters.join(', ')}</span>
+                  ) : (
+                    `Garson: ${order?.waiterName || state.currentUser?.name || 'Garson'}`
+                  )}
+                </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsMobileTicketOpen(false)}
-                className="p-2 bg-stone-800 hover:bg-stone-700 rounded-full text-white active:scale-95 transition-all cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileTicketOpen(false);
+                    setIsTransferModalOpen(true);
+                  }}
+                  className="px-2.5 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer active:scale-95 transition-colors"
+                  title="Ürünleri veya masayı başka masaya taşı"
+                >
+                  <ArrowRightLeft className="w-3.5 h-3.5 text-orange-400" />
+                  <span>Taşı</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileTicketOpen(false)}
+                  className="p-2 bg-stone-800 hover:bg-stone-700 rounded-full text-white active:scale-95 transition-all cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Order Timing & Status Details */}
@@ -604,6 +753,9 @@ export default function OrderPage() {
                                 ● Yeni
                               </span>
                             )}
+                            <span className="text-[10px] text-stone-400 font-medium">
+                              ({item.addedByWaiterName || order?.waiterName || 'Garson'})
+                            </span>
                           </div>
                           {item.modifiers && item.modifiers.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1">
@@ -630,7 +782,7 @@ export default function OrderPage() {
                         </div>
                       </div>
 
-                      {!isSent && (
+                      {!isSent ? (
                         <div className="flex items-center justify-between pt-2 border-t border-stone-700/60 mt-1">
                           {/* Large Touch Stepper */}
                           <div className="flex items-center bg-stone-950 rounded-xl border border-stone-700 p-0.5 shadow-2xs">
@@ -663,7 +815,23 @@ export default function OrderPage() {
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                      )}
+                      ) : isCashierOrManager ? (
+                        <div className="flex items-center justify-between pt-2 border-t border-stone-800 mt-1">
+                          <span className="text-[10px] text-stone-400 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                            Kasiyer Yetkisi
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleCashierDeleteItem(item)}
+                            className="px-2.5 py-1 bg-red-950 hover:bg-red-900 text-red-300 border border-red-800 rounded-lg text-xs font-bold transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
+                            title="Ürünü Masadan İptal Et / Sil"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Ürünü İptal Et / Sil</span>
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
                   );
                 })
@@ -749,13 +917,30 @@ export default function OrderPage() {
                 {table?.guestCount || 2} Kişi
               </span>
             </div>
-            <p className="text-xs text-stone-400 font-medium mt-0.5">Garson: {order?.waiterName || state.currentUser?.name || 'Garson'}</p>
+            <p className="text-xs text-stone-400 font-medium mt-0.5">
+              {order?.waiters && order.waiters.length > 1 ? (
+                <span className="text-orange-300 font-semibold">Garsonlar: {order.waiters.join(', ')}</span>
+              ) : (
+                `Garson: ${order?.waiterName || state.currentUser?.name || 'Garson'}`
+              )}
+            </p>
           </div>
-          <div className="text-right">
-            <span className="text-[10px] text-stone-400 uppercase tracking-wider block font-bold">Adisyon</span>
-            <span className="font-mono font-black text-sm text-stone-200">
-              #{order?.id?.slice(0, 6).toUpperCase() || 'YENİ'}
-            </span>
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setIsTransferModalOpen(true)}
+              className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer active:scale-95 transition-colors"
+              title="Ürünleri veya masayı başka masaya taşı"
+            >
+              <ArrowRightLeft className="w-3.5 h-3.5 text-orange-400" />
+              <span>Taşı</span>
+            </button>
+            <div className="text-right">
+              <span className="text-[10px] text-stone-400 uppercase tracking-wider block font-bold">Adisyon</span>
+              <span className="font-mono font-black text-sm text-stone-200">
+                #{order?.id?.slice(0, 6).toUpperCase() || 'YENİ'}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -827,6 +1012,9 @@ export default function OrderPage() {
                             ● Yeni
                           </span>
                         )}
+                        <span className="text-[10px] text-stone-400 font-medium">
+                          ({item.addedByWaiterName || order?.waiterName || 'Garson'})
+                        </span>
                       </div>
                       {item.modifiers && item.modifiers.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
@@ -853,7 +1041,7 @@ export default function OrderPage() {
                     </div>
                   </div>
                   
-                  {!isSent && (
+                  {!isSent ? (
                     <div className="flex items-center justify-between pt-2 border-t border-stone-700/60 mt-1">
                       <div className="flex items-center bg-stone-950 rounded-xl border border-stone-700 p-0.5 shadow-2xs">
                         <button 
@@ -881,7 +1069,23 @@ export default function OrderPage() {
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                  )}
+                  ) : isCashierOrManager ? (
+                    <div className="flex items-center justify-between pt-2 border-t border-stone-800 mt-1">
+                      <span className="text-[10px] text-stone-400 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                        Kasiyer Yetkisi
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleCashierDeleteItem(item)}
+                        className="px-2.5 py-1 bg-red-950 hover:bg-red-900 text-red-300 border border-red-800 rounded-lg text-xs font-bold transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
+                        title="Ürünü Masadan İptal Et / Sil"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Ürünü İptal Et / Sil</span>
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               );
             })
@@ -1002,6 +1206,19 @@ export default function OrderPage() {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             notes,
+          }}
+        />
+      )}
+
+      {isTransferModalOpen && table && (
+        <TableTransferModal
+          currentTable={table}
+          currentOrder={order || null}
+          currentItems={localItems}
+          onClose={() => setIsTransferModalOpen(false)}
+          onSuccess={(targetTableId) => {
+            setIsTransferModalOpen(false);
+            navigate(`/order/${targetTableId}`);
           }}
         />
       )}

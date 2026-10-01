@@ -107,6 +107,7 @@ export interface OrderItem {
   station: KitchenStation
   addedAt: string
   addedBy: string
+  addedByWaiterName?: string
 }
 
 export interface Order {
@@ -115,6 +116,7 @@ export interface Order {
   tableLabel: string
   waiterId: string
   waiterName: string
+  waiters?: string[] // All staff members who took orders / added items to this table
   status: OrderStatus
   items: OrderItem[]
   subtotal: number

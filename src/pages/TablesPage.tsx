@@ -230,13 +230,23 @@ export default function TablesPage() {
 
                 {/* Bottom Row */}
                 {isOccupied && !activeEditMode && (
-                  <div className="pt-1.5 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-[10px] text-stone-500 dark:text-stone-400 shrink-0 font-medium">
-                    <div className="flex items-center gap-1">
+                  <div className="pt-1.5 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-[10px] text-stone-500 dark:text-stone-400 shrink-0 font-medium gap-1">
+                    <div className="flex items-center gap-1 shrink-0">
                       <Users className="w-3 h-3 text-stone-400" />
                       <span>{table.guestCount || 1}</span>
                     </div>
+
+                    <div
+                      className="flex-1 text-center truncate px-1 text-[10px] font-semibold text-stone-600 dark:text-stone-300"
+                      title={order?.waiters && order.waiters.length > 0 ? `Garson(lar): ${order.waiters.join(', ')}` : `Garson: ${order?.waiterName || 'Garson'}`}
+                    >
+                      {order?.waiters && order.waiters.length > 1
+                        ? order.waiters.join(', ')
+                        : (order?.waiterName || 'Garson')}
+                    </div>
+
                     {elapsedMins > 0 && (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 shrink-0">
                         <Clock className="w-3 h-3 text-stone-400" />
                         <span>{elapsedMins} dk</span>
                       </div>
