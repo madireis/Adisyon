@@ -18,6 +18,7 @@ import {
   BookOpen,
   Download,
   Terminal,
+  ShieldAlert,
 } from 'lucide-react';
 import type { UserRole, PosPermissions } from '@/types/pos';
 import { usePermissions } from '@/lib/permissions';
@@ -68,14 +69,15 @@ export default function Layout() {
   const hasManagerSession = Boolean(state.originalManager || isManager);
   const isSwitchedToAnotherUser = Boolean(state.originalManager && user.id !== state.originalManager.id);
 
-  // Clean, short navigation items without yapping
+  // Clean, short navigation items with granular permission checking
   const allNavItems: NavItem[] = [
-    { path: '/tables', label: 'Masalar', icon: Grid2X2, roles: ['waiter', 'cashier', 'owner', 'manager', 'developer'] },
-    { path: '/kitchen', label: 'Mutfak', icon: ChefHat, roles: ['kitchen', 'bar', 'owner', 'manager', 'developer'] },
+    { path: '/tables', label: 'Masalar', icon: Grid2X2, permission: 'canViewTablesPage', roles: ['waiter', 'cashier', 'owner', 'manager', 'developer'] },
+    { path: '/kitchen', label: 'Mutfak', icon: ChefHat, permission: 'canViewKitchen', roles: ['kitchen', 'bar', 'owner', 'manager', 'developer'] },
     { path: '/reports', label: 'Kasa', icon: Banknote, permission: 'canViewReports', roles: ['cashier', 'owner', 'manager', 'developer'] },
-    { path: '/menu', label: 'Menü', icon: MenuSquare, permission: 'canManageMenu', roles: ['owner', 'manager', 'developer'] },
-    { path: '/staff', label: 'Personel', icon: Users, permission: 'canManageStaff', roles: ['owner', 'manager', 'developer'] },
-    { path: '/settings', label: 'Ayarlar', icon: Settings, permission: 'canManageStaff', roles: ['owner', 'manager', 'developer'] },
+    { path: '/patron-logs', label: 'Patron Logları', icon: ShieldAlert, permission: 'canViewAuditLogs', roles: ['owner', 'manager', 'developer'] },
+    { path: '/menu', label: 'Menü', icon: MenuSquare, permission: 'canViewMenu', roles: ['owner', 'manager', 'developer'] },
+    { path: '/staff', label: 'Personel', icon: Users, permission: 'canViewStaff', roles: ['owner', 'manager', 'developer'] },
+    { path: '/settings', label: 'Ayarlar', icon: Settings, permission: 'canManageSettings', roles: ['owner', 'manager', 'developer'] },
     { path: '/guide', label: 'Rehber', icon: BookOpen, roles: ['owner', 'manager', 'developer'] },
     { path: '/developer', label: 'Geliştirici', icon: Terminal, roles: ['developer'] },
   ];
@@ -87,7 +89,15 @@ export default function Layout() {
         { path: '/tables', label: 'Masalar', icon: Grid2X2 },
         { path: '/kitchen', label: 'Mutfak', icon: ChefHat },
         { path: '/reports', label: 'Kasa', icon: Banknote },
-        { path: '/developer', label: 'Dev Log', icon: Terminal },
+        { path: '/patron-logs', label: 'Patron Log', icon: ShieldAlert },
+      ];
+    }
+    if (user.role === 'owner') {
+      return [
+        { path: '/tables', label: 'Masalar', icon: Grid2X2 },
+        { path: '/reports', label: 'Kasa', icon: Banknote },
+        { path: '/patron-logs', label: 'Patron Log', icon: ShieldAlert },
+        { path: '/kitchen', label: 'Mutfak', icon: ChefHat },
       ];
     }
     const items = [];
@@ -96,7 +106,7 @@ export default function Layout() {
     } else {
       items.push({ path: '/tables', label: 'Masalar', icon: Grid2X2 });
     }
-    if (user.role === 'kitchen' || user.role === 'bar' || user.role === 'owner' || user.role === 'manager') {
+    if (user.role === 'kitchen' || user.role === 'bar' || user.role === 'manager') {
       if (!items.some(i => i.path === '/kitchen')) {
         items.push({ path: '/kitchen', label: 'Mutfak', icon: ChefHat });
       }
@@ -136,9 +146,10 @@ export default function Layout() {
 
   useEffect(() => {
     if (!isAuthorized()) {
-      if (user.role === 'waiter') navigate('/tables', { replace: true });
-      else if (user.role === 'kitchen' || user.role === 'bar') navigate('/kitchen', { replace: true });
-      else navigate('/tables', { replace: true });
+      if (hasPermission('canViewTablesPage')) navigate('/tables', { replace: true });
+      else if (hasPermission('canViewKitchen')) navigate('/kitchen', { replace: true });
+      else if (hasPermission('canViewReports')) navigate('/reports', { replace: true });
+      else navigate('/login', { replace: true });
     }
   }, [user.role, location.pathname]);
 

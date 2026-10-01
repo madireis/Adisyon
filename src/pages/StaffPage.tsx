@@ -4,14 +4,24 @@ import { db } from '@/lib/db';
 import { 
   UserPlus, Shield, Edit2, Trash2, X, Check, KeyRound, Wifi, 
   Smartphone, Eye, EyeOff, RotateCcw, ArrowRightLeft, DoorClosed, 
-  Trash2 as TrashIcon, CreditCard, Percent, Printer, BarChart3, 
-  LayoutGrid, Utensils, ShieldAlert, XCircle, Users, CheckCircle2
+  CreditCard, Percent, Printer, BarChart3, LayoutGrid, Utensils, 
+  ShieldAlert, XCircle, Users, CheckCircle2, Plus, PlusCircle, 
+  ArrowDownUp, ChefHat, CheckSquare, MenuSquare, ToggleLeft, 
+  UserCog, ShieldCheck, History, Settings, Sparkles, Filter,
+  CheckCheck, Banknote
 } from 'lucide-react';
 import { cn, generateId } from '@/lib/utils';
 import type { Staff, UserRole, PosPermissions } from '@/types/pos';
 import { useLocalNetwork } from '@/lib/useLocalNetwork';
 import LocalNetworkModal from '@/components/common/LocalNetworkModal';
-import { usePermissions, PERMISSION_DEFINITIONS, EDITABLE_ROLES, DEFAULT_ROLE_PERMISSIONS } from '@/lib/permissions';
+import { 
+  usePermissions, 
+  PERMISSION_CATEGORIES, 
+  PERMISSION_DEFINITIONS, 
+  EDITABLE_ROLES, 
+  DEFAULT_ROLE_PERMISSIONS,
+  type PermissionCategoryKey
+} from '@/lib/permissions';
 
 export default function StaffPage() {
   const staffMembers = useLiveQuery(() => db.staff.toArray()) || [];
@@ -19,8 +29,10 @@ export default function StaffPage() {
   const { 
     rolePermissionsMap, 
     updateRolePermission, 
+    toggleCategoryPermissions,
     resetRoleToDefault, 
     resetAllToDefault,
+    permissionCategories,
     permissionDefinitions,
     editableRoles
   } = usePermissions();
@@ -50,8 +62,8 @@ export default function StaffPage() {
   const [showAddPin, setShowAddPin] = useState(false);
   const [showEditPin, setShowEditPin] = useState(false);
 
-  // Permissions filter / search
-  const [selectedRoleFilter, setSelectedRoleFilter] = useState<UserRole | 'all'>('all');
+  // Category filter state in permissions tab
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
 
   const roleOptions: { value: UserRole; label: string }[] = [
     { value: 'waiter', label: 'Garson' },
@@ -83,28 +95,54 @@ export default function StaffPage() {
 
   const getPermissionIcon = (iconName: string) => {
     switch (iconName) {
+      case 'Eye':
+        return <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400" />;
+      case 'PlusCircle':
+        return <PlusCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />;
       case 'ArrowRightLeft':
-        return <ArrowRightLeft className="w-4 h-4 text-orange-600 dark:text-orange-400" />;
+        return <ArrowRightLeft className="w-4 h-4 text-blue-600 dark:text-blue-400" />;
       case 'DoorClosed':
-        return <DoorClosed className="w-4 h-4 text-orange-600 dark:text-orange-400" />;
+        return <DoorClosed className="w-4 h-4 text-blue-600 dark:text-blue-400" />;
+      case 'LayoutGrid':
+        return <LayoutGrid className="w-4 h-4 text-blue-600 dark:text-blue-400" />;
+      case 'Plus':
+        return <Plus className="w-4 h-4 text-amber-600 dark:text-amber-400" />;
       case 'Trash2':
-        return <TrashIcon className="w-4 h-4 text-red-500" />;
+        return <Trash2 className="w-4 h-4 text-red-500" />;
       case 'XCircle':
         return <XCircle className="w-4 h-4 text-red-500" />;
-      case 'CreditCard':
-        return <CreditCard className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />;
       case 'Percent':
-        return <Percent className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />;
+        return <Percent className="w-4 h-4 text-amber-600 dark:text-amber-400" />;
       case 'Printer':
         return <Printer className="w-4 h-4 text-blue-600 dark:text-blue-400" />;
+      case 'Banknote':
+        return <Banknote className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />;
+      case 'CreditCard':
+        return <CreditCard className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />;
       case 'BarChart3':
-        return <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400" />;
-      case 'LayoutGrid':
-        return <LayoutGrid className="w-4 h-4 text-stone-600 dark:text-stone-400" />;
+        return <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />;
+      case 'ArrowDownUp':
+        return <ArrowDownUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />;
+      case 'ChefHat':
+        return <ChefHat className="w-4 h-4 text-purple-600 dark:text-purple-400" />;
+      case 'CheckSquare':
+        return <CheckSquare className="w-4 h-4 text-purple-600 dark:text-purple-400" />;
+      case 'MenuSquare':
+        return <MenuSquare className="w-4 h-4 text-orange-600 dark:text-orange-400" />;
       case 'Utensils':
-        return <Utensils className="w-4 h-4 text-stone-600 dark:text-stone-400" />;
-      case 'ShieldAlert':
-        return <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400" />;
+        return <Utensils className="w-4 h-4 text-orange-600 dark:text-orange-400" />;
+      case 'ToggleLeft':
+        return <ToggleLeft className="w-4 h-4 text-orange-600 dark:text-orange-400" />;
+      case 'Users':
+        return <Users className="w-4 h-4 text-rose-600 dark:text-rose-400" />;
+      case 'UserCog':
+        return <UserCog className="w-4 h-4 text-rose-600 dark:text-rose-400" />;
+      case 'ShieldCheck':
+        return <ShieldCheck className="w-4 h-4 text-rose-600 dark:text-rose-400" />;
+      case 'History':
+        return <History className="w-4 h-4 text-rose-600 dark:text-rose-400" />;
+      case 'Settings':
+        return <Settings className="w-4 h-4 text-stone-600 dark:text-stone-400" />;
       default:
         return <Shield className="w-4 h-4 text-orange-600" />;
     }
@@ -271,8 +309,22 @@ export default function StaffPage() {
     }
   };
 
-  // Group permissions by category
-  const categories = ['Masa & Adisyon', 'Ödeme & Finans', 'Yönetim & Menü'] as const;
+  // Filter categories by selection
+  const displayedCategories = selectedCategoryFilter === 'all'
+    ? permissionCategories
+    : permissionCategories.filter(c => c.key === selectedCategoryFilter);
+
+  // Helper for batch modal category toggle
+  const toggleModalCategoryPermissions = (categoryKey: PermissionCategoryKey, enable: boolean) => {
+    const categoryPerms = permissionDefinitions.filter(p => p.category === categoryKey);
+    setCustomPermState(prev => {
+      const next = { ...prev };
+      for (const p of categoryPerms) {
+        next[p.key] = enable;
+      }
+      return next;
+    });
+  };
 
   return (
     <div className="p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto dark:bg-stone-950 dark:text-stone-100 select-none pb-24 md:pb-8">
@@ -283,7 +335,7 @@ export default function StaffPage() {
             Personel & Yetki Yönetimi
           </h1>
           <p className="text-stone-500 text-xs sm:text-sm mt-0.5">
-            Personel hesapları, PIN kodları ve rollere özel yetkilendirme
+            Masa, Sipariş, Kasa, Mutfak ve Menü için kategorize yetki matrisi
           </p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -331,8 +383,8 @@ export default function StaffPage() {
               : "text-stone-500 hover:text-stone-800 dark:hover:text-stone-200"
           )}
         >
-          <Shield size={16} />
-          <span>Rol Yetkileri & İzinler</span>
+          <ShieldCheck size={16} />
+          <span>Kategorize Yetki Matrisi ({permissionDefinitions.length})</span>
         </button>
       </div>
 
@@ -350,105 +402,76 @@ export default function StaffPage() {
               const hasCustom = Boolean(member.customPermissions && Object.keys(member.customPermissions).length > 0);
 
               return (
-                <div key={member.id} className="bg-stone-50/70 dark:bg-stone-950/60 p-3.5 rounded-2xl border border-stone-200/80 dark:border-stone-800 flex flex-col gap-2.5 shadow-2xs">
-                  {/* Header: Avatar, Name, UserNo & Role */}
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-stone-800 text-orange-600 dark:text-orange-400 font-black text-sm flex items-center justify-center shrink-0 border border-orange-200 dark:border-stone-700">
+                <div key={member.id} className="p-3.5 bg-stone-50 dark:bg-stone-950/60 rounded-2xl border border-stone-200/60 dark:border-stone-800/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-2xl bg-orange-100 dark:bg-orange-950/80 text-orange-700 dark:text-orange-400 font-bold flex items-center justify-center text-sm border border-orange-200 dark:border-orange-900">
                         {member.name.split(' ').map(n => n[0]).join('')}
                       </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-black text-sm text-stone-900 dark:text-stone-100 truncate">{member.name}</span>
-                          <span className="font-mono text-[10px] font-bold bg-orange-50 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 px-1.5 py-0.2 rounded border border-orange-200 dark:border-orange-900">
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-black text-sm text-stone-900 dark:text-stone-100">{member.name}</span>
+                          {roleBadge(member.role)}
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="font-mono text-xs font-bold text-stone-500 bg-white dark:bg-stone-900 px-1.5 py-0.5 rounded border border-stone-200 dark:border-stone-800">
                             #{member.username || member.id}
                           </span>
+                          {hasCustom && (
+                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-900">
+                              ★ Özel Yetki
+                            </span>
+                          )}
                         </div>
-                        {hasCustom ? (
-                          <span className="text-[10px] text-orange-600 dark:text-orange-400 font-bold block mt-0.5">
-                            ★ Özel Yetki Tanımlı
-                          </span>
-                        ) : (
-                          <span className="text-[10px] text-stone-400 block mt-0.5">
-                            Standart Rol Yetkileri
-                          </span>
-                        )}
-                        {isWifiOnline && (
-                          <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5">
-                            <Smartphone size={10} /> {liveConnection.deviceName}
-                          </span>
-                        )}
                       </div>
                     </div>
-                    <div className="shrink-0">
-                      {roleBadge(member.role)}
-                    </div>
-                  </div>
-
-                  {/* Details: PIN & WiFi Status */}
-                  <div className="grid grid-cols-2 gap-2 bg-white dark:bg-stone-900 p-2.5 rounded-xl border border-stone-200/60 dark:border-stone-800 text-xs">
-                    <div>
-                      <span className="text-[10px] text-stone-400 dark:text-stone-500 font-bold block mb-1">Giriş PIN:</span>
-                      <div className="flex items-center gap-1.5 font-mono">
-                        <span className={cn(
-                          "font-bold text-stone-800 dark:text-stone-200",
-                          !isPinRevealed && "filter blur-xs select-none"
-                        )}>
-                          {member.pin}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => togglePinVisibility(member.id)}
-                          className="p-1 rounded text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
-                          title={isPinRevealed ? "PIN'i Gizle" : "PIN'i Göster"}
-                        >
-                          {isPinRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
-                        </button>
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-stone-400 dark:text-stone-500 font-bold block mb-1">WiFi Durumu:</span>
-                      {isWifiOnline ? (
-                        <span className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-                          Aktif Bağlı ({liveConnection.pingMs}ms)
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-stone-400 italic">Çevrimdışı</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Footer: Status & Actions */}
-                  <div className="flex items-center justify-between pt-1 border-t border-stone-200/60 dark:border-stone-800/80 gap-2">
                     <button
                       type="button"
                       onClick={() => toggleActive(member)}
                       className={cn(
-                        "px-3 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer",
+                        "px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all",
                         member.active 
-                          ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60" 
-                          : "bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-400"
+                          ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" 
+                          : "bg-stone-200 dark:bg-stone-800 text-stone-500"
                       )}
                     >
-                      {member.active ? '● Aktif' : '○ Pasif'}
+                      {member.active ? 'Aktif' : 'Pasif'}
                     </button>
+                  </div>
 
+                  {/* Mobile PIN & Connection bar */}
+                  <div className="flex items-center justify-between pt-2 border-t border-stone-200/50 dark:border-stone-800/50 text-xs">
                     <div className="flex items-center gap-1.5">
-                      <button 
+                      <span className="text-stone-400 font-medium">PIN:</span>
+                      <span className={cn(
+                        "font-mono font-bold px-2 py-0.5 rounded bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 tracking-wider text-xs",
+                        !isPinRevealed && "filter blur-xs select-none"
+                      )}>
+                        {member.pin}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => togglePinVisibility(member.id)}
+                        className="p-1 text-stone-400 hover:text-stone-600"
+                      >
+                        {isPinRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <button
                         type="button"
                         onClick={() => openEditModal(member)}
-                        className="px-3 py-1.5 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:text-orange-600 rounded-xl transition-colors cursor-pointer flex items-center gap-1 text-xs font-bold shadow-2xs min-h-[34px]"
-                        title="Düzenle / Yetkileri Ayarla"
+                        className="px-2.5 py-1 rounded-lg bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 font-bold border border-stone-200 dark:border-stone-700 text-xs flex items-center gap-1"
                       >
-                        <Edit2 size={13} />
+                        <Edit2 size={12} />
                         <span>Düzenle</span>
                       </button>
-                      <button 
+                      <button
                         type="button"
                         onClick={() => handleDeleteStaff(member)}
-                        className="p-1.5 text-red-500 hover:text-red-700 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl transition-colors cursor-pointer min-h-[34px] min-w-[34px] flex items-center justify-center shadow-2xs"
-                        title="Personeli Sil"
+                        className="p-1 rounded-lg text-stone-400 hover:text-red-500"
+                        title="Sil"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -459,30 +482,30 @@ export default function StaffPage() {
             })}
           </div>
 
-          {/* Desktop Table View (hidden md:table) */}
-          <table className="hidden md:table w-full text-left">
-            <thead className="bg-stone-50 dark:bg-stone-950/80 text-xs uppercase tracking-wider font-bold text-stone-500 dark:text-stone-300 border-b border-stone-200 dark:border-stone-800">
-              <tr>
-                <th className="py-3 sm:py-3.5 px-3 sm:px-6">Kullanıcı No</th>
-                <th className="py-3 sm:py-3.5 px-3 sm:px-6">Personel Adı</th>
-                <th className="py-3 sm:py-3.5 px-3 sm:px-6">Görevi / Rolü</th>
-                <th className="py-3 sm:py-3.5 px-3 sm:px-6">Yetki Durumu</th>
-                <th className="py-3 sm:py-3.5 px-3 sm:px-6">
-                  <div className="flex items-center gap-1.5">
+          {/* Desktop Table View (hidden on mobile) */}
+          <table className="hidden md:table w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950/50 text-stone-500 font-bold text-xs uppercase tracking-wider">
+                <th className="py-3.5 px-6">Kullanıcı No</th>
+                <th className="py-3.5 px-6">Personel Adı</th>
+                <th className="py-3.5 px-6">Görevi</th>
+                <th className="py-3.5 px-6">Yetki Durumu</th>
+                <th className="py-3.5 px-6">
+                  <div className="flex items-center gap-2">
                     <span>Giriş PIN Kodu</span>
                     <button
                       type="button"
                       onClick={toggleAllPins}
-                      className="p-1 rounded text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-200/50 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                      className="p-1 rounded hover:bg-stone-200 dark:hover:bg-stone-800 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors"
                       title={revealAllPins ? "Tüm PIN'leri Bulanıklaştır" : "Tüm PIN'leri Göster"}
                     >
-                      {revealAllPins ? <EyeOff size={13} /> : <Eye size={13} />}
+                      {revealAllPins ? <EyeOff size={14} /> : <Eye size={14} />}
                     </button>
                   </div>
                 </th>
-                <th className="py-3 sm:py-3.5 px-3 sm:px-6">Yerel WiFi Cihazı</th>
-                <th className="py-3 sm:py-3.5 px-3 sm:px-6">Durum</th>
-                <th className="py-3 sm:py-3.5 px-3 sm:px-6 text-right">İşlemler</th>
+                <th className="py-3.5 px-6">WiFi Bağlantı</th>
+                <th className="py-3.5 px-6">Durum</th>
+                <th className="py-3.5 px-6 text-right">İşlemler</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100 dark:divide-stone-800 text-sm">
@@ -491,11 +514,11 @@ export default function StaffPage() {
                   g => g.id === member.id || g.name.toLowerCase().includes(member.name.toLowerCase())
                 );
                 const isWifiOnline = liveConnection?.isOnline;
-                const isPinRevealed = revealedPins[member.id] || false;
+                const isPinRevealed = revealAllPins || revealedPins[member.id] || false;
                 const hasCustom = Boolean(member.customPermissions && Object.keys(member.customPermissions).length > 0);
 
                 return (
-                  <tr key={member.id} className="hover:bg-stone-50/70 dark:hover:bg-stone-800/50 transition-colors">
+                  <tr key={member.id} className="hover:bg-stone-50/50 dark:hover:bg-stone-800/30 transition-colors">
                     <td className="py-3 sm:py-4 px-3 sm:px-6 font-mono font-bold text-orange-600 dark:text-orange-400">
                       <span className="bg-orange-50 dark:bg-orange-950/50 px-2.5 py-1 rounded-md text-xs border border-orange-200 dark:border-orange-900">
                         {member.username || member.id}
@@ -606,26 +629,26 @@ export default function StaffPage() {
         </div>
       )}
 
-      {/* TAB 2: ROL YETKILERI & IZINLER MATRISI */}
+      {/* TAB 2: KATEGORIZE ROL YETKILERI & IZINLER MATRISI */}
       {activeTab === 'permissions' && (
         <div className="space-y-6">
           {/* Information & Action Banner */}
           <div className="bg-white dark:bg-stone-900 p-4 sm:p-6 rounded-2xl border border-stone-200 dark:border-stone-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <Shield className="text-orange-600 dark:text-orange-400" size={20} />
+                <ShieldCheck className="text-orange-600 dark:text-orange-400" size={22} />
                 <h2 className="text-base sm:text-lg font-black text-stone-900 dark:text-stone-100">
-                  Rol Yetki Matrisi
+                  Kategorize Rol & İşlem İzinleri
                 </h2>
               </div>
-              <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400">
-                Patron olarak personellerin rollerine göre masa taşıma, ürün silme, masa kapatma ve ödeme alma gibi yetkilerini buradan tek tıkla açıp kapatabilirsiniz.
+              <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 leading-relaxed max-w-2xl">
+                Patron olarak personellerinizin hangi sayfaları görebileceğini, masadan ürün çekip çekemeyeceğini, sipariş veya ödeme alıp alamayacağını kategoriler altında tek tıkla açıp kapatabilirsiniz.
               </p>
             </div>
             <button
               type="button"
               onClick={handleResetAllPermissions}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 transition-colors flex items-center gap-2 cursor-pointer shrink-0"
+              className="px-3.5 py-2.5 rounded-xl text-xs font-bold border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 transition-colors flex items-center gap-2 cursor-pointer shrink-0 shadow-2xs"
               title="Tüm rolleri önerilen fabrika ayarlarına döndür"
             >
               <RotateCcw size={14} />
@@ -633,31 +656,107 @@ export default function StaffPage() {
             </button>
           </div>
 
-          {/* Categorized Permissions Grid */}
+          {/* Category Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+            <button
+              type="button"
+              onClick={() => setSelectedCategoryFilter('all')}
+              className={cn(
+                "px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer border flex items-center gap-1.5",
+                selectedCategoryFilter === 'all'
+                  ? "bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 border-transparent shadow-xs"
+                  : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800"
+              )}
+            >
+              <Sparkles size={13} />
+              <span>Tüm Kategoriler ({permissionDefinitions.length})</span>
+            </button>
+
+            {permissionCategories.map(cat => {
+              const count = permissionDefinitions.filter(p => (p.category as string) === (cat.key as string)).length;
+              const isSelected = selectedCategoryFilter === cat.key;
+              return (
+                <button
+                  key={cat.key}
+                  type="button"
+                  onClick={() => setSelectedCategoryFilter(cat.key)}
+                  className={cn(
+                    "px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer border flex items-center gap-1.5",
+                    isSelected
+                      ? "bg-orange-600 text-white border-orange-600 shadow-xs"
+                      : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800"
+                  )}
+                >
+                  <span>{cat.label}</span>
+                  <span className={cn(
+                    "px-1.5 py-0.2 rounded-full text-[10px]",
+                    isSelected ? "bg-white/20 text-white" : "bg-stone-100 dark:bg-stone-800 text-stone-500"
+                  )}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Categorized Permissions Accordions / Cards */}
           <div className="space-y-6">
-            {categories.map(cat => {
-              const items = permissionDefinitions.filter(p => p.category === cat);
+            {displayedCategories.map(cat => {
+              const items = permissionDefinitions.filter(p => (p.category as string) === (cat.key as string));
               if (items.length === 0) return null;
 
               return (
-                <div key={cat} className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-xs">
-                  {/* Category Header */}
-                  <div className="px-4 sm:px-6 py-3.5 bg-stone-50 dark:bg-stone-950/70 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
-                    <h3 className="font-black text-sm text-stone-800 dark:text-stone-200 uppercase tracking-wider">
-                      {cat} Yetkileri
-                    </h3>
-                    <span className="text-xs text-stone-400 font-medium">
-                      {items.length} Yetki Tanımı
-                    </span>
+                <div key={cat.key} className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-xs">
+                  {/* Category Header with quick actions */}
+                  <div className="px-4 sm:px-6 py-4 bg-stone-50 dark:bg-stone-950/70 border-b border-stone-200 dark:border-stone-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center border font-bold", cat.color)}>
+                        {getPermissionIcon(cat.icon)}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-black text-sm sm:text-base text-stone-900 dark:text-stone-100">
+                            {cat.label}
+                          </h3>
+                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-stone-200/70 dark:bg-stone-800 text-stone-600 dark:text-stone-300">
+                            {items.length} Yetki
+                          </span>
+                        </div>
+                        <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                          {cat.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Quick Category Action for Garson / Kasiyer */}
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                      <span className="text-[11px] font-bold text-stone-400 hidden lg:inline">Hızlı Garson:</span>
+                      <button
+                        type="button"
+                        onClick={() => toggleCategoryPermissions('waiter', cat.key, true)}
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 text-emerald-700 dark:text-emerald-400 border border-stone-200 dark:border-stone-700 transition-colors cursor-pointer"
+                        title="Bu kategorideki tüm yetkileri Garson rolüne aç"
+                      >
+                        Garsona Aç
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleCategoryPermissions('waiter', cat.key, false)}
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-500 hover:text-red-600 border border-stone-200 dark:border-stone-700 transition-colors cursor-pointer"
+                        title="Bu kategorideki tüm yetkileri Garson rolünden kaldır"
+                      >
+                        Garsona Kapat
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Permissions Table / Rows */}
+                  {/* Permissions Rows */}
                   <div className="divide-y divide-stone-100 dark:divide-stone-800">
                     {items.map(perm => (
-                      <div key={perm.key} className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 hover:bg-stone-50/50 dark:hover:bg-stone-800/30 transition-colors">
+                      <div key={perm.key} className="p-4 sm:p-5 flex flex-col xl:flex-row xl:items-center justify-between gap-4 hover:bg-stone-50/50 dark:hover:bg-stone-800/30 transition-colors">
                         {/* Left: Permission Info */}
-                        <div className="flex items-start gap-3 lg:max-w-md">
-                          <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-stone-800 border border-orange-100 dark:border-stone-700 flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="flex items-start gap-3 xl:max-w-lg">
+                          <div className="w-8 h-8 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center shrink-0 mt-0.5">
                             {getPermissionIcon(perm.icon)}
                           </div>
                           <div>
@@ -671,7 +770,7 @@ export default function StaffPage() {
                         </div>
 
                         {/* Right: Role Toggles */}
-                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 lg:gap-3 shrink-0">
+                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 lg:gap-2.5 shrink-0">
                           {editableRoles.map(r => {
                             const isAllowed = Boolean(rolePermissionsMap[r.role]?.[perm.key]);
 
@@ -681,9 +780,9 @@ export default function StaffPage() {
                                 type="button"
                                 onClick={() => updateRolePermission(r.role, perm.key, !isAllowed)}
                                 className={cn(
-                                  "p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 text-center min-w-[85px]",
+                                  "p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 text-center min-w-[92px]",
                                   isAllowed
-                                    ? "bg-orange-50 dark:bg-orange-950/40 border-orange-400 dark:border-orange-900/80 text-orange-950 dark:text-orange-200 ring-1 ring-orange-500/30"
+                                    ? "bg-orange-50 dark:bg-orange-950/40 border-orange-400 dark:border-orange-900/80 text-orange-950 dark:text-orange-200 ring-1 ring-orange-500/30 shadow-2xs"
                                     : "bg-stone-50 dark:bg-stone-950 border-stone-200 dark:border-stone-800 text-stone-400 hover:border-stone-300 dark:hover:border-stone-700"
                                 )}
                                 title={`${r.label} için ${perm.label} yetkisini ${isAllowed ? 'Kaldır' : 'Ver'}`}
@@ -719,7 +818,7 @@ export default function StaffPage() {
       {/* Add Staff Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 sm:p-4 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-lg shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95 my-auto max-h-[92vh] flex flex-col">
+          <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-xl shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95 my-auto max-h-[92vh] flex flex-col">
             <div className="flex justify-between items-center mb-4 pb-3 border-b border-stone-100 dark:border-stone-800 shrink-0">
               <h3 className="text-lg sm:text-xl font-black text-stone-800 dark:text-stone-100 flex items-center gap-2">
                 <UserPlus className="text-orange-600" size={22} />
@@ -801,7 +900,7 @@ export default function StaffPage() {
                 </div>
               </div>
 
-              {/* Kişiye Özel Yetkiler Accordion */}
+              {/* Kişiye Özel Kategorize Yetkiler Accordion */}
               <div className="pt-3 border-t border-stone-200 dark:border-stone-800">
                 <div className="flex items-center justify-between mb-2">
                   <div>
@@ -824,22 +923,52 @@ export default function StaffPage() {
                 </div>
 
                 {hasCustomPermissions && (
-                  <div className="space-y-1.5 p-3 bg-stone-50 dark:bg-stone-950 rounded-2xl border border-stone-200 dark:border-stone-800 max-h-48 overflow-y-auto">
-                    {permissionDefinitions.map(def => {
-                      const activeVal = customPermState[def.key] !== undefined 
-                        ? Boolean(customPermState[def.key]) 
-                        : Boolean(rolePermissionsMap[role]?.[def.key]);
-
+                  <div className="space-y-3 p-3 bg-stone-50 dark:bg-stone-950 rounded-2xl border border-stone-200 dark:border-stone-800 max-h-64 overflow-y-auto">
+                    {permissionCategories.map(cat => {
+                      const catPerms = permissionDefinitions.filter(p => p.category === cat.key);
                       return (
-                        <label key={def.key} className="flex items-center justify-between gap-2 p-1.5 rounded-lg hover:bg-stone-200/50 dark:hover:bg-stone-800/50 cursor-pointer">
-                          <span className="text-xs font-semibold text-stone-700 dark:text-stone-300">{def.label}</span>
-                          <input
-                            type="checkbox"
-                            checked={activeVal}
-                            onChange={e => setCustomPermState(prev => ({ ...prev, [def.key]: e.target.checked }))}
-                            className="w-4 h-4 rounded text-orange-600 accent-orange-600 cursor-pointer"
-                          />
-                        </label>
+                        <div key={cat.key} className="space-y-1.5 bg-white dark:bg-stone-900 p-2.5 rounded-xl border border-stone-200/70 dark:border-stone-800">
+                          <div className="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-1.5 mb-1.5">
+                            <span className="text-xs font-black text-stone-800 dark:text-stone-200">{cat.label}</span>
+                            <div className="flex items-center gap-1.5 text-[10px]">
+                              <button
+                                type="button"
+                                onClick={() => toggleModalCategoryPermissions(cat.key, true)}
+                                className="text-emerald-600 font-bold hover:underline cursor-pointer"
+                              >
+                                Tümünü Seç
+                              </button>
+                              <span>•</span>
+                              <button
+                                type="button"
+                                onClick={() => toggleModalCategoryPermissions(cat.key, false)}
+                                className="text-stone-400 hover:text-red-500 font-medium cursor-pointer"
+                              >
+                                Kaldır
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                            {catPerms.map(def => {
+                              const activeVal = customPermState[def.key] !== undefined 
+                                ? Boolean(customPermState[def.key]) 
+                                : Boolean(rolePermissionsMap[role]?.[def.key]);
+
+                              return (
+                                <label key={def.key} className="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-stone-50 dark:bg-stone-950 hover:bg-stone-100 dark:hover:bg-stone-800/60 cursor-pointer border border-stone-100 dark:border-stone-800/50">
+                                  <span className="text-[11px] font-semibold text-stone-700 dark:text-stone-300 truncate">{def.label}</span>
+                                  <input
+                                    type="checkbox"
+                                    checked={activeVal}
+                                    onChange={e => setCustomPermState(prev => ({ ...prev, [def.key]: e.target.checked }))}
+                                    className="w-4 h-4 rounded text-orange-600 accent-orange-600 cursor-pointer shrink-0"
+                                  />
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
@@ -869,7 +998,7 @@ export default function StaffPage() {
       {/* Edit Staff / Change PIN / Permissions Modal */}
       {editingStaff && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 sm:p-4 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-lg shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95 my-auto max-h-[92vh] flex flex-col">
+          <div className="bg-white dark:bg-stone-900 rounded-3xl p-4 sm:p-6 w-full max-w-xl shadow-2xl border border-stone-200 dark:border-stone-800 dark:text-stone-100 animate-in fade-in zoom-in-95 my-auto max-h-[92vh] flex flex-col">
             <div className="flex justify-between items-center mb-4 pb-3 border-b border-stone-100 dark:border-stone-800 shrink-0">
               <h3 className="text-lg sm:text-xl font-black text-stone-800 dark:text-stone-100 flex items-center gap-2">
                 <KeyRound className="text-orange-600" size={22} />
@@ -949,7 +1078,7 @@ export default function StaffPage() {
                 </div>
               </div>
 
-              {/* Kişiye Özel Yetkiler Accordion */}
+              {/* Kişiye Özel Kategorize Yetkiler Accordion */}
               <div className="pt-3 border-t border-stone-200 dark:border-stone-800">
                 <div className="flex items-center justify-between mb-2">
                   <div>
@@ -972,22 +1101,52 @@ export default function StaffPage() {
                 </div>
 
                 {hasCustomPermissions && (
-                  <div className="space-y-1.5 p-3 bg-stone-50 dark:bg-stone-950 rounded-2xl border border-stone-200 dark:border-stone-800 max-h-48 overflow-y-auto">
-                    {permissionDefinitions.map(def => {
-                      const activeVal = customPermState[def.key] !== undefined 
-                        ? Boolean(customPermState[def.key]) 
-                        : Boolean(rolePermissionsMap[role]?.[def.key]);
-
+                  <div className="space-y-3 p-3 bg-stone-50 dark:bg-stone-950 rounded-2xl border border-stone-200 dark:border-stone-800 max-h-64 overflow-y-auto">
+                    {permissionCategories.map(cat => {
+                      const catPerms = permissionDefinitions.filter(p => p.category === cat.key);
                       return (
-                        <label key={def.key} className="flex items-center justify-between gap-2 p-1.5 rounded-lg hover:bg-stone-200/50 dark:hover:bg-stone-800/50 cursor-pointer">
-                          <span className="text-xs font-semibold text-stone-700 dark:text-stone-300">{def.label}</span>
-                          <input
-                            type="checkbox"
-                            checked={activeVal}
-                            onChange={e => setCustomPermState(prev => ({ ...prev, [def.key]: e.target.checked }))}
-                            className="w-4 h-4 rounded text-orange-600 accent-orange-600 cursor-pointer"
-                          />
-                        </label>
+                        <div key={cat.key} className="space-y-1.5 bg-white dark:bg-stone-900 p-2.5 rounded-xl border border-stone-200/70 dark:border-stone-800">
+                          <div className="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-1.5 mb-1.5">
+                            <span className="text-xs font-black text-stone-800 dark:text-stone-200">{cat.label}</span>
+                            <div className="flex items-center gap-1.5 text-[10px]">
+                              <button
+                                type="button"
+                                onClick={() => toggleModalCategoryPermissions(cat.key, true)}
+                                className="text-emerald-600 font-bold hover:underline cursor-pointer"
+                              >
+                                Tümünü Seç
+                              </button>
+                              <span>•</span>
+                              <button
+                                type="button"
+                                onClick={() => toggleModalCategoryPermissions(cat.key, false)}
+                                className="text-stone-400 hover:text-red-500 font-medium cursor-pointer"
+                              >
+                                Kaldır
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                            {catPerms.map(def => {
+                              const activeVal = customPermState[def.key] !== undefined 
+                                ? Boolean(customPermState[def.key]) 
+                                : Boolean(rolePermissionsMap[role]?.[def.key]);
+
+                              return (
+                                <label key={def.key} className="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-stone-50 dark:bg-stone-950 hover:bg-stone-100 dark:hover:bg-stone-800/60 cursor-pointer border border-stone-100 dark:border-stone-800/50">
+                                  <span className="text-[11px] font-semibold text-stone-700 dark:text-stone-300 truncate">{def.label}</span>
+                                  <input
+                                    type="checkbox"
+                                    checked={activeVal}
+                                    onChange={e => setCustomPermState(prev => ({ ...prev, [def.key]: e.target.checked }))}
+                                    className="w-4 h-4 rounded text-orange-600 accent-orange-600 cursor-pointer shrink-0"
+                                  />
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
                       );
                     })}
                   </div>

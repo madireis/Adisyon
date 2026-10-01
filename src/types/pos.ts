@@ -17,17 +17,41 @@ export type OnlinePlatform = 'yemeksepeti' | 'getir' | 'trendyol' | 'migros' | '
 
 // ─── Permissions ──────────────────────────────────────────────
 export interface PosPermissions {
-  canTransferTable: boolean;      // Masa ve ürün taşıma / birleştirme
-  canDeleteTable: boolean;        // Masayı boşaltma ve kapatma
-  canDeleteOrderItem: boolean;    // Adisyondan iletilmiş ürün silme/iptal
-  canCancelOrder: boolean;        // Komple sipariş iptal etme
-  canTakePayment: boolean;        // Ödeme alma ve hesap kapatma
-  canApplyDiscount: boolean;      // İndirim ve ikram uygulama
-  canPrintReceipt: boolean;       // Fiş ve ara hesap yazdırma
-  canViewReports: boolean;        // Kasa, ciro ve gün sonu raporları
-  canEditTables: boolean;         // Masa ve salon kroki düzenleme
-  canManageMenu: boolean;         // Menü, fiyat ve stok yönetimi
-  canManageStaff: boolean;        // Personel hesapları ve yetki yönetimi
+  // Masalar & Salon
+  canViewTablesPage: boolean;         // Masalar sayfasını görüntüleme
+  canOpenTable: boolean;              // Masa açma & misafir kabul etme
+  canTransferTable: boolean;          // Masa ve ürün taşıma / birleştirme
+  canDeleteTable: boolean;            // Masayı boşaltma ve kapatma
+  canEditTables: boolean;             // Masa ve salon kroki düzenleme
+
+  // Sipariş & Adisyon
+  canTakeOrder: boolean;              // Sipariş alma & yeni ürün ekleme
+  canDeleteOrderItem: boolean;        // Masadan ürün çekme / sipariş kalemi iptali
+  canCancelOrder: boolean;            // Açık adisyonu komple iptal etme
+  canApplyDiscount: boolean;          // İndirim ve ikram uygulama
+  canPrintReceipt: boolean;           // Fiş ve ara hesap yazdırma
+
+  // Kasa & Ödeme
+  canViewReports: boolean;            // Kasa, ciro ve gün sonu raporları sayfası
+  canTakePayment: boolean;            // Ödeme alma ve hesap kapatma
+  canViewDailyZReport: boolean;       // Günlük ciro & Z-Raporu detaylarını görme
+  canCashInOut: boolean;              // Kasadan para girişi / para çıkışı yapma
+
+  // Mutfak & Bar
+  canViewKitchen: boolean;            // Mutfak & Bar ekranı erişimi
+  canUpdateKitchenStatus: boolean;    // Sipariş hazırlık durumu güncelleme
+
+  // Menü & Stok
+  canViewMenu: boolean;               // Menü sayfasını görüntüleme
+  canManageMenu: boolean;             // Menü, fiyat ve ürün yönetimi
+  canToggleItemAvailability: boolean; // Ürün stokta var / tükendi durumu değiştirme
+
+  // Yönetim & Personel
+  canViewStaff: boolean;              // Personel sayfasını görüntüleme
+  canManageStaff: boolean;            // Personel hesapları ve şifre yönetimi
+  canManagePermissions: boolean;      // Rol yetkileri ve izin matrisini değiştirme
+  canViewAuditLogs: boolean;          // İşlem geçmişi ve denetim kayıtlarını görme
+  canManageSettings: boolean;         // Sistem ayarları ve ağ yapılandırması
 }
 
 export interface RolePermissionsRecord {

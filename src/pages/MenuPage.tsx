@@ -4,10 +4,15 @@ import { db } from '@/lib/db';
 import { Search, Plus, Edit2, Check, X, Trash2, Utensils, Sparkles } from 'lucide-react';
 import { cn, generateId } from '@/lib/utils';
 import PosIcon from '@/components/common/PosIcon';
+import { usePermissions } from '@/lib/permissions';
 import type { MenuItem, KitchenStation } from '@/types/pos';
 import { seedDefaultMenu } from '@/lib/mockData';
 
 export default function MenuPage() {
+  const { hasPermission } = usePermissions();
+  const canManageMenu = hasPermission('canManageMenu');
+  const canToggleAvailability = hasPermission('canToggleItemAvailability') || canManageMenu;
+
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('ALL');
 
@@ -36,6 +41,10 @@ export default function MenuPage() {
   });
 
   const toggleAvailability = async (item: MenuItem) => {
+    if (!canToggleAvailability) {
+      alert('Ürün stok/tükendi durumunu değiştirme yetkiniz bulunmamaktadır.');
+      return;
+    }
     await db.menuItems.update(item.id, { available: !item.available });
   };
 
@@ -47,6 +56,10 @@ export default function MenuPage() {
   };
 
   const openAddModal = () => {
+    if (!canManageMenu) {
+      alert('Yeni ürün ekleme yetkiniz bulunmamaktadır.');
+      return;
+    }
     setName('');
     setDescription('');
     setPrice(120);
@@ -59,6 +72,10 @@ export default function MenuPage() {
   };
 
   const openEditModal = (item: MenuItem) => {
+    if (!canManageMenu) {
+      alert('Menü ürünlerini düzenleme yetkiniz bulunmamaktadır.');
+      return;
+    }
     setEditingItem(item);
     setName(item.name);
     setDescription(item.description || '');
@@ -133,6 +150,10 @@ export default function MenuPage() {
   };
 
   const handleDeleteItem = async (item: MenuItem) => {
+    if (!canManageMenu) {
+      alert('Menüden ürün silme yetkiniz bulunmamaktadır.');
+      return;
+    }
     if (confirm(`"${item.name}" ürününü menüden tamamen silmek istediğinize emin misiniz?`)) {
       await db.menuItems.delete(item.id);
     }

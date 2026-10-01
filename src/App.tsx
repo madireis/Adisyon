@@ -23,6 +23,7 @@ const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 const CustomerQRPage = lazy(() => import('@/pages/CustomerQRPage'));
 const GuidePage = lazy(() => import('@/pages/GuidePage'));
 const DeveloperPage = lazy(() => import('@/pages/DeveloperPage'));
+const PatronLogsPage = lazy(() => import('@/pages/PatronLogsPage'));
 
 const SuspenseFallback = () => (
   <div className="p-4 sm:p-8 flex items-center justify-center min-h-screen bg-stone-50 dark:bg-stone-950">
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="/order/:tableId" element={<OrderPage />} />
           <Route path="/kitchen" element={<KitchenPage />} />
           <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/patron-logs" element={<PatronLogsPage />} />
           <Route path="/menu" element={<MenuPage />} />
           <Route path="/staff" element={<StaffPage />} />
           <Route path="/settings" element={<SettingsPage />} />
@@ -68,7 +70,7 @@ export default function App() {
           <Route path="/customers" element={<Navigate to="/tables" replace />} />
           <Route path="/reservations" element={<Navigate to="/tables" replace />} />
           <Route path="/online-orders" element={<Navigate to="/tables" replace />} />
-          <Route path="/audit" element={<Navigate to="/reports" replace />} />
+          <Route path="/audit" element={<Navigate to="/patron-logs" replace />} />
         </Route>
         
         {/* Catch all redirect to role selection */}

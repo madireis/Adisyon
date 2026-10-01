@@ -4,9 +4,12 @@ import { Clock, CheckCircle2, ChefHat, Play, Flame, Utensils, Sparkles, Check, B
 import { db } from '@/lib/db';
 import { cn, getElapsedMinutes } from '@/lib/utils';
 import ThermalSlipModal from '@/components/pos/ThermalSlipModal';
+import { usePermissions } from '@/lib/permissions';
 import type { KitchenTicket, KitchenStation } from '@/types/pos';
 
 export default function KitchenPage() {
+  const { hasPermission } = usePermissions();
+  const canUpdate = hasPermission('canUpdateKitchenStatus');
   const [activeStation, setActiveStation] = useState<KitchenStation | 'ALL'>('ALL');
   const [mobileStatusTab, setMobileStatusTab] = useState<'new' | 'preparing' | 'ready' | 'completed'>('new');
   const [selectedTicketForPrint, setSelectedTicketForPrint] = useState<KitchenTicket | null>(null);
@@ -39,6 +42,10 @@ export default function KitchenPage() {
   ];
 
   const advanceStatus = async (ticket: KitchenTicket) => {
+    if (!canUpdate) {
+      alert('Mutfak sipariş durumunu güncelleme yetkiniz bulunmamaktadır.');
+      return;
+    }
     const nowIso = new Date().toISOString();
     if (ticket.status === 'new') {
       await db.kitchenTickets.update(ticket.id, {

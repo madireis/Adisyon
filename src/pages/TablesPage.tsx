@@ -19,7 +19,8 @@ export default function TablesPage() {
 
   const canTransfer = hasPermission('canTransferTable');
   const canEditTables = hasPermission('canEditTables');
-  const canViewReports = hasPermission('canViewReports');
+  const canViewReports = hasPermission('canViewDailyZReport') || hasPermission('canViewReports');
+  const canOpen = hasPermission('canOpenTable');
   
   // Floor and table states
   const [isEditMode, setIsEditMode] = useState(false);
@@ -98,6 +99,10 @@ export default function TablesPage() {
       setIsTableModalOpen(true);
       return;
     }
+    if (table.status === 'available' && !canOpen) {
+      alert('Yeni masa açma yetkiniz bulunmamaktadır.');
+      return;
+    }
     navigate(`/order/${table.id}`);
   };
 
@@ -123,7 +128,7 @@ export default function TablesPage() {
             </button>
           ))}
 
-          {isManager && (
+          {canEditTables && (
             <button
               onClick={() => {
                 setEditingFloor(null);
@@ -143,7 +148,7 @@ export default function TablesPage() {
             <span><strong>{totalOccupied}</strong> / {tables.length} Dolu</span>
             <span>•</span>
             <span><strong>{totalGuests}</strong> Misafir</span>
-            {isManager && (
+            {canViewReports && (
               <>
                 <span>•</span>
                 <span className="font-bold text-stone-900 dark:text-white">{formatCurrency(totalRevenue)}</span>

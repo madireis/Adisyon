@@ -26,6 +26,7 @@ export default function OrderPage() {
   const canPrintReceipt = hasPermission('canPrintReceipt');
   const canApplyDiscount = hasPermission('canApplyDiscount');
   const canCancelOrder = hasPermission('canCancelOrder');
+  const canTakeOrder = hasPermission('canTakeOrder');
   
   const [activeCategoryId, setActiveCategoryId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -217,6 +218,10 @@ export default function OrderPage() {
   };
 
   const handleProductClick = (item: MenuItem) => {
+    if (!canTakeOrder) {
+      alert('Sipariş alma veya yeni ürün ekleme yetkiniz bulunmamaktadır.');
+      return;
+    }
     if (!item.available) return;
     
     if (item.modifierGroups && item.modifierGroups.length > 0) {
@@ -228,6 +233,14 @@ export default function OrderPage() {
   };
 
   const updateItemQuantity = (id: string, delta: number) => {
+    if (delta > 0 && !canTakeOrder) {
+      alert('Sipariş artırma yetkiniz bulunmamaktadır.');
+      return;
+    }
+    if (delta < 0 && !canDeleteOrderItem) {
+      alert('Masadan ürün çekme veya miktar azaltma yetkiniz bulunmamaktadır.');
+      return;
+    }
     setLocalItems(prev => prev.map(item => {
       if (item.id === id) {
         const newQty = Math.max(1, item.quantity + delta);
@@ -238,6 +251,10 @@ export default function OrderPage() {
   };
 
   const removeItem = (id: string) => {
+    if (!canDeleteOrderItem) {
+      alert('Masadan ürün çekme veya sipariş kalemi silme yetkiniz bulunmamaktadır.');
+      return;
+    }
     setLocalItems(prev => prev.filter(item => item.id !== id));
   };
 
@@ -246,6 +263,10 @@ export default function OrderPage() {
   const total = subtotal;
 
   const handleSendToKitchen = async () => {
+    if (!canTakeOrder) {
+      alert('Sipariş alma veya mutfağa iletme yetkiniz bulunmamaktadır.');
+      return;
+    }
     if (!tableId) return;
     if (localItems.length === 0) {
       alert('Mutfağa göndermek için en az bir ürün seçmelisiniz.');
