@@ -4,7 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { useApp } from '@/lib/store';
 import { cn, formatCurrency, generateId } from '@/lib/utils';
-import { ChevronLeft, ChevronRight, Plus, Minus, Trash2, CheckCircle2, Send, CreditCard, Utensils, Sparkles, X, Receipt, Search, Printer, Clock, Users, ChefHat, Timer, ArrowRightLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Minus, Trash2, CheckCircle2, Send, CreditCard, Utensils, Sparkles, X, Receipt, Search, Printer, Clock, Users, User, ChefHat, Timer, ArrowRightLeft } from 'lucide-react';
 import ModifierModal from '@/components/pos/ModifierModal';
 import PaymentModal from '@/components/pos/PaymentModal';
 import ThermalSlipModal from '@/components/pos/ThermalSlipModal';
@@ -66,7 +66,11 @@ export default function OrderPage() {
   
   useEffect(() => {
     if (order) {
-      setLocalItems(order.items || []);
+      const itemsWithWaiter = (order.items || []).map(i => ({
+        ...i,
+        addedByWaiterName: i.addedByWaiterName || order.waiterName || 'Garson',
+      }));
+      setLocalItems(itemsWithWaiter);
       setNotes(order.notes || '');
     } else {
       setLocalItems([]);
@@ -314,6 +318,7 @@ export default function OrderPage() {
             quantity: i.quantity,
             modifiers: (i.modifiers || []).map(m => m.name),
             notes: i.notes || '',
+            waiterName: i.addedByWaiterName || state.currentUser?.name || 'Garson',
           })),
           status: 'new',
           createdAt: nowIso,
@@ -753,8 +758,13 @@ export default function OrderPage() {
                                 ● Yeni
                               </span>
                             )}
-                            <span className="text-[10px] text-stone-400 font-medium">
-                              ({item.addedByWaiterName || order?.waiterName || 'Garson'})
+                          </div>
+
+                          {/* Garson İsmi - Yemeğin / İçeceğin / Tabağın Altında */}
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-stone-300 bg-stone-950/80 px-2 py-0.5 rounded-md border border-stone-800 shadow-2xs">
+                              <User className="w-3 h-3 text-orange-400 shrink-0" />
+                              <span>Garson: <strong className="text-orange-400 font-bold">{item.addedByWaiterName || order?.waiterName || state.currentUser?.name || 'Garson'}</strong></span>
                             </span>
                           </div>
                           {item.modifiers && item.modifiers.length > 0 && (
@@ -1012,8 +1022,13 @@ export default function OrderPage() {
                             ● Yeni
                           </span>
                         )}
-                        <span className="text-[10px] text-stone-400 font-medium">
-                          ({item.addedByWaiterName || order?.waiterName || 'Garson'})
+                      </div>
+
+                      {/* Garson İsmi - Yemeğin / İçeceğin / Tabağın Altında */}
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-stone-300 bg-stone-950/80 px-2 py-0.5 rounded-md border border-stone-800 shadow-2xs">
+                          <User className="w-3 h-3 text-orange-400 shrink-0" />
+                          <span>Garson: <strong className="text-orange-400 font-bold">{item.addedByWaiterName || order?.waiterName || state.currentUser?.name || 'Garson'}</strong></span>
                         </span>
                       </div>
                       {item.modifiers && item.modifiers.length > 0 && (

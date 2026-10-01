@@ -134,6 +134,11 @@ export default function ThermalSlipModal({
                           {it.quantity}x {it.name}
                         </span>
                       </div>
+                      {it.waiterName && (
+                        <div className="text-[10px] text-stone-600 font-semibold pl-4">
+                          Garson: {it.waiterName}
+                        </div>
+                      )}
                       {it.modifiers && it.modifiers.length > 0 && (
                         <div className="text-[10px] text-stone-600 font-semibold pl-4">
                           + {it.modifiers.join(', ')}
@@ -191,6 +196,9 @@ export default function ThermalSlipModal({
                     <div key={idx} className="flex justify-between text-xs">
                       <div>
                         <span className="font-bold text-stone-900">{it.quantity}x</span> {it.name}
+                        <div className="text-[10px] text-stone-500 pl-3">
+                          Garson: {it.addedByWaiterName || order.waiterName || 'Garson'}
+                        </div>
                         {it.modifiers && it.modifiers.length > 0 && (
                           <div className="text-[10px] text-stone-500 pl-3">
                             {it.modifiers.map(m => m.name).join(', ')}

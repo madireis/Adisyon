@@ -182,6 +182,7 @@ export interface KitchenTicket {
     quantity: number
     modifiers: string[]
     notes: string
+    waiterName?: string
   }[]
   status: 'new' | 'preparing' | 'ready' | 'completed'
   createdAt: string

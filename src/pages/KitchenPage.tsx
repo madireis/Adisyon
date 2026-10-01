@@ -133,6 +133,11 @@ export default function KitchenPage() {
                 <span className="font-black text-orange-500 text-base">{item.quantity}x</span>
                 <div>
                   <div className="font-bold text-base text-stone-100 leading-snug">{item.name}</div>
+                  {item.waiterName && (
+                    <div className="text-[11px] text-stone-400 mt-0.5 font-medium">
+                      Garson: <span className="text-orange-300 font-semibold">{item.waiterName}</span>
+                    </div>
+                  )}
                   {item.modifiers && item.modifiers.length > 0 && (
                     <div className="text-xs text-stone-400 mt-0.5">{item.modifiers.join(', ')}</div>
                   )}
