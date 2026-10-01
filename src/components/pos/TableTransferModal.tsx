@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { X, ArrowRightLeft, Check, Minus, Plus, Users, UtensilsCrossed, AlertCircle, Sparkles } from 'lucide-react';
 import { db } from '@/lib/db';
@@ -30,10 +30,17 @@ export default function TableTransferModal({
   const [transferMode, setTransferMode] = useState<'all' | 'partial'>('all');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Available items: from currentItems or currentOrder?.items
+  const allAvailableItems = useMemo(() => {
+    if (currentItems && currentItems.length > 0) return currentItems;
+    if (currentOrder && currentOrder.items && currentOrder.items.length > 0) return currentOrder.items;
+    return [];
+  }, [currentItems, currentOrder]);
+
   // Partial transfer item quantities: { [itemId]: quantityToMove }
   const [selectedItems, setSelectedItems] = useState<Record<string, number>>(() => {
     const init: Record<string, number> = {};
-    currentItems.forEach(i => {
+    allAvailableItems.forEach(i => {
       init[i.id] = i.quantity;
     });
     return init;
@@ -42,11 +49,31 @@ export default function TableTransferModal({
   // Selected item checked states
   const [checkedItemIds, setCheckedItemIds] = useState<Record<string, boolean>>(() => {
     const init: Record<string, boolean> = {};
-    currentItems.forEach(i => {
+    allAvailableItems.forEach(i => {
       init[i.id] = true;
     });
     return init;
   });
+
+  // Keep state synced if allAvailableItems changes
+  useEffect(() => {
+    if (allAvailableItems.length > 0) {
+      setSelectedItems(prev => {
+        const next = { ...prev };
+        allAvailableItems.forEach(i => {
+          if (!next[i.id]) next[i.id] = i.quantity;
+        });
+        return next;
+      });
+      setCheckedItemIds(prev => {
+        const next = { ...prev };
+        allAvailableItems.forEach(i => {
+          if (next[i.id] === undefined) next[i.id] = true;
+        });
+        return next;
+      });
+    }
+  }, [allAvailableItems]);
 
   // Default floor selection
   const currentFloorId = activeFloorId || currentTable.floorId || floors[0]?.id;
@@ -79,15 +106,15 @@ export default function TableTransferModal({
   // Calculate items selected to be moved
   const itemsToMoveList = useMemo(() => {
     if (transferMode === 'all') {
-      return currentItems.map(i => ({ item: i, qty: i.quantity }));
+      return allAvailableItems.map(i => ({ item: i, qty: i.quantity }));
     }
-    return currentItems
+    return allAvailableItems
       .filter(i => checkedItemIds[i.id])
       .map(i => ({
         item: i,
         qty: Math.min(i.quantity, selectedItems[i.id] || 1),
       }));
-  }, [transferMode, currentItems, checkedItemIds, selectedItems]);
+  }, [transferMode, allAvailableItems, checkedItemIds, selectedItems]);
 
   const handleExecuteTransfer = async () => {
     if (!selectedTargetTable) {
@@ -95,7 +122,7 @@ export default function TableTransferModal({
       return;
     }
 
-    if (itemsToMoveList.length === 0) {
+    if (transferMode === 'partial' && itemsToMoveList.length === 0) {
       alert('Lütfen taşınacak en az bir ürün seçin.');
       return;
     }
@@ -106,36 +133,55 @@ export default function TableTransferModal({
     const currentUserName = currentUser?.name || 'Garson';
 
     try {
-      const isTargetOccupied = selectedTargetTable.status === 'occupied' && Boolean(selectedTargetTable.currentOrderId);
-      const isFullTableMove = transferMode === 'all' || itemsToMoveList.length === currentItems.length && itemsToMoveList.every(m => m.qty === m.item.quantity);
+      // 1. Resolve source order if missing
+      let effectiveOrder = currentOrder;
+      if (!effectiveOrder && currentTable.currentOrderId) {
+        effectiveOrder = await db.orders.get(currentTable.currentOrderId) || null;
+      }
+      if (!effectiveOrder) {
+        effectiveOrder = await db.orders.where('tableId').equals(currentTable.id)
+          .filter((o: Order) => o.status !== 'paid' && o.status !== 'cancelled')
+          .first() || null;
+      }
+
+      // 2. Resolve target order
+      let targetOrder = selectedTargetTable.currentOrderId ? await db.orders.get(selectedTargetTable.currentOrderId) : null;
+      if (!targetOrder) {
+        targetOrder = await db.orders.where('tableId').equals(selectedTargetTable.id)
+          .filter((o: Order) => o.status !== 'paid' && o.status !== 'cancelled')
+          .first() || null;
+      }
+      const isTargetOccupied = Boolean(targetOrder) || selectedTargetTable.status === 'occupied' || selectedTargetTable.status === 'payment_waiting';
+      const isFullTableMove = transferMode === 'all' || (allAvailableItems.length > 0 && itemsToMoveList.length === allAvailableItems.length && itemsToMoveList.every(m => m.qty === m.item.quantity));
 
       // CASE 1: FULL TABLE TRANSFER TO AN EMPTY TABLE
-      if (isFullTableMove && !isTargetOccupied && currentOrder) {
-        // 1. Move the order record to the target table
-        await db.orders.update(currentOrder.id, {
-          tableId: selectedTargetTable.id,
-          tableLabel: selectedTargetTable.label,
-          updatedAt: nowIso,
-          waiters: Array.from(new Set([...(currentOrder.waiters || [currentOrder.waiterName]), currentUserName])),
-        });
-
-        // 2. Update kitchen tickets tableLabel
-        const tickets = await db.kitchenTickets.where('orderId').equals(currentOrder.id).toArray();
-        for (const ticket of tickets) {
-          await db.kitchenTickets.update(ticket.id, {
+      if (isFullTableMove && !isTargetOccupied) {
+        if (effectiveOrder) {
+          await db.orders.update(effectiveOrder.id, {
+            tableId: selectedTargetTable.id,
             tableLabel: selectedTargetTable.label,
+            updatedAt: nowIso,
+            waiters: Array.from(new Set([...(effectiveOrder.waiters || [effectiveOrder.waiterName]), currentUserName].filter(Boolean) as string[])),
           });
+
+          // Update kitchen tickets tableLabel
+          const tickets = await db.kitchenTickets.where('orderId').equals(effectiveOrder.id).toArray();
+          for (const ticket of tickets) {
+            await db.kitchenTickets.update(ticket.id, {
+              tableLabel: selectedTargetTable.label,
+            });
+          }
         }
 
-        // 3. Mark target table occupied with this order
+        // Mark target table occupied with this order
         await db.table<Table>('tables').update(selectedTargetTable.id, {
-          status: 'occupied',
-          currentOrderId: currentOrder.id,
+          status: currentTable.status === 'payment_waiting' ? 'payment_waiting' : 'occupied',
+          currentOrderId: effectiveOrder?.id || undefined,
           guestCount: currentTable.guestCount || 2,
-          occupiedAt: currentTable.occupiedAt || currentOrder.createdAt || nowIso,
+          occupiedAt: currentTable.occupiedAt || effectiveOrder?.createdAt || nowIso,
         });
 
-        // 4. Mark source table available
+        // Mark source table available
         await db.table<Table>('tables').update(currentTable.id, {
           status: 'available',
           currentOrderId: undefined,
@@ -143,7 +189,7 @@ export default function TableTransferModal({
           occupiedAt: undefined,
         });
 
-        // 5. Audit Log
+        // Audit Log
         await db.auditLogs.add({
           id: generateId(),
           userId: currentUser?.id || 'staff-1',
@@ -151,15 +197,24 @@ export default function TableTransferModal({
           action: 'Masa Taşıma',
           details: `Masa ${currentTable.label} tüm siparişleriyle Masa ${selectedTargetTable.label}'e taşındı.`,
           entityType: 'order',
-          entityId: currentOrder.id,
+          entityId: effectiveOrder?.id || 'order',
           timestamp: nowIso,
         });
       }
       // CASE 2: MERGING ENTIRE TABLE INTO AN OCCUPIED TARGET TABLE
-      else if (isFullTableMove && isTargetOccupied && currentOrder) {
-        const targetOrder = await db.orders.get(selectedTargetTable.currentOrderId!);
-        if (targetOrder) {
-          const mergedItems = [...(targetOrder.items || [])];
+      else if (isFullTableMove && isTargetOccupied) {
+        let activeTargetOrder = targetOrder;
+        if (!activeTargetOrder && selectedTargetTable.currentOrderId) {
+          activeTargetOrder = await db.orders.get(selectedTargetTable.currentOrderId) || null;
+        }
+        if (!activeTargetOrder) {
+          activeTargetOrder = await db.orders.where('tableId').equals(selectedTargetTable.id)
+            .filter((o: Order) => o.status !== 'paid' && o.status !== 'cancelled')
+            .first() || null;
+        }
+
+        if (activeTargetOrder) {
+          const mergedItems = [...(activeTargetOrder.items || [])];
           for (const { item, qty } of itemsToMoveList) {
             const existingIdx = mergedItems.findIndex(x => x.menuItemId === item.menuItemId && JSON.stringify(x.modifiers || []) === JSON.stringify(item.modifiers || []));
             if (existingIdx >= 0) {
@@ -168,7 +223,7 @@ export default function TableTransferModal({
               mergedItems.push({
                 ...item,
                 id: generateId(),
-                orderId: targetOrder.id,
+                orderId: activeTargetOrder.id,
                 quantity: qty,
                 addedByWaiterName: item.addedByWaiterName || currentUserName,
               });
@@ -178,19 +233,21 @@ export default function TableTransferModal({
           const newSubtotal = mergedItems.reduce((acc, it) => acc + (it.unitPrice * it.quantity), 0);
           const newTotal = newSubtotal;
 
-          await db.orders.update(targetOrder.id, {
+          await db.orders.update(activeTargetOrder.id, {
             items: mergedItems,
             subtotal: newSubtotal,
             total: newTotal,
             updatedAt: nowIso,
-            waiters: Array.from(new Set([...(targetOrder.waiters || [targetOrder.waiterName]), currentUserName])),
+            waiters: Array.from(new Set([...(activeTargetOrder.waiters || [activeTargetOrder.waiterName]), currentUserName])),
           });
 
-          // Cancel or remove source order
-          await db.orders.update(currentOrder.id, {
-            status: 'cancelled',
-            notes: (currentOrder.notes ? currentOrder.notes + ' - ' : '') + `Masa ${selectedTargetTable.label}'e aktarıldı.`,
-          });
+          // Cancel or mark source order transferred
+          if (effectiveOrder) {
+            await db.orders.update(effectiveOrder.id, {
+              status: 'cancelled',
+              notes: (effectiveOrder.notes ? effectiveOrder.notes + ' - ' : '') + `Masa ${selectedTargetTable.label}'e aktarıldı.`,
+            });
+          }
 
           // Mark source table free
           await db.table<Table>('tables').update(currentTable.id, {
@@ -207,7 +264,7 @@ export default function TableTransferModal({
             action: 'Masa Birleştirme',
             details: `Masa ${currentTable.label}, Masa ${selectedTargetTable.label} ile birleştirildi.`,
             entityType: 'order',
-            entityId: targetOrder.id,
+            entityId: activeTargetOrder.id,
             timestamp: nowIso,
           });
         }
@@ -218,7 +275,7 @@ export default function TableTransferModal({
         const remainingItems: OrderItem[] = [];
         const movedItemsForTarget: OrderItem[] = [];
 
-        for (const item of currentItems) {
+        for (const item of allAvailableItems) {
           const moveInfo = itemsToMoveList.find(m => m.item.id === item.id);
           if (!moveInfo) {
             // Not moving this item
@@ -248,10 +305,10 @@ export default function TableTransferModal({
         }
 
         // 1. Update source table order
-        if (currentOrder) {
+        if (effectiveOrder) {
           if (remainingItems.length === 0) {
             // All items moved away, free the source table
-            await db.orders.update(currentOrder.id, {
+            await db.orders.update(effectiveOrder.id, {
               status: 'cancelled',
               items: [],
               subtotal: 0,
@@ -266,7 +323,7 @@ export default function TableTransferModal({
             });
           } else {
             const remSubtotal = remainingItems.reduce((acc, it) => acc + (it.unitPrice * it.quantity), 0);
-            await db.orders.update(currentOrder.id, {
+            await db.orders.update(effectiveOrder.id, {
               items: remainingItems,
               subtotal: remSubtotal,
               total: remSubtotal,
@@ -276,32 +333,39 @@ export default function TableTransferModal({
         }
 
         // 2. Add moved items to target table
-        if (isTargetOccupied && selectedTargetTable.currentOrderId) {
-          // Merge into existing target table order
-          const targetOrder = await db.orders.get(selectedTargetTable.currentOrderId);
-          if (targetOrder) {
-            const updatedTargetItems = [...(targetOrder.items || [])];
-            for (const movedIt of movedItemsForTarget) {
-              const existingIdx = updatedTargetItems.findIndex(x => x.menuItemId === movedIt.menuItemId && JSON.stringify(x.modifiers || []) === JSON.stringify(movedIt.modifiers || []));
-              if (existingIdx >= 0) {
-                updatedTargetItems[existingIdx].quantity += movedIt.quantity;
-              } else {
-                updatedTargetItems.push({
-                  ...movedIt,
-                  orderId: targetOrder.id,
-                });
-              }
-            }
+        let activeTargetOrder = targetOrder;
+        if (!activeTargetOrder && selectedTargetTable.currentOrderId) {
+          activeTargetOrder = await db.orders.get(selectedTargetTable.currentOrderId) || null;
+        }
+        if (!activeTargetOrder) {
+          activeTargetOrder = await db.orders.where('tableId').equals(selectedTargetTable.id)
+            .filter((o: Order) => o.status !== 'paid' && o.status !== 'cancelled')
+            .first() || null;
+        }
 
-            const newSubtotal = updatedTargetItems.reduce((acc, it) => acc + (it.unitPrice * it.quantity), 0);
-            await db.orders.update(targetOrder.id, {
-              items: updatedTargetItems,
-              subtotal: newSubtotal,
-              total: newSubtotal,
-              updatedAt: nowIso,
-              waiters: Array.from(new Set([...(targetOrder.waiters || [targetOrder.waiterName]), currentUserName])),
-            });
+        if (isTargetOccupied && activeTargetOrder) {
+          // Merge into existing target table order
+          const updatedTargetItems = [...(activeTargetOrder.items || [])];
+          for (const movedIt of movedItemsForTarget) {
+            const existingIdx = updatedTargetItems.findIndex(x => x.menuItemId === movedIt.menuItemId && JSON.stringify(x.modifiers || []) === JSON.stringify(movedIt.modifiers || []));
+            if (existingIdx >= 0) {
+              updatedTargetItems[existingIdx].quantity += movedIt.quantity;
+            } else {
+              updatedTargetItems.push({
+                ...movedIt,
+                orderId: activeTargetOrder.id,
+              });
+            }
           }
+
+          const newSubtotal = updatedTargetItems.reduce((acc, it) => acc + (it.unitPrice * it.quantity), 0);
+          await db.orders.update(activeTargetOrder.id, {
+            items: updatedTargetItems,
+            subtotal: newSubtotal,
+            total: newSubtotal,
+            updatedAt: nowIso,
+            waiters: Array.from(new Set([...(activeTargetOrder.waiters || [activeTargetOrder.waiterName]), currentUserName])),
+          });
         } else {
           // Create new order on empty target table
           const newOrderId = generateId();
@@ -342,7 +406,7 @@ export default function TableTransferModal({
           action: 'Ürün Taşıma',
           details: `Masa ${currentTable.label} -> Masa ${selectedTargetTable.label}: ${itemsToMoveList.map(m => `${m.qty}x ${m.item.name}`).join(', ')} aktarıldı.`,
           entityType: 'order',
-          entityId: currentOrder?.id || 'order',
+          entityId: effectiveOrder?.id || 'order',
           timestamp: nowIso,
         });
       }
@@ -422,58 +486,69 @@ export default function TableTransferModal({
                 Taşınacak Ürünleri Seçin:
               </span>
               <div className="border border-stone-200 dark:border-stone-800 rounded-2xl p-2 divide-y divide-stone-100 dark:divide-stone-800 max-h-56 overflow-y-auto">
-                {currentItems.map(item => {
-                  const isChecked = Boolean(checkedItemIds[item.id]);
-                  const qtyToMove = selectedItems[item.id] || item.quantity;
-                  return (
-                    <div key={item.id} className="py-2 px-2 flex items-center justify-between gap-3">
-                      <div 
-                        onClick={() => toggleItemCheck(item.id)}
-                        className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer"
-                      >
-                        <div className={cn(
-                          "w-5 h-5 rounded-md flex items-center justify-center border transition-all shrink-0",
-                          isChecked 
-                            ? "bg-orange-600 border-orange-600 text-white" 
-                            : "border-stone-400 dark:border-stone-600"
-                        )}>
-                          {isChecked && <Check size={13} strokeWidth={3} />}
+                {allAvailableItems.length === 0 ? (
+                  <div className="py-6 px-4 text-center">
+                    <p className="text-xs text-stone-500 dark:text-stone-400">
+                      Bu masada henüz kayıtlı sipariş veya ürün bulunmuyor.
+                    </p>
+                    <p className="text-[11px] text-stone-400 dark:text-stone-500 mt-1">
+                      Masa oturumunu veya adisyonu taşımak için yukarıdan <strong>"Tüm Masayı Taşı"</strong> seçeneğini kullanabilirsiniz.
+                    </p>
+                  </div>
+                ) : (
+                  allAvailableItems.map(item => {
+                    const isChecked = Boolean(checkedItemIds[item.id]);
+                    const qtyToMove = selectedItems[item.id] || item.quantity;
+                    return (
+                      <div key={item.id} className="py-2 px-2 flex items-center justify-between gap-3">
+                        <div 
+                          onClick={() => toggleItemCheck(item.id)}
+                          className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer"
+                        >
+                          <div className={cn(
+                            "w-5 h-5 rounded-md flex items-center justify-center border transition-all shrink-0",
+                            isChecked 
+                              ? "bg-orange-600 border-orange-600 text-white" 
+                              : "border-stone-400 dark:border-stone-600"
+                          )}>
+                            {isChecked && <Check size={13} strokeWidth={3} />}
+                          </div>
+                          <div className="min-w-0">
+                            <span className={cn("text-xs font-bold block truncate", isChecked ? "text-stone-900 dark:text-stone-100" : "text-stone-400")}>
+                              {item.name}
+                            </span>
+                            <span className="text-[10px] text-stone-400">
+                              Mevcut: {item.quantity} adet • {formatCurrency(item.unitPrice)}
+                            </span>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <span className={cn("text-xs font-bold block truncate", isChecked ? "text-stone-900 dark:text-stone-100" : "text-stone-400")}>
-                            {item.name}
-                          </span>
-                          <span className="text-[10px] text-stone-400">
-                            Mevcut: {item.quantity} adet • {formatCurrency(item.unitPrice)}
-                          </span>
-                        </div>
-                      </div>
 
-                      {/* Quantity Stepper (if checked) */}
-                      {isChecked && item.quantity > 1 && (
-                        <div className="flex items-center bg-stone-100 dark:bg-stone-800 rounded-xl p-0.5 border border-stone-200 dark:border-stone-700 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => updateQuantityToMove(item.id, item.quantity, -1)}
-                            className="w-7 h-7 flex items-center justify-center text-stone-700 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-lg cursor-pointer"
-                          >
-                            <Minus size={12} />
-                          </button>
-                          <span className="w-6 text-center font-mono font-bold text-xs text-orange-600 dark:text-orange-400">
-                            {qtyToMove}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => updateQuantityToMove(item.id, item.quantity, 1)}
-                            className="w-7 h-7 flex items-center justify-center text-stone-700 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-lg cursor-pointer"
-                          >
-                            <Plus size={12} />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                        {/* Quantity Stepper (if checked) */}
+                        {isChecked && item.quantity > 1 && (
+                          <div className="flex items-center bg-stone-100 dark:bg-stone-800 rounded-xl p-0.5 border border-stone-200 dark:border-stone-700 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => updateQuantityToMove(item.id, item.quantity, -1)}
+                              className="w-7 h-7 flex items-center justify-center text-stone-700 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-lg cursor-pointer"
+                            >
+                              <Minus size={12} />
+                            </button>
+                            <span className="w-6 text-center font-mono font-bold text-xs text-orange-600 dark:text-orange-400">
+                              {qtyToMove}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateQuantityToMove(item.id, item.quantity, 1)}
+                              className="w-7 h-7 flex items-center justify-center text-stone-700 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-lg cursor-pointer"
+                            >
+                              <Plus size={12} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           )}
@@ -559,7 +634,7 @@ export default function TableTransferModal({
             <button
               type="button"
               onClick={handleExecuteTransfer}
-              disabled={!selectedTargetTableId || isSubmitting || itemsToMoveList.length === 0}
+              disabled={!selectedTargetTableId || isSubmitting || (transferMode === 'partial' && itemsToMoveList.length === 0)}
               className="px-5 py-2.5 rounded-xl font-bold text-xs bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white transition-all shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
               <ArrowRightLeft size={14} />

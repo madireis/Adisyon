@@ -141,12 +141,12 @@ export default function MenuPage() {
   const handleLoadDefaultMenu = async () => {
     try {
       if (menuItems.length > 0) {
-        if (!confirm("Wot's Cafe 85 çeşit standart restoran menüsünü (Kahvaltı, Burger, Pizza, Izgara, İçecekler vb.) yüklemek istiyor musunuz?")) {
+        if (!confirm("Wot's Cafe güncel restoran menüsünü (18 Kategori, 167 Ürün) yüklemek istiyor musunuz?")) {
           return;
         }
       }
-      await seedDefaultMenu(db, false);
-      alert("Wot's Cafe standart restoran menüsü başarıyla yüklendi! (85 ürün)");
+      await seedDefaultMenu(db, true);
+      alert("Wot's Cafe güncel restoran menüsü başarıyla yüklendi! (18 Kategori, 167 Ürün)");
     } catch (err: any) {
       console.error('Menü yüklenirken hata:', err);
       alert('Menü yüklenirken bir hata oluştu: ' + (err?.message || err));

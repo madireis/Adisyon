@@ -44,461 +44,3392 @@ export const tables: Table[] = [
   { id: 't-26', floorId: 'floor-4', number: 26, label: 'M24', seats: 2, status: 'available', guestCount: 0, posX: 10, posY: 60, shape: 'round' },
 ]
 
-// ─── CATEGORIES ───────────────────────────────────────────────
+// ─── CATEGORIES (Scraped from Wot's Cafe - 18 Categories) ───────
 export const categories: Category[] = [
-  { id: 'cat-1', name: 'Kahvaltı', icon: 'egg', order: 1, color: 'bg-amber-100 text-amber-800' },
-  { id: 'cat-2', name: 'Başlangıçlar', icon: 'salad', order: 2, color: 'bg-emerald-100 text-emerald-800' },
-  { id: 'cat-3', name: 'Burgerler', icon: 'sandwich', order: 3, color: 'bg-red-100 text-red-800' },
-  { id: 'cat-4', name: 'Pizza & Pide', icon: 'pizza', order: 4, color: 'bg-orange-100 text-orange-800' },
-  { id: 'cat-5', name: 'Makarna', icon: 'utensils', order: 5, color: 'bg-yellow-100 text-yellow-800' },
-  { id: 'cat-6', name: 'Ana Yemek', icon: 'beef', order: 6, color: 'bg-stone-100 text-stone-800' },
-  { id: 'cat-7', name: 'Tatlılar', icon: 'cake', order: 7, color: 'bg-pink-100 text-pink-800' },
-  { id: 'cat-8', name: 'Sıcak İçecek', icon: 'coffee', order: 8, color: 'bg-espresso-100 text-espresso-800' },
-  { id: 'cat-9', name: 'Soğuk İçecek', icon: 'glass-water', order: 9, color: 'bg-sky-100 text-sky-800' },
-  { id: 'cat-10', name: 'Kokteyller', icon: 'martini', order: 10, color: 'bg-purple-100 text-purple-800' },
+  {
+    "id": "cat-1",
+    "name": "KAHVALTI",
+    "icon": "egg",
+    "order": 1,
+    "color": "bg-amber-100 text-amber-800"
+  },
+  {
+    "id": "cat-2",
+    "name": "ATIŞTIRMALIKLAR",
+    "icon": "drumstick",
+    "order": 2,
+    "color": "bg-orange-100 text-orange-800"
+  },
+  {
+    "id": "cat-3",
+    "name": "WRAPLAR",
+    "icon": "sandwich",
+    "order": 3,
+    "color": "bg-lime-100 text-lime-800"
+  },
+  {
+    "id": "cat-4",
+    "name": "GÖZLEMELER",
+    "icon": "utensils",
+    "order": 4,
+    "color": "bg-yellow-100 text-yellow-800"
+  },
+  {
+    "id": "cat-5",
+    "name": "TOSTLAR",
+    "icon": "sandwich",
+    "order": 5,
+    "color": "bg-amber-100 text-amber-900"
+  },
+  {
+    "id": "cat-6",
+    "name": "SALATALAR",
+    "icon": "salad",
+    "order": 6,
+    "color": "bg-emerald-100 text-emerald-800"
+  },
+  {
+    "id": "cat-7",
+    "name": "MAKARNALAR",
+    "icon": "pasta",
+    "order": 7,
+    "color": "bg-yellow-100 text-yellow-800"
+  },
+  {
+    "id": "cat-8",
+    "name": "BURGERLER",
+    "icon": "burger",
+    "order": 8,
+    "color": "bg-red-100 text-red-800"
+  },
+  {
+    "id": "cat-9",
+    "name": "PIZZALAR",
+    "icon": "pizza",
+    "order": 9,
+    "color": "bg-orange-100 text-orange-800"
+  },
+  {
+    "id": "cat-10",
+    "name": "ANA YEMEKLER",
+    "icon": "beef",
+    "order": 10,
+    "color": "bg-stone-100 text-stone-800"
+  },
+  {
+    "id": "cat-11",
+    "name": "IZGARALAR",
+    "icon": "flame",
+    "order": 11,
+    "color": "bg-rose-100 text-rose-800"
+  },
+  {
+    "id": "cat-12",
+    "name": "TATLILAR & PASTALAR",
+    "icon": "cake",
+    "order": 12,
+    "color": "bg-pink-100 text-pink-800"
+  },
+  {
+    "id": "cat-13",
+    "name": "DONDURMA",
+    "icon": "ice-cream",
+    "order": 13,
+    "color": "bg-teal-100 text-teal-800"
+  },
+  {
+    "id": "cat-14",
+    "name": "SICAK İÇECEK",
+    "icon": "coffee",
+    "order": 14,
+    "color": "bg-amber-100 text-amber-900"
+  },
+  {
+    "id": "cat-15",
+    "name": "SOĞUK KAHVELER",
+    "icon": "coffee",
+    "order": 15,
+    "color": "bg-sky-100 text-sky-800"
+  },
+  {
+    "id": "cat-16",
+    "name": "SOĞUK İÇECEKLER",
+    "icon": "glass-water",
+    "order": 16,
+    "color": "bg-cyan-100 text-cyan-800"
+  },
+  {
+    "id": "cat-17",
+    "name": "KOKTEYLLER",
+    "icon": "martini",
+    "order": 17,
+    "color": "bg-purple-100 text-purple-800"
+  },
+  {
+    "id": "cat-18",
+    "name": "NARGILE",
+    "icon": "flame",
+    "order": 18,
+    "color": "bg-indigo-100 text-indigo-800"
+  }
 ]
 
-// ─── MENU ITEMS ───────────────────────────────────────────────
+// ─── MENU ITEMS (Scraped from Wot's Cafe - 167 Items) ────────────
 export const menuItems: MenuItem[] = [
-  // ── 1. KAHVALTI (cat-1) ──
   {
-    id: 'mi-1', categoryId: 'cat-1', name: 'Serpme Sahil Kahvaltısı', description: 'Zengin serpme kahvaltı tabağı, peynir çeşitleri, reçeller, sınırsız çay', price: 450,
-    station: 'kitchen', available: true, preparationTime: 15, vat: 8,
-    modifierGroups: [{ id: 'mg-1', name: 'Ekstra', type: 'multiple', modifiers: [
-      { id: 'mod-1', name: 'Ekstra Peynir Tabağı', price: 80, group: 'Ekstra' },
-      { id: 'mod-2', name: 'Ekstra Bal-Kaymak', price: 60, group: 'Ekstra' },
-      { id: 'mod-3', name: 'Pişi (3 Adet)', price: 50, group: 'Ekstra' },
-    ]}]
-  },
-  {
-    id: 'mi-2', categoryId: 'cat-1', name: 'Hızlı Kahvaltı Tabağı', description: 'Beyaz peynir, kaşar, domates, salatalık, siyah/yeşil zeytin, haşlanmış yumurta, reçel, 1 çay', price: 220,
-    station: 'kitchen', available: true, preparationTime: 8, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-3', categoryId: 'cat-1', name: 'Menemen', description: 'Köy tereyağında domates, biber ve taze yumurta', price: 150,
-    station: 'kitchen', available: true, preparationTime: 10, vat: 8,
-    modifierGroups: [{ id: 'mg-2', name: 'Seçenek', type: 'single', modifiers: [
-      { id: 'mod-4', name: 'Sade', price: 0, group: 'Seçenek' },
-      { id: 'mod-5', name: 'Kaşarlı', price: 30, group: 'Seçenek' },
-      { id: 'mod-6', name: 'Sucuklu', price: 40, group: 'Seçenek' },
-      { id: 'mod-7', name: 'Karışık (Sucuklu & Kaşarlı)', price: 50, group: 'Seçenek' },
-    ]}]
-  },
-  {
-    id: 'mi-4', categoryId: 'cat-1', name: 'Sahanda Sucuklu Yumurta', description: 'Özel kasap sucuk ve tereyağında 2 göz yumurta', price: 170,
-    station: 'kitchen', available: true, preparationTime: 8, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-5', categoryId: 'cat-1', name: 'Kaşarlı Tost', description: 'Tost ekmeğinde bol kaşar peyniri, patates kızartması ve söğüş ile', price: 110,
-    station: 'kitchen', available: true, preparationTime: 8, vat: 8,
-    modifierGroups: [{ id: 'mg-3', name: 'Seçenek', type: 'multiple', modifiers: [
-      { id: 'mod-8', name: 'Çift Kaşar', price: 25, group: 'Seçenek' },
-      { id: 'mod-9', name: 'Domatesli', price: 0, group: 'Seçenek' },
-    ]}]
-  },
-  {
-    id: 'mi-6', categoryId: 'cat-1', name: 'Karışık Tost', description: 'Kasap sucuk, kaşar peyniri, domates salçası, patates kızartması ile', price: 135,
-    station: 'kitchen', available: true, preparationTime: 8, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-7', categoryId: 'cat-1', name: 'Avokadolu Poşe Yumurta', description: 'Ekşi mayalı ekmek üzeri avokado ezmesi, 2 poşe yumurta ve çörek otu', price: 210,
-    station: 'kitchen', available: true, preparationTime: 10, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-8', categoryId: 'cat-1', name: 'Pişi & Bal-Kaymak', description: 'Sıcak ev yapımı pişiler (4 adet), manda kaymağı ve çiçek balı ile', price: 130,
-    station: 'kitchen', available: true, preparationTime: 8, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-9', categoryId: 'cat-1', name: 'Kuymak / Mıhlama', description: 'Trabzon kolot peyniri, taze mısır unu ve köy tereyağı ile', price: 185,
-    station: 'kitchen', available: true, preparationTime: 12, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-10', categoryId: 'cat-1', name: 'Meyveli Pankek Tabağı', description: '3 adet pankek, nutella, muz, çilek ve akçaağaç şurubu', price: 160,
-    station: 'kitchen', available: true, preparationTime: 10, vat: 8, modifierGroups: []
-  },
-
-  // ── 2. BAŞLANGIÇLAR & ATIŞTIRMALIKLAR (cat-2) ──
-  {
-    id: 'mi-11', categoryId: 'cat-2', name: 'Patates Kızartması', description: 'Özel baharat karışımlı çıtır patates sepeti', price: 95,
-    station: 'kitchen', available: true, preparationTime: 8, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-12', categoryId: 'cat-2', name: 'Trüflü & Parmesanlı Patates', description: 'Trüf yağı ve taze rendelenmiş parmesan peynirli çıtır patates', price: 140,
-    station: 'kitchen', available: true, preparationTime: 8, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-13', categoryId: 'cat-2', name: 'Çıtır Tavuk Sepeti (Tenders)', description: 'Baharatlı mısır gevreği kaplı tavuk parçaları, ballı hardal ve barbekü sos', price: 190,
-    station: 'kitchen', available: true, preparationTime: 10, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-14', categoryId: 'cat-2', name: 'Çıtır Karides', description: '8 adet tereyağlı çıtır karides, tartar ve acı sos ile', price: 280,
-    station: 'kitchen', available: true, preparationTime: 12, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-15', categoryId: 'cat-2', name: 'Falafel Tabağı', description: 'Ev yapımı falafel köfteleri, humus, tahin sos ve yeşillik', price: 180,
-    station: 'kitchen', available: true, preparationTime: 10, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-16', categoryId: 'cat-2', name: 'Paçanga Böreği', description: 'Kayseri pastırması, kaşar peyniri ve domatesli çıtır börek (2 adet)', price: 160,
-    station: 'kitchen', available: true, preparationTime: 10, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-17', categoryId: 'cat-2', name: 'Çıtır Sigara Böreği', description: 'Beyaz peynirli ve maydanozlu ev usulü börek (5 adet)', price: 110,
-    station: 'kitchen', available: true, preparationTime: 8, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-18', categoryId: 'cat-2', name: 'Hellim Salatası', description: 'Izgara hellim peyniri, ceviz, nar ekşisi, kurutulmuş domates ve Akdeniz yeşilliği', price: 200,
-    station: 'kitchen', available: true, preparationTime: 8, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-19', categoryId: 'cat-2', name: 'Tavuklu Sezar Salata', description: 'Izgara tavuk fileto, marul, sarımsaklı kruton, parmesan ve özel Sezar sos', price: 220,
-    station: 'kitchen', available: true, preparationTime: 10, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-20', categoryId: 'cat-2', name: 'Ton Balıklı Salata', description: 'Akdeniz yeşillikleri, ton balığı, mısır, kapari çiçeği, kırmızı soğan ve limon sos', price: 210,
-    station: 'kitchen', available: true, preparationTime: 8, vat: 8, modifierGroups: []
-  },
-
-  // ── 3. BURGERLER (cat-3) ──
-  {
-    id: 'mi-21', categoryId: 'cat-3', name: "Wot's Classic Burger", description: '180gr dana köfte, cheddar, karamelize soğan, marul, özel burger sos, patates ile', price: 320,
-    station: 'kitchen', available: true, preparationTime: 15, vat: 8,
-    modifierGroups: [
-      { id: 'mg-4', name: 'Pişirme', type: 'single', modifiers: [
-        { id: 'mod-10', name: 'Az Pişmiş', price: 0, group: 'Pişirme' },
-        { id: 'mod-11', name: 'Orta Pişmiş', price: 0, group: 'Pişirme' },
-        { id: 'mod-12', name: 'İyi Pişmiş', price: 0, group: 'Pişirme' },
-      ]},
-      { id: 'mg-5', name: 'Ekstra', type: 'multiple', modifiers: [
-        { id: 'mod-13', name: 'Ekstra Cheddar', price: 35, group: 'Ekstra' },
-        { id: 'mod-14', name: 'Dana Bacon', price: 45, group: 'Ekstra' },
-        { id: 'mod-15', name: 'Ekstra Köfte (180gr)', price: 90, group: 'Ekstra' },
-      ]},
-      { id: 'mg-6', name: 'Çıkar', type: 'remove', modifiers: [
-        { id: 'mod-16', name: 'Soğansız', price: 0, group: 'Çıkar' },
-        { id: 'mod-17', name: 'Turşusuz', price: 0, group: 'Çıkar' },
-        { id: 'mod-18', name: 'Yeşilliksiz', price: 0, group: 'Çıkar' },
-      ]}
-    ]
-  },
-  {
-    id: 'mi-22', categoryId: 'cat-3', name: "Wot's Double Burger", description: '2x140gr dana köfte, çift kat cheddar, dana bacon, tütsülenmiş sos, patates ile', price: 420,
-    station: 'kitchen', available: true, preparationTime: 15, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-23', categoryId: 'cat-3', name: 'Smash Burger', description: 'İnce preslenmiş çift kat köfte, eritilmiş Amerikan peyniri, turşu, patates ile', price: 290,
-    station: 'kitchen', available: true, preparationTime: 12, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-24', categoryId: 'cat-3', name: 'Trüflü Mantarlı Burger', description: '180gr köfte, sote mantar, gravyer peyniri, trüflü mayonez, patates ile', price: 340,
-    station: 'kitchen', available: true, preparationTime: 14, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-25', categoryId: 'cat-3', name: 'Crispy Chicken Burger', description: 'Çıtır pane tavuk göğsü, cheddar, ev yapımı coleslaw, acı-tatlı mayonez, patates ile', price: 260,
-    station: 'kitchen', available: true, preparationTime: 12, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-26', categoryId: 'cat-3', name: 'BBQ Bacon Burger', description: 'Dana köfte, dana bacon, çıtır soğan halkası, cheddar ve barbekü sos, patates ile', price: 350,
-    station: 'kitchen', available: true, preparationTime: 14, vat: 8, modifierGroups: []
-  },
-
-  // ── 4. PIZZA & PİDE (cat-4) ──
-  {
-    id: 'mi-27', categoryId: 'cat-4', name: 'Margarita Pizza', description: 'İtalyan domates sosu, bol mozzarella, taze fesleğen, sızma zeytinyağı', price: 240,
-    station: 'kitchen', available: true, preparationTime: 15, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-28', categoryId: 'cat-4', name: 'Karışık Pizza', description: 'Mozzarella, kasap sucuk, salam, sosis, mantar, mısır, yeşil biber, siyah zeytin', price: 280,
-    station: 'kitchen', available: true, preparationTime: 18, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-29', categoryId: 'cat-4', name: 'Pepperoni Pizza', description: 'Özel baharatlı İtalyan dana pepperoni, mozzarella, kekik', price: 290,
-    station: 'kitchen', available: true, preparationTime: 15, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-30', categoryId: 'cat-4', name: 'Dört Peynirli (Quattro Formaggi)', description: 'Mozzarella, gorgonzola, parmesan ve kaşar peyniri harmanı', price: 285,
-    station: 'kitchen', available: true, preparationTime: 15, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-31', categoryId: 'cat-4', name: 'Tavuklu & Mantarlı Pizza', description: 'Kremalı domates sos, jülyen tavuk, kültür mantarı, köz biber, mozzarella', price: 270,
-    station: 'kitchen', available: true, preparationTime: 16, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-32', categoryId: 'cat-4', name: 'Kuşbaşılı & Kaşarlı Pide', description: 'Taş fırında marine edilmiş dana kuşbaşı eti ve eritilmiş kaşar peyniri', price: 265,
-    station: 'kitchen', available: true, preparationTime: 15, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-33', categoryId: 'cat-4', name: 'Kıymalı Taş Fırın Pidesi', description: 'Özel baharatlı dana kıymalı geleneksel taş fırın pidesi', price: 235,
-    station: 'kitchen', available: true, preparationTime: 14, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-34', categoryId: 'cat-4', name: 'Kaşarlı Pide', description: 'Bol tereyağlı ve erimiş kaşarlı çıtır taş fırın pidesi', price: 210,
-    station: 'kitchen', available: true, preparationTime: 12, vat: 8, modifierGroups: []
-  },
-
-  // ── 5. MAKARNA & MANTI (cat-5) ──
-  {
-    id: 'mi-35', categoryId: 'cat-5', name: 'Fettuccine Alfredo', description: 'Jülyen tavuk parçaları, kültür mantarı, krema ve parmesan peyniri', price: 250,
-    station: 'kitchen', available: true, preparationTime: 14, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-36', categoryId: 'cat-5', name: 'Spaghetti Bolognese', description: 'Ağır ateşte pişmiş dana kıymalı özel İtalyan sos, fesleğen ve parmesan', price: 240,
-    station: 'kitchen', available: true, preparationTime: 12, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-37', categoryId: 'cat-5', name: 'Penne Arrabbiata', description: 'Acılı sarımsaklı domates sosu, dilim siyah zeytin, taze fesleğen', price: 210,
-    station: 'kitchen', available: true, preparationTime: 12, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-38', categoryId: 'cat-5', name: 'Tavuklu Pesto Penne', description: 'Ev yapımı fesleğenli pesto sos, ızgara tavuk dilimleri ve parmesan', price: 245,
-    station: 'kitchen', available: true, preparationTime: 13, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-39', categoryId: 'cat-5', name: 'Ev Yapımı Kayseri Mantısı', description: 'Sarımsaklı süzme yoğurt, kızgın tereyağında nane ve pul biber sosu ile', price: 230,
-    station: 'kitchen', available: true, preparationTime: 12, vat: 8,
-    modifierGroups: [{ id: 'mg-7', name: 'Yoğurt Tercihi', type: 'single', modifiers: [
-      { id: 'mod-19', name: 'Sarımsaklı Yoğurt', price: 0, group: 'Yoğurt' },
-      { id: 'mod-20', name: 'Sarımsaksız Yoğurt', price: 0, group: 'Yoğurt' },
-    ]}]
-  },
-  {
-    id: 'mi-40', categoryId: 'cat-5', name: 'Çıtır Kızarmış Mantı', description: 'Altın sarısı çıtır mantılar, domates sosu ve yoğurt eşliğinde', price: 240,
-    station: 'kitchen', available: true, preparationTime: 10, vat: 8, modifierGroups: []
-  },
-
-  // ── 6. ANA YEMEK & IZGARALAR (cat-6) ──
-  {
-    id: 'mi-41', categoryId: 'cat-6', name: 'Izgara Kasap Köfte', description: '200gr dana köfte, tereyağlı pirinç pilavı, patates kızartması, köz domates ve biber', price: 280,
-    station: 'kitchen', available: true, preparationTime: 15, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-42', categoryId: 'cat-6', name: 'Cafe de Paris Soslu Antrikot', description: '220gr dinlendirilmiş dana antrikot, özel Cafe de Paris sos ve patates tava', price: 480,
-    station: 'kitchen', available: true, preparationTime: 18, vat: 8,
-    modifierGroups: [{ id: 'mg-8', name: 'Pişirme Derecesi', type: 'single', modifiers: [
-      { id: 'mod-21', name: 'Az Pişmiş', price: 0, group: 'Pişirme' },
-      { id: 'mod-22', name: 'Orta', price: 0, group: 'Pişirme' },
-      { id: 'mod-23', name: 'İyi Pişmiş', price: 0, group: 'Pişirme' },
-    ]}]
-  },
-  {
-    id: 'mi-43', categoryId: 'cat-6', name: 'Marine Tavuk Şiş', description: 'Özel marinasyonlu tavuk göğsü, sebzeli bulgur pilavı, köz sebzeler ve lavaş', price: 250,
-    station: 'kitchen', available: true, preparationTime: 15, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-44', categoryId: 'cat-6', name: 'Çökertme Kebabı', description: 'Çıtır kibrit patates yatağında marine dana bonfile, sarımsaklı yoğurt ve kızgın tereyağı', price: 380,
-    station: 'kitchen', available: true, preparationTime: 16, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-45', categoryId: 'cat-6', name: 'Beğendili Tavuk Külbastı', description: 'Köz patlıcan beğendi üzerinde ızgara tavuk pirzola, köz biber ile', price: 290,
-    station: 'kitchen', available: true, preparationTime: 15, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-46', categoryId: 'cat-6', name: 'Somon Izgara', description: 'Norveç somon fileto, sote sebzeler, bebek patates, kaparili tereyağı sosu', price: 380,
-    station: 'kitchen', available: true, preparationTime: 18, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-47', categoryId: 'cat-6', name: 'Izgara Levrek Fileto', description: 'Ege levrek fileto, roka-kırmızı soğan salatası, ızgara patates', price: 360,
-    station: 'kitchen', available: true, preparationTime: 18, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-48', categoryId: 'cat-6', name: 'Kremalı Körili Tavuk', description: 'Jülyen tavuk parçaları, mantar, köri sos, basmati pirinç pilavı ile', price: 260,
-    station: 'kitchen', available: true, preparationTime: 14, vat: 8, modifierGroups: []
-  },
-
-  // ── 7. TATLILAR (cat-7) ──
-  {
-    id: 'mi-49', categoryId: 'cat-7', name: 'San Sebastian Cheesecake', description: 'Karamelize kıvam, sıcak Belçika sütlü çikolatası sosu ile', price: 160,
-    station: 'dessert', available: true, preparationTime: 4, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-50', categoryId: 'cat-7', name: 'Sıcak Çikolatalı Sufle', description: 'Akışkan sıcak çikolata keki, yanında hakiki vanilyalı Maraş dondurması', price: 155,
-    station: 'dessert', available: true, preparationTime: 10, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-51', categoryId: 'cat-7', name: 'Fıstıklı Sıcak Künefe', description: 'Hatay peynirli sıcak künefe, bol Antep fıstığı ve kesme dondurma', price: 180,
-    station: 'dessert', available: true, preparationTime: 12, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-52', categoryId: 'cat-7', name: "Wot's Special Waffle", description: 'Çıtır sıcak hamur, nutella, muz, çilek, fındık, dondurma ve çikolata sosu', price: 175,
-    station: 'dessert', available: true, preparationTime: 10, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-53', categoryId: 'cat-7', name: 'Klasik İtalyan Tiramisu', description: 'Mascarpone peynirli, espresso ile ıslatılmış savoiardi bisküvili', price: 145,
-    station: 'dessert', available: true, preparationTime: 4, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-54', categoryId: 'cat-7', name: 'Profiterol', description: 'Özel şu hamuru, vanilyalı pastacı kreması ve yoğun çikolata sosu', price: 140,
-    station: 'dessert', available: true, preparationTime: 4, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-55', categoryId: 'cat-7', name: 'Dondurma Tabağı (3 Top)', description: 'Vanilya, Belçika çikolata, çilek veya Antep fıstığı seçenekleriyle', price: 110,
-    station: 'dessert', available: true, preparationTime: 3, vat: 8, modifierGroups: []
-  },
-
-  // ── 8. SICAK İÇECEKLER (cat-8) ──
-  {
-    id: 'mi-56', categoryId: 'cat-8', name: 'Çay (Bardak)', description: 'Taze demlenmiş Doğu Karadeniz çayı', price: 30,
-    station: 'coffee', available: true, preparationTime: 2, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-57', categoryId: 'cat-8', name: 'Fincan Çay', description: 'Büyük fincan taze çay', price: 45,
-    station: 'coffee', available: true, preparationTime: 2, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-58', categoryId: 'cat-8', name: 'Türk Kahvesi', description: 'Geleneksel taze çekilmiş Türk kahvesi, lokum ve su ile', price: 70,
-    station: 'coffee', available: true, preparationTime: 5, vat: 8,
-    modifierGroups: [{ id: 'mg-9', name: 'Şeker', type: 'single', modifiers: [
-      { id: 'mod-24', name: 'Sade', price: 0, group: 'Şeker' },
-      { id: 'mod-25', name: 'Az Şekerli', price: 0, group: 'Şeker' },
-      { id: 'mod-26', name: 'Orta', price: 0, group: 'Şeker' },
-      { id: 'mod-27', name: 'Şekerli', price: 0, group: 'Şeker' },
-    ]}]
-  },
-  {
-    id: 'mi-59', categoryId: 'cat-8', name: 'Damla Sakızlı Türk Kahvesi', description: 'Hakiki Çeşme damla sakızı aromalı Türk kahvesi', price: 80,
-    station: 'coffee', available: true, preparationTime: 5, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-60', categoryId: 'cat-8', name: 'Espresso', description: '%100 Arabica çekirdekten tek shot yoğun kahve', price: 75,
-    station: 'coffee', available: true, preparationTime: 3, vat: 8,
-    modifierGroups: [{ id: 'mg-10', name: 'Shot', type: 'single', modifiers: [
-      { id: 'mod-28', name: 'Single Shot', price: 0, group: 'Shot' },
-      { id: 'mod-29', name: 'Double Shot (Duble)', price: 25, group: 'Shot' },
-    ]}]
-  },
-  {
-    id: 'mi-61', categoryId: 'cat-8', name: 'Americano', description: 'Sıcak su ile inceltilmiş double shot espresso', price: 90,
-    station: 'coffee', available: true, preparationTime: 3, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-62', categoryId: 'cat-8', name: 'Cafe Latte', description: 'Espresso ve kadifemsi kıvamda buharda ısıtılmış süt', price: 110,
-    station: 'coffee', available: true, preparationTime: 4, vat: 8,
-    modifierGroups: [{ id: 'mg-11', name: 'Süt Türü', type: 'single', modifiers: [
-      { id: 'mod-30', name: 'Tam Yağlı Süt', price: 0, group: 'Süt' },
-      { id: 'mod-31', name: 'Yulaf Sütü', price: 20, group: 'Süt' },
-      { id: 'mod-32', name: 'Badem Sütü', price: 20, group: 'Süt' },
-    ]}]
-  },
-  {
-    id: 'mi-63', categoryId: 'cat-8', name: 'Cappuccino', description: 'Espresso, sıcak süt ve üzerinde yoğun süt kreması', price: 105,
-    station: 'coffee', available: true, preparationTime: 4, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-64', categoryId: 'cat-8', name: 'Caramel Macchiato', description: 'Vanilya şurubu, sıcak süt, espresso ve karamel gezdirilmiş süt kreması', price: 125,
-    station: 'coffee', available: true, preparationTime: 4, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-65', categoryId: 'cat-8', name: 'Caffe Mocha', description: 'Espresso, Belçika çikolata sosu, sıcak süt ve krema', price: 125,
-    station: 'coffee', available: true, preparationTime: 4, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-66', categoryId: 'cat-8', name: 'Sıcak Çikolata', description: 'Hakiki eritilmiş çikolata ve sıcak süt', price: 110,
-    station: 'coffee', available: true, preparationTime: 4, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-67', categoryId: 'cat-8', name: 'Hakiki Sahlep', description: 'Süt ile pişirilmiş doğal dağ sahlebi, bol tarçın ile', price: 120,
-    station: 'coffee', available: true, preparationTime: 5, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-68', categoryId: 'cat-8', name: 'Bitki Çayları', description: 'Ihlamur, Yeşil Çay, Papatya, Adaçayı veya Kış Çayı (Bal ve limon ile)', price: 85,
-    station: 'coffee', available: true, preparationTime: 4, vat: 8,
-    modifierGroups: [{ id: 'mg-12', name: 'Çeşit', type: 'single', modifiers: [
-      { id: 'mod-33', name: 'Ihlamur', price: 0, group: 'Çeşit' },
-      { id: 'mod-34', name: 'Yeşil Çay', price: 0, group: 'Çeşit' },
-      { id: 'mod-35', name: 'Papatya', price: 0, group: 'Çeşit' },
-      { id: 'mod-36', name: 'Adaçayı', price: 0, group: 'Çeşit' },
-      { id: 'mod-37', name: 'Atom Kış Çayı', price: 10, group: 'Çeşit' },
-    ]}]
-  },
-
-  // ── 9. SOĞUK İÇECEKLER (cat-9) ──
-  {
-    id: 'mi-69', categoryId: 'cat-9', name: 'Ev Yapımı Limonata', description: 'Taze sıkılmış limon, nane yaprakları ve buz ile', price: 90,
-    station: 'bar', available: true, preparationTime: 3, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-70', categoryId: 'cat-9', name: 'Çilekli Limonata', description: 'Ev yapımı limonata ve taze çilek püresi karışımı', price: 105,
-    station: 'bar', available: true, preparationTime: 3, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-71', categoryId: 'cat-9', name: 'Taze Sıkma Portakal Suyu', description: 'Anlık sıkılmış %100 doğal portakal suyu', price: 110,
-    station: 'bar', available: true, preparationTime: 4, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-72', categoryId: 'cat-9', name: 'Iced Latte', description: 'Soğuk süt, espresso ve bol buz', price: 115,
-    station: 'coffee', available: true, preparationTime: 3, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-73', categoryId: 'cat-9', name: 'Iced Americano', description: 'Soğuk su, double shot espresso ve buz', price: 95,
-    station: 'coffee', available: true, preparationTime: 3, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-74', categoryId: 'cat-9', name: 'Milkshake', description: 'Dondurma ve süt ile hazırlanan yoğun soğuk içecek', price: 130,
-    station: 'bar', available: true, preparationTime: 4, vat: 8,
-    modifierGroups: [{ id: 'mg-13', name: 'Aroma', type: 'single', modifiers: [
-      { id: 'mod-38', name: 'Çilekli', price: 0, group: 'Aroma' },
-      { id: 'mod-39', name: 'Çikolatalı', price: 0, group: 'Aroma' },
-      { id: 'mod-40', name: 'Vanilyalı', price: 0, group: 'Aroma' },
-      { id: 'mod-41', name: 'Muzlu', price: 0, group: 'Aroma' },
-    ]}]
-  },
-  {
-    id: 'mi-75', categoryId: 'cat-9', name: 'Frozen Mango & Çilek', description: 'Buzlu ferahlatıcı meyve püresi', price: 120,
-    station: 'bar', available: true, preparationTime: 4, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-76', categoryId: 'cat-9', name: 'Kutu İçecekler (330ml)', description: 'Coca-Cola, Coca-Cola Zero, Fanta, Sprite', price: 60,
-    station: 'bar', available: true, preparationTime: 1, vat: 8,
-    modifierGroups: [{ id: 'mg-14', name: 'Seçenek', type: 'single', modifiers: [
-      { id: 'mod-42', name: 'Coca-Cola', price: 0, group: 'İçecek' },
-      { id: 'mod-43', name: 'Coca-Cola Zero', price: 0, group: 'İçecek' },
-      { id: 'mod-44', name: 'Fanta', price: 0, group: 'İçecek' },
-      { id: 'mod-45', name: 'Sprite', price: 0, group: 'İçecek' },
-    ]}]
-  },
-  {
-    id: 'mi-77', categoryId: 'cat-9', name: 'Köpüklü Yayık Ayran', description: 'Geleneksel soğuk yayık ayranı', price: 40,
-    station: 'bar', available: true, preparationTime: 1, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-78', categoryId: 'cat-9', name: 'Şişe Maden Suyu', description: 'Cam şişe doğal maden suyu', price: 35,
-    station: 'bar', available: true, preparationTime: 1, vat: 8,
-    modifierGroups: [{ id: 'mg-15', name: 'Çeşit', type: 'single', modifiers: [
-      { id: 'mod-46', name: 'Sade', price: 0, group: 'Çeşit' },
-      { id: 'mod-47', name: 'Limonlu (+10 TL)', price: 10, group: 'Çeşit' },
-      { id: 'mod-48', name: 'Elmalı (+10 TL)', price: 10, group: 'Çeşit' },
-    ]}]
-  },
-  {
-    id: 'mi-79', categoryId: 'cat-9', name: 'Su (500ml)', description: 'Şişe su', price: 20,
-    station: 'bar', available: true, preparationTime: 1, vat: 8, modifierGroups: []
-  },
-
-  // ── 10. KOKTEYLLER & ÖZEL İÇECEKLER (cat-10) ──
-  {
-    id: 'mi-80', categoryId: 'cat-10', name: 'Mojito (Classic)', description: 'Taze nane yaprakları, taze lime suyu, esmer şeker, soda ve kırık buz', price: 180,
-    station: 'bar', available: true, preparationTime: 5, vat: 18, modifierGroups: []
-  },
-  {
-    id: 'mi-81', categoryId: 'cat-10', name: 'Aperol Spritz', description: 'Aperol, prosecco, maden suyu ve taze portakal dilimi', price: 220,
-    station: 'bar', available: true, preparationTime: 4, vat: 18, modifierGroups: []
-  },
-  {
-    id: 'mi-82', categoryId: 'cat-10', name: 'Espresso Martini', description: 'Taze çekilmiş espresso, kahlua ve krema', price: 230,
-    station: 'bar', available: true, preparationTime: 5, vat: 18, modifierGroups: []
-  },
-  {
-    id: 'mi-83', categoryId: 'cat-10', name: 'Klasik Margarita', description: 'Tekila, triple sec, taze sıkılmış lime suyu ve tuzlu bardak kenarı', price: 210,
-    station: 'bar', available: true, preparationTime: 5, vat: 18, modifierGroups: []
-  },
-  {
-    id: 'mi-84', categoryId: 'cat-10', name: 'Virgin Mojito (Alkolsüz)', description: 'Nane, esmer şeker, misket limonu, elma suyu ve gazoz ile ferahlatıcı mocktail', price: 140,
-    station: 'bar', available: true, preparationTime: 4, vat: 8, modifierGroups: []
-  },
-  {
-    id: 'mi-85', categoryId: 'cat-10', name: 'Blue Lagoon Mocktail (Alkolsüz)', description: 'Mavi turunç şurubu, ev yapımı limonata ve sprite ile egzotik sunum', price: 140,
-    station: 'bar', available: true, preparationTime: 4, vat: 8, modifierGroups: []
-  },
+    "id": "mi-1",
+    "categoryId": "cat-1",
+    "name": "Serpme Kahvaltı (2 kişilik)",
+    "description": "Beyaz peynir, taze kaşar, eski kaşar, keçi peyniri, siyah zeytin, yeşil zeytin, acuka, bal, reçel, çikolata, tahin pekmez, tereyağı, domates, salatalık, mevsim yeşillikleri, patates kızartması, mini paçanga, pankek, pişi, soslu sosis, omlet, sucuk ve sınırsız çay ikramı ile servis edilir.",
+    "price": 1050,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-1-1",
+        "name": "Ekstra Lezzetler",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-1-1",
+            "name": "Ekstra Pişi (3 Adet)",
+            "price": 50,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-1-2",
+            "name": "Ekstra Bal & Kaymak",
+            "price": 60,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-1-3",
+            "name": "Ekstra Peynir Tabağı",
+            "price": 80,
+            "group": "Ekstra"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-2",
+    "categoryId": "cat-1",
+    "name": "Kahvaltı Tabağı",
+    "description": "Beyaz peynir, taze kaşar, eski kaşar, keçi peyniri, siyah-yeşil zeytin, acuka, bal, çikolata, reçel, haşlanmış yumurta, salatalık, domates, mini paçanga ve çay ile servis edilir.",
+    "price": 450,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-3",
+    "categoryId": "cat-1",
+    "name": "Sade Omlet",
+    "description": "",
+    "price": 180,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-4",
+    "categoryId": "cat-1",
+    "name": "Sucuklu Omlet",
+    "description": "",
+    "price": 230,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-5",
+    "categoryId": "cat-1",
+    "name": "Sebzeli Omlet",
+    "description": "",
+    "price": 220,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-6",
+    "categoryId": "cat-1",
+    "name": "Kavurmalı Omlet",
+    "description": "",
+    "price": 290,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-7",
+    "categoryId": "cat-1",
+    "name": "Sahanda Sade Yumurta",
+    "description": "",
+    "price": 150,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-8",
+    "categoryId": "cat-1",
+    "name": "Sahanda Kavurmalı Yumurta",
+    "description": "",
+    "price": 290,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-9",
+    "categoryId": "cat-1",
+    "name": "Sahanda Sucuklu Yumurta",
+    "description": "",
+    "price": 230,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-10",
+    "categoryId": "cat-1",
+    "name": "Kaşarlı Menemen",
+    "description": "",
+    "price": 190,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-11",
+    "categoryId": "cat-1",
+    "name": "Sade Menemen",
+    "description": "",
+    "price": 180,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-11-1",
+        "name": "Menemen Ekleme",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-11-1",
+            "name": "Kaşar Peynirli",
+            "price": 30,
+            "group": "Ekleme"
+          },
+          {
+            "id": "mod-mi-11-2",
+            "name": "Kasap Sucuklu",
+            "price": 50,
+            "group": "Ekleme"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-12",
+    "categoryId": "cat-2",
+    "name": "Wot’s Combo Tabağı",
+    "description": "Patates kızartması, soğan halkası, mozarella stick, dana sosis, kalem böreği, mini paçanga, çıtır tavuk topları ve özel soslarla servis edilir.",
+    "price": 430,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-13",
+    "categoryId": "cat-2",
+    "name": "Soğan Halkası Tabağı",
+    "description": "",
+    "price": 180,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-14",
+    "categoryId": "cat-2",
+    "name": "Sosis Tabağı",
+    "description": "",
+    "price": 230,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-15",
+    "categoryId": "cat-2",
+    "name": "Kalem Böreği Tabağı",
+    "description": "",
+    "price": 200,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-16",
+    "categoryId": "cat-2",
+    "name": "Paçanga Böreği",
+    "description": "",
+    "price": 270,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-17",
+    "categoryId": "cat-2",
+    "name": "Chicken Combo Tabağı",
+    "description": "Patates kızartması, çıtır tavuk, çıtır baget tavuk, kemiksiz tavuk kanat, soğan halkası, sosis ve özel soslarla servis edilir.",
+    "price": 500,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-18",
+    "categoryId": "cat-2",
+    "name": "Patates Kızartması",
+    "description": "",
+    "price": 170,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-19",
+    "categoryId": "cat-2",
+    "name": "Kaşık Patates",
+    "description": "",
+    "price": 200,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-20",
+    "categoryId": "cat-3",
+    "name": "Tavuklu Wrap",
+    "description": "Tavuk bonfile, renkli biberler, soğan, rende kaşar, patates kızartması, özel soslar ve mini salata ile servis edilir.",
+    "price": 450,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-21",
+    "categoryId": "cat-3",
+    "name": "Etli Wrap",
+    "description": "Jülyen bonfile, renkli biberler, soğan, rende kaşar, patates kızartması, özel soslar ve mini salata ile servis edilir.",
+    "price": 530,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-22",
+    "categoryId": "cat-3",
+    "name": "Tavuklu Quasedilla",
+    "description": "Tavuk bonfile, rende kaşar, patates kızartması ve mini salata ile servis edilir.",
+    "price": 470,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-23",
+    "categoryId": "cat-3",
+    "name": "Etli Quasedilla",
+    "description": "Jülyen bonfile, rende kaşar, patates kızartması ve mini salata ile servis edilir.",
+    "price": 570,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-24",
+    "categoryId": "cat-4",
+    "name": "Kavurma Kaşarlı Gözleme",
+    "description": "Patates kızartması ve mini salata ile servis edilir.",
+    "price": 400,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-25",
+    "categoryId": "cat-4",
+    "name": "Sucuk Kaşarlı Gözleme",
+    "description": "Patates kızartması ve mini salata ile servis edilir.",
+    "price": 300,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-26",
+    "categoryId": "cat-4",
+    "name": "Patatesli Gözleme",
+    "description": "Patates kızartması ve mini salata ile servis edilir.",
+    "price": 250,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-27",
+    "categoryId": "cat-4",
+    "name": "Beyaz Peynirli Gözleme",
+    "description": "Patates kızartması ve mini salata ile servis edilir.",
+    "price": 240,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-28",
+    "categoryId": "cat-4",
+    "name": "Karışık Gözleme",
+    "description": "Patates kızartması ve mini salata ile servis edilir.",
+    "price": 350,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-29",
+    "categoryId": "cat-4",
+    "name": "Kaşarlı Gözleme",
+    "description": "Patates kızartması ve mini salata ile servis edilir.",
+    "price": 260,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-30",
+    "categoryId": "cat-5",
+    "name": "Karışık Tost",
+    "description": "Sucuk, kaşar, patates kızartması ve mini salata ile servis edilir.",
+    "price": 270,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-31",
+    "categoryId": "cat-5",
+    "name": "Kaşarlı Tost",
+    "description": "Kaşar peyniri, patates kızartması ve mini salata ile servis edilir.",
+    "price": 200,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-32",
+    "categoryId": "cat-5",
+    "name": "Beyaz Peynir-Domatesli Tost",
+    "description": "Beyaz peynir, domates, patates kızartması ve mini salata ile servis edilir.",
+    "price": 240,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-33",
+    "categoryId": "cat-5",
+    "name": "Kavurma Kaşarlı Tost",
+    "description": "Patates kızartması ve mini salata ile servis edilir.",
+    "price": 320,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 8,
+    "vat": 10
+  },
+  {
+    "id": "mi-34",
+    "categoryId": "cat-6",
+    "name": "Çıtır Tavuk Salata",
+    "description": "Çıtır tavuk topları, mevsim yeşillikleri, domates, salatalık, mısır, ballı hardal sos ile servis edilir.",
+    "price": 400,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 7,
+    "vat": 10
+  },
+  {
+    "id": "mi-35",
+    "categoryId": "cat-6",
+    "name": "Sezar Salata",
+    "description": "Izgara tavuk, iceberg marul, mısır, kruton ekmek, sezar sos, parmesan peyniri, domates, salatalık ile servis edilir.",
+    "price": 390,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 7,
+    "vat": 10
+  },
+  {
+    "id": "mi-36",
+    "categoryId": "cat-6",
+    "name": "Ton Balıklı Salata",
+    "description": "Mevsim yeşillikleri, mısır, ton balığı, balsamic sirkes, rende kaşar, domates, salatalık ile servis edilir.",
+    "price": 390,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 7,
+    "vat": 10
+  },
+  {
+    "id": "mi-37",
+    "categoryId": "cat-6",
+    "name": "Mevsim Salata",
+    "description": "",
+    "price": 230,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 7,
+    "vat": 10
+  },
+  {
+    "id": "mi-38",
+    "categoryId": "cat-7",
+    "name": "Fettuccini Al Fredo",
+    "description": "Fettuccini makarna, mantar, tavuk, pesto sos ve parmesan peyniri ile servis edilir.",
+    "price": 400,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-39",
+    "categoryId": "cat-7",
+    "name": "Penne Al Arabiata",
+    "description": "Penne makarna, dilim zeytin, acı napoliten, pesto sos ve parmesan peyniri ile servis edilir.",
+    "price": 380,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-40",
+    "categoryId": "cat-7",
+    "name": "Spagetti Bolognese",
+    "description": "Spagetti makarna, kıymalı sos, pesto sos ve parmesan peyniri ile servis edilir.",
+    "price": 430,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-41",
+    "categoryId": "cat-7",
+    "name": "Peynirli Raviolli",
+    "description": "İtalyan usulü peynir dolgulu raviolli, pesto sos ve parmesan peyniri ile servis edilir.",
+    "price": 400,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-42",
+    "categoryId": "cat-7",
+    "name": "Mac And Cheese Makarna",
+    "description": "Pipet makarna, cheddar peyniri, krema, jalopene biber ve eritilmiş rende kaşar ile servis edilir.",
+    "price": 400,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-43",
+    "categoryId": "cat-7",
+    "name": "Ev Mantısı",
+    "description": "Dana kıyma dolgulu, tercihe göre sarımsaklı veya sarımsaksız servis edilir.",
+    "price": 360,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-43-1",
+        "name": "Yoğurt Tercihi",
+        "type": "single",
+        "modifiers": [
+          {
+            "id": "mod-mi-43-1",
+            "name": "Sarımsaklı Yoğurt",
+            "price": 0,
+            "group": "Yoğurt"
+          },
+          {
+            "id": "mod-mi-43-2",
+            "name": "Sarımsaksız Yoğurt",
+            "price": 0,
+            "group": "Yoğurt"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-44",
+    "categoryId": "cat-8",
+    "name": "Classic Burger",
+    "description": "Dana köfte, marul, domates, kornişon turşu, patates kızartması ve soğan halkası ile servis edilir.",
+    "price": 470,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-44-1",
+        "name": "Burger Ekstraları",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-44-1",
+            "name": "Ekstra Cheddar Peyniri",
+            "price": 40,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-44-2",
+            "name": "Ekstra Dana Bacon",
+            "price": 60,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-44-3",
+            "name": "Çift Köfte (Double)",
+            "price": 150,
+            "group": "Ekstra"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-45",
+    "categoryId": "cat-8",
+    "name": "Cheeseburger",
+    "description": "Dana köfte, marul, domates, kornişon turşu, cheddar peyniri, patates kızartması ve soğan halkası ile servis edilir.",
+    "price": 500,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-45-1",
+        "name": "Burger Ekstraları",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-45-1",
+            "name": "Ekstra Cheddar Peyniri",
+            "price": 40,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-45-2",
+            "name": "Ekstra Dana Bacon",
+            "price": 60,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-45-3",
+            "name": "Çift Köfte (Double)",
+            "price": 150,
+            "group": "Ekstra"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-46",
+    "categoryId": "cat-8",
+    "name": "Wot'S Burger",
+    "description": "İki adet dana köfte, coslow salata, cheddar peyniri, patates kızartması ve soğan halkası ile servis edilir.",
+    "price": 700,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-46-1",
+        "name": "Burger Ekstraları",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-46-1",
+            "name": "Ekstra Cheddar Peyniri",
+            "price": 40,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-46-2",
+            "name": "Ekstra Dana Bacon",
+            "price": 60,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-46-3",
+            "name": "Çift Köfte (Double)",
+            "price": 150,
+            "group": "Ekstra"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-47",
+    "categoryId": "cat-8",
+    "name": "Şefin Burgeri",
+    "description": "Dana köfte, karamelize soğan, mantar, california biberleri, cheddar peyniri, dana bacon, patates kızartması ve soğan halkası ile servis edilir.",
+    "price": 500,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-47-1",
+        "name": "Burger Ekstraları",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-47-1",
+            "name": "Ekstra Cheddar Peyniri",
+            "price": 40,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-47-2",
+            "name": "Ekstra Dana Bacon",
+            "price": 60,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-47-3",
+            "name": "Çift Köfte (Double)",
+            "price": 150,
+            "group": "Ekstra"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-48",
+    "categoryId": "cat-8",
+    "name": "Tavuk Burger",
+    "description": "Tavuk köftesi, marul, domates, kornişon turşu, patates kızartması ve soğan halkası ile servis edilir.",
+    "price": 450,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-48-1",
+        "name": "Burger Ekstraları",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-48-1",
+            "name": "Ekstra Cheddar Peyniri",
+            "price": 40,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-48-2",
+            "name": "Ekstra Dana Bacon",
+            "price": 60,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-48-3",
+            "name": "Çift Köfte (Double)",
+            "price": 150,
+            "group": "Ekstra"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-49",
+    "categoryId": "cat-8",
+    "name": "Döküm Dana Burger",
+    "description": "Dana köfte, marul, domates, kornişon turşu, patates kızartması, soğan halkası ve sıcak cheddar sos ile servis edilir.",
+    "price": 500,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-49-1",
+        "name": "Burger Ekstraları",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-49-1",
+            "name": "Ekstra Cheddar Peyniri",
+            "price": 40,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-49-2",
+            "name": "Ekstra Dana Bacon",
+            "price": 60,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-49-3",
+            "name": "Çift Köfte (Double)",
+            "price": 150,
+            "group": "Ekstra"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-50",
+    "categoryId": "cat-8",
+    "name": "Döküm Tavuk Burger",
+    "description": "Tavuk köftesi, marul, domates, kornişon turşu, patates kızartması, soğan halkası ve sıcak mantar sos ile servis edilir.",
+    "price": 450,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-50-1",
+        "name": "Burger Ekstraları",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-50-1",
+            "name": "Ekstra Cheddar Peyniri",
+            "price": 40,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-50-2",
+            "name": "Ekstra Dana Bacon",
+            "price": 60,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-50-3",
+            "name": "Çift Köfte (Double)",
+            "price": 150,
+            "group": "Ekstra"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-51",
+    "categoryId": "cat-8",
+    "name": "Lokum Burger",
+    "description": "Dana bonfile, marul, domates, kornişon turşu, soğan, patates kızartması ve soğan halkası ile servis edilir.",
+    "price": 700,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-51-1",
+        "name": "Burger Ekstraları",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-51-1",
+            "name": "Ekstra Cheddar Peyniri",
+            "price": 40,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-51-2",
+            "name": "Ekstra Dana Bacon",
+            "price": 60,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-51-3",
+            "name": "Çift Köfte (Double)",
+            "price": 150,
+            "group": "Ekstra"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 12,
+    "vat": 10
+  },
+  {
+    "id": "mi-52",
+    "categoryId": "cat-9",
+    "name": "Wots Pizza",
+    "description": "Özel napolitan sos, mozzarella peyniri, sucuk, kavurma, pastırma ve mantar ile servis edilir.",
+    "price": 600,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-52-1",
+        "name": "Pizza Tercihi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-52-1",
+            "name": "Ekstra Mozzarella",
+            "price": 45,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-52-2",
+            "name": "Acı Soslu",
+            "price": 0,
+            "group": "Sos"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 15,
+    "vat": 10
+  },
+  {
+    "id": "mi-53",
+    "categoryId": "cat-9",
+    "name": "Margherita Pizza",
+    "description": "Özel napolitan sos, mozzarella peyniri, pesto sos, domates ve roka ile servis edilir.",
+    "price": 400,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-53-1",
+        "name": "Pizza Tercihi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-53-1",
+            "name": "Ekstra Mozzarella",
+            "price": 45,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-53-2",
+            "name": "Acı Soslu",
+            "price": 0,
+            "group": "Sos"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 15,
+    "vat": 10
+  },
+  {
+    "id": "mi-54",
+    "categoryId": "cat-9",
+    "name": "Karışık Pizza",
+    "description": "Özel napolitan sos, mozzarella peyniri, sucuk, sosis, biber, dilim zeytin, mantar ve mısır ile servis edilir.",
+    "price": 500,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-54-1",
+        "name": "Pizza Tercihi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-54-1",
+            "name": "Ekstra Mozzarella",
+            "price": 45,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-54-2",
+            "name": "Acı Soslu",
+            "price": 0,
+            "group": "Sos"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 15,
+    "vat": 10
+  },
+  {
+    "id": "mi-55",
+    "categoryId": "cat-9",
+    "name": "4 Peynirli Pizza",
+    "description": "Özel napolitan sos, mozzarella peyniri, parmesan peyniri, cheddar peyniri, rokfor peyniri ve roka ile servis edilir.",
+    "price": 460,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-55-1",
+        "name": "Pizza Tercihi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-55-1",
+            "name": "Ekstra Mozzarella",
+            "price": 45,
+            "group": "Ekstra"
+          },
+          {
+            "id": "mod-mi-55-2",
+            "name": "Acı Soslu",
+            "price": 0,
+            "group": "Sos"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 15,
+    "vat": 10
+  },
+  {
+    "id": "mi-56",
+    "categoryId": "cat-10",
+    "name": "Körili Tavuk",
+    "description": "Tavuk bonfile, renkli biberler, mantar, soğan, pilav, patates kızartması ve mini salata ile servis edilir.",
+    "price": 450,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-57",
+    "categoryId": "cat-10",
+    "name": "Barbekü Soslu Tavuk",
+    "description": "Tavuk bonfile, renkli biberler, mantar, soğan, barbekü sosu, pilav, patates kızartması ve mini salata ile servis edilir.",
+    "price": 450,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-58",
+    "categoryId": "cat-10",
+    "name": "Soya Soslu Tavuk",
+    "description": "Tavuk bonfile, renkli biberler, mantar, soğan, soya sosu, krema, patates kızartması, pilav ve mini salata ile servis edilir.",
+    "price": 450,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-59",
+    "categoryId": "cat-10",
+    "name": "Sweet Chili Soslu Tavuk",
+    "description": "Tavuk bonfile, renkli biberler, mantar, soğan, sweet chili sos, patates kızartması, pilav ve mini salata ile servis edilir.",
+    "price": 450,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-60",
+    "categoryId": "cat-10",
+    "name": "Çökertme",
+    "description": "Juliyen bonfile, kibrit patates, süzme yoğurt, domates sos ve tereyağı ile servis edilir.",
+    "price": 520,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-61",
+    "categoryId": "cat-10",
+    "name": "Tavuk Schnitzel",
+    "description": "Panelenmiş tavuk bonfile, patates salatası, tereyağı, limon ve mini salata ile servis edilir.",
+    "price": 400,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-62",
+    "categoryId": "cat-10",
+    "name": "Mantar Soslu Tavuk Schnitzel",
+    "description": "Panelenmiş tavuk bonfile, patates salatası, mantar sos ve mini salata ile servis edilir.",
+    "price": 430,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-63",
+    "categoryId": "cat-10",
+    "name": "Mantar Soslu Bonfile",
+    "description": "Izgara bonfile, mantar sos, pilav ve patates kızartması ile servis edilir.",
+    "price": 850,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-64",
+    "categoryId": "cat-10",
+    "name": "Mantar Soslu Tavuk",
+    "description": "Izgara tavuk külbastı, mantar sos, pilav, patates kızartması ve mini salata ile servis edilir.",
+    "price": 480,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-65",
+    "categoryId": "cat-11",
+    "name": "Izgara Köfte",
+    "description": "Köfte, pilav, domates, biber, acı sos, kaşık patates ve mini salata ile servis edilir.",
+    "price": 600,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-66",
+    "categoryId": "cat-11",
+    "name": "Kaşarlı Köfte",
+    "description": "Köfte, pilav, domates, biber, acı sos, kaşık patates ve mini salata ile servis edilir.",
+    "price": 650,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-67",
+    "categoryId": "cat-11",
+    "name": "Izgara Bonfile",
+    "description": "Dana bonfile, pilav, domates, biber, kaşık patates ve mini salata ile servis edilir.",
+    "price": 830,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-68",
+    "categoryId": "cat-11",
+    "name": "Tavuk Şiş",
+    "description": "Tavuk but, domates, biber, pilav, kaşık patates, lavaş ve mini salata ile servis edilir.",
+    "price": 550,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-69",
+    "categoryId": "cat-11",
+    "name": "Kuzu Şiş",
+    "description": "Kuzu eti, domates, biber, pilav, kaşık patates, lavaş ve mini salata ile servis edilir.",
+    "price": 650,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-70",
+    "categoryId": "cat-11",
+    "name": "Kuzu Pirzola",
+    "description": "Domates, biber, pilav, kaşık patates, lavaş ve mini salata ile servis edilir.",
+    "price": 1000,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-71",
+    "categoryId": "cat-11",
+    "name": "Dana Antrikot",
+    "description": "Domates, biber, pilav, kaşık patates ve mini salata ile servis edilir.",
+    "price": 1000,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-72",
+    "categoryId": "cat-11",
+    "name": "Karışık Izgara",
+    "description": "Köfte, kaşarlı köfte, tavuk şiş, bonfile, kuzu külbastı, domates, biber, pilav, beğendi ve çubuk patates ile servis edilir.",
+    "price": 1250,
+    "station": "kitchen",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 18,
+    "vat": 10
+  },
+  {
+    "id": "mi-73",
+    "categoryId": "cat-12",
+    "name": "Waffle",
+    "description": "Muz, çilek, çikolata ve süsler ile servis edilir.",
+    "price": 320,
+    "station": "dessert",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-74",
+    "categoryId": "cat-12",
+    "name": "Dondurmalı Profiterol",
+    "description": "4 top pataşu içinde dondurma ve çikolata ile servis edilir.",
+    "price": 320,
+    "station": "dessert",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-75",
+    "categoryId": "cat-12",
+    "name": "Çikolatalı Pankek",
+    "description": "Özel sunum ile servis edilir.",
+    "price": 300,
+    "station": "dessert",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-76",
+    "categoryId": "cat-12",
+    "name": "Spoonful",
+    "description": "",
+    "price": 280,
+    "station": "dessert",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-77",
+    "categoryId": "cat-12",
+    "name": "San Sebastian Cheesecake",
+    "description": "",
+    "price": 300,
+    "station": "dessert",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-78",
+    "categoryId": "cat-12",
+    "name": "Magnolia",
+    "description": "",
+    "price": 280,
+    "station": "dessert",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-79",
+    "categoryId": "cat-12",
+    "name": "Tiramisu",
+    "description": "",
+    "price": 280,
+    "station": "dessert",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-80",
+    "categoryId": "cat-12",
+    "name": "Cedric Fıstık",
+    "description": "",
+    "price": 320,
+    "station": "dessert",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-81",
+    "categoryId": "cat-12",
+    "name": "Profiterol",
+    "description": "",
+    "price": 280,
+    "station": "dessert",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-82",
+    "categoryId": "cat-12",
+    "name": "Suffle",
+    "description": "",
+    "price": 300,
+    "station": "dessert",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-83",
+    "categoryId": "cat-12",
+    "name": "Meyve Tabağı",
+    "description": "",
+    "price": 300,
+    "station": "dessert",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-84",
+    "categoryId": "cat-13",
+    "name": "Cup Dondurma",
+    "description": "",
+    "price": 180,
+    "station": "dessert",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-85",
+    "categoryId": "cat-13",
+    "name": "Top Dondurma",
+    "description": "",
+    "price": 60,
+    "station": "dessert",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-86",
+    "categoryId": "cat-14",
+    "name": "Çay",
+    "description": "",
+    "price": 60,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-87",
+    "categoryId": "cat-14",
+    "name": "Fincan Çay",
+    "description": "",
+    "price": 80,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-88",
+    "categoryId": "cat-14",
+    "name": "Bitki Çayları",
+    "description": "Yeşil çay, papatya çayı, ıhlamur, kış çayı, adaçayı, hibiskus.",
+    "price": 180,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-89",
+    "categoryId": "cat-14",
+    "name": "Türk Kahvesi",
+    "description": "",
+    "price": 120,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-89-1",
+        "name": "Süt & Şurup Seçimi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-89-1",
+            "name": "Yulaf Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-89-2",
+            "name": "Soya Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-89-3",
+            "name": "Ekstra Espresso Shot",
+            "price": 35,
+            "group": "Kahve"
+          },
+          {
+            "id": "mod-mi-89-4",
+            "name": "Vanilya Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          },
+          {
+            "id": "mod-mi-89-5",
+            "name": "Karamel Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-90",
+    "categoryId": "cat-14",
+    "name": "Double Türk Kahvesi",
+    "description": "",
+    "price": 150,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-90-1",
+        "name": "Süt & Şurup Seçimi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-90-1",
+            "name": "Yulaf Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-90-2",
+            "name": "Soya Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-90-3",
+            "name": "Ekstra Espresso Shot",
+            "price": 35,
+            "group": "Kahve"
+          },
+          {
+            "id": "mod-mi-90-4",
+            "name": "Vanilya Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          },
+          {
+            "id": "mod-mi-90-5",
+            "name": "Karamel Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-91",
+    "categoryId": "cat-14",
+    "name": "Damla Sakızlı Türk Kahvesi",
+    "description": "",
+    "price": 130,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-91-1",
+        "name": "Süt & Şurup Seçimi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-91-1",
+            "name": "Yulaf Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-91-2",
+            "name": "Soya Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-91-3",
+            "name": "Ekstra Espresso Shot",
+            "price": 35,
+            "group": "Kahve"
+          },
+          {
+            "id": "mod-mi-91-4",
+            "name": "Vanilya Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          },
+          {
+            "id": "mod-mi-91-5",
+            "name": "Karamel Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-92",
+    "categoryId": "cat-14",
+    "name": "Sütlü Sıcak Çikolata",
+    "description": "",
+    "price": 210,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-93",
+    "categoryId": "cat-14",
+    "name": "Beyaz Sıcak Çikolata",
+    "description": "",
+    "price": 210,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-94",
+    "categoryId": "cat-14",
+    "name": "Salep",
+    "description": "",
+    "price": 190,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-95",
+    "categoryId": "cat-14",
+    "name": "Dondurmalı Salep",
+    "description": "",
+    "price": 220,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-96",
+    "categoryId": "cat-14",
+    "name": "Filtre Kahve",
+    "description": "",
+    "price": 150,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-96-1",
+        "name": "Süt & Şurup Seçimi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-96-1",
+            "name": "Yulaf Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-96-2",
+            "name": "Soya Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-96-3",
+            "name": "Ekstra Espresso Shot",
+            "price": 35,
+            "group": "Kahve"
+          },
+          {
+            "id": "mod-mi-96-4",
+            "name": "Vanilya Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          },
+          {
+            "id": "mod-mi-96-5",
+            "name": "Karamel Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-97",
+    "categoryId": "cat-14",
+    "name": "Sütlü Kahve",
+    "description": "",
+    "price": 180,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-97-1",
+        "name": "Süt & Şurup Seçimi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-97-1",
+            "name": "Yulaf Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-97-2",
+            "name": "Soya Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-97-3",
+            "name": "Ekstra Espresso Shot",
+            "price": 35,
+            "group": "Kahve"
+          },
+          {
+            "id": "mod-mi-97-4",
+            "name": "Vanilya Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          },
+          {
+            "id": "mod-mi-97-5",
+            "name": "Karamel Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-98",
+    "categoryId": "cat-14",
+    "name": "Espresso",
+    "description": "",
+    "price": 110,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-98-1",
+        "name": "Süt & Şurup Seçimi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-98-1",
+            "name": "Yulaf Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-98-2",
+            "name": "Soya Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-98-3",
+            "name": "Ekstra Espresso Shot",
+            "price": 35,
+            "group": "Kahve"
+          },
+          {
+            "id": "mod-mi-98-4",
+            "name": "Vanilya Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          },
+          {
+            "id": "mod-mi-98-5",
+            "name": "Karamel Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-99",
+    "categoryId": "cat-14",
+    "name": "Double Espresso",
+    "description": "",
+    "price": 140,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-99-1",
+        "name": "Süt & Şurup Seçimi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-99-1",
+            "name": "Yulaf Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-99-2",
+            "name": "Soya Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-99-3",
+            "name": "Ekstra Espresso Shot",
+            "price": 35,
+            "group": "Kahve"
+          },
+          {
+            "id": "mod-mi-99-4",
+            "name": "Vanilya Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          },
+          {
+            "id": "mod-mi-99-5",
+            "name": "Karamel Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-100",
+    "categoryId": "cat-14",
+    "name": "Caffe Latte",
+    "description": "",
+    "price": 180,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-100-1",
+        "name": "Süt & Şurup Seçimi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-100-1",
+            "name": "Yulaf Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-100-2",
+            "name": "Soya Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-100-3",
+            "name": "Ekstra Espresso Shot",
+            "price": 35,
+            "group": "Kahve"
+          },
+          {
+            "id": "mod-mi-100-4",
+            "name": "Vanilya Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          },
+          {
+            "id": "mod-mi-100-5",
+            "name": "Karamel Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-101",
+    "categoryId": "cat-14",
+    "name": "Americano",
+    "description": "",
+    "price": 150,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-102",
+    "categoryId": "cat-14",
+    "name": "Cappuccino",
+    "description": "",
+    "price": 180,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-102-1",
+        "name": "Süt & Şurup Seçimi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-102-1",
+            "name": "Yulaf Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-102-2",
+            "name": "Soya Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-102-3",
+            "name": "Ekstra Espresso Shot",
+            "price": 35,
+            "group": "Kahve"
+          },
+          {
+            "id": "mod-mi-102-4",
+            "name": "Vanilya Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          },
+          {
+            "id": "mod-mi-102-5",
+            "name": "Karamel Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-103",
+    "categoryId": "cat-14",
+    "name": "Macchiato",
+    "description": "",
+    "price": 170,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-104",
+    "categoryId": "cat-14",
+    "name": "Latte Macchiato",
+    "description": "",
+    "price": 170,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-104-1",
+        "name": "Süt & Şurup Seçimi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-104-1",
+            "name": "Yulaf Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-104-2",
+            "name": "Soya Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-104-3",
+            "name": "Ekstra Espresso Shot",
+            "price": 35,
+            "group": "Kahve"
+          },
+          {
+            "id": "mod-mi-104-4",
+            "name": "Vanilya Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          },
+          {
+            "id": "mod-mi-104-5",
+            "name": "Karamel Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-105",
+    "categoryId": "cat-14",
+    "name": "Mocha",
+    "description": "",
+    "price": 200,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-105-1",
+        "name": "Süt & Şurup Seçimi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-105-1",
+            "name": "Yulaf Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-105-2",
+            "name": "Soya Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-105-3",
+            "name": "Ekstra Espresso Shot",
+            "price": 35,
+            "group": "Kahve"
+          },
+          {
+            "id": "mod-mi-105-4",
+            "name": "Vanilya Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          },
+          {
+            "id": "mod-mi-105-5",
+            "name": "Karamel Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-106",
+    "categoryId": "cat-14",
+    "name": "White Chocolate Mocha",
+    "description": "",
+    "price": 200,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-106-1",
+        "name": "Süt & Şurup Seçimi",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-106-1",
+            "name": "Yulaf Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-106-2",
+            "name": "Soya Sütü",
+            "price": 30,
+            "group": "Süt"
+          },
+          {
+            "id": "mod-mi-106-3",
+            "name": "Ekstra Espresso Shot",
+            "price": 35,
+            "group": "Kahve"
+          },
+          {
+            "id": "mod-mi-106-4",
+            "name": "Vanilya Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          },
+          {
+            "id": "mod-mi-106-5",
+            "name": "Karamel Şurubu",
+            "price": 20,
+            "group": "Şurup"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-107",
+    "categoryId": "cat-15",
+    "name": "Ice Mocha",
+    "description": "",
+    "price": 200,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-108",
+    "categoryId": "cat-15",
+    "name": "Ice White Mocha",
+    "description": "",
+    "price": 200,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-109",
+    "categoryId": "cat-15",
+    "name": "Ice Latte",
+    "description": "",
+    "price": 200,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-110",
+    "categoryId": "cat-15",
+    "name": "Ice Americano",
+    "description": "",
+    "price": 160,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-111",
+    "categoryId": "cat-15",
+    "name": "Frappe",
+    "description": "",
+    "price": 200,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-112",
+    "categoryId": "cat-15",
+    "name": "Karamelli Frappe",
+    "description": "",
+    "price": 210,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-113",
+    "categoryId": "cat-15",
+    "name": "Ice Hibiscus",
+    "description": "",
+    "price": 240,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-114",
+    "categoryId": "cat-15",
+    "name": "Wotspresso",
+    "description": "",
+    "price": 250,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-115",
+    "categoryId": "cat-15",
+    "name": "Affogato",
+    "description": "",
+    "price": 170,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-116",
+    "categoryId": "cat-15",
+    "name": "Milkshake",
+    "description": "Vanilya, muz, çilek, çikolata",
+    "price": 220,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-117",
+    "categoryId": "cat-15",
+    "name": "Frozen",
+    "description": "Çilek, orman meyveli, kavun, karpuz, mango",
+    "price": 220,
+    "station": "coffee",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-118",
+    "categoryId": "cat-16",
+    "name": "Su",
+    "description": "",
+    "price": 60,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-119",
+    "categoryId": "cat-16",
+    "name": "Soda",
+    "description": "",
+    "price": 90,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-120",
+    "categoryId": "cat-16",
+    "name": "Meyveli Soda",
+    "description": "Limon, elma, mandalina, vişne, frenk üzümü",
+    "price": 90,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-121",
+    "categoryId": "cat-16",
+    "name": "Churchill",
+    "description": "",
+    "price": 130,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-122",
+    "categoryId": "cat-16",
+    "name": "Taze Sıkılmış Portakal Suyu",
+    "description": "",
+    "price": 200,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-123",
+    "categoryId": "cat-16",
+    "name": "Coca Cola",
+    "description": "Klasik, şekersiz",
+    "price": 110,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-124",
+    "categoryId": "cat-16",
+    "name": "Fanta",
+    "description": "",
+    "price": 110,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-125",
+    "categoryId": "cat-16",
+    "name": "Sprite",
+    "description": "",
+    "price": 110,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-126",
+    "categoryId": "cat-16",
+    "name": "Ayran",
+    "description": "",
+    "price": 100,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-127",
+    "categoryId": "cat-16",
+    "name": "Cappy Meyve Suyu",
+    "description": "Vişne, karışık, şeftali",
+    "price": 110,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-128",
+    "categoryId": "cat-16",
+    "name": "Ice Tea",
+    "description": "Limon, şeftali, karpuz, çilek, mango",
+    "price": 110,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-129",
+    "categoryId": "cat-16",
+    "name": "Redbull",
+    "description": "",
+    "price": 180,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-130",
+    "categoryId": "cat-16",
+    "name": "Wot'S Lemonade",
+    "description": "",
+    "price": 180,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-131",
+    "categoryId": "cat-16",
+    "name": "Çilekli Limonata",
+    "description": "",
+    "price": 200,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 4,
+    "vat": 10
+  },
+  {
+    "id": "mi-132",
+    "categoryId": "cat-17",
+    "name": "Mojito",
+    "description": "",
+    "price": 220,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-133",
+    "categoryId": "cat-17",
+    "name": "Çilekli Mojito",
+    "description": "",
+    "price": 230,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-134",
+    "categoryId": "cat-17",
+    "name": "Elmalı Mojito",
+    "description": "",
+    "price": 230,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-135",
+    "categoryId": "cat-17",
+    "name": "Wots Special",
+    "description": "",
+    "price": 280,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-136",
+    "categoryId": "cat-17",
+    "name": "Hawai",
+    "description": "",
+    "price": 200,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-137",
+    "categoryId": "cat-17",
+    "name": "Cool Lime",
+    "description": "",
+    "price": 200,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-138",
+    "categoryId": "cat-17",
+    "name": "Tropicano",
+    "description": "",
+    "price": 200,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-139",
+    "categoryId": "cat-17",
+    "name": "Baby Love",
+    "description": "",
+    "price": 200,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-140",
+    "categoryId": "cat-17",
+    "name": "Meyve Partisi",
+    "description": "Portakal, ananas ve limon yine bir arada.",
+    "price": 250,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-141",
+    "categoryId": "cat-17",
+    "name": "Cherry Wot’s",
+    "description": "Soda serinletir, vişne kan yapar, şeker canlandırır.",
+    "price": 250,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-142",
+    "categoryId": "cat-17",
+    "name": "Cuba Libre",
+    "description": "Misket limon, kola, buz ile serinliğin tadına varın.",
+    "price": 250,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-143",
+    "categoryId": "cat-17",
+    "name": "Cosmopolitan",
+    "description": "Misket limon, portakal, vişne mayhoş bir tat daha.",
+    "price": 250,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-144",
+    "categoryId": "cat-17",
+    "name": "Acapulco",
+    "description": "Hindistan cevizi, ananas, turunç ve krema ile mavi rüya.",
+    "price": 250,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-145",
+    "categoryId": "cat-17",
+    "name": "Gizemli Adam",
+    "description": "Anlatamam çok gizli İç zaten beğeneceksin.",
+    "price": 300,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [],
+    "preparationTime": 5,
+    "vat": 10
+  },
+  {
+    "id": "mi-146",
+    "categoryId": "cat-18",
+    "name": "Love 66",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-146-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-146-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-146-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-147",
+    "categoryId": "cat-18",
+    "name": "Capuccino",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-147-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-147-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-147-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-148",
+    "categoryId": "cat-18",
+    "name": "Lady Killer",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-148-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-148-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-148-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-149",
+    "categoryId": "cat-18",
+    "name": "Yaban Mersini",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-149-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-149-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-149-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-150",
+    "categoryId": "cat-18",
+    "name": "Portakal",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-150-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-150-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-150-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-151",
+    "categoryId": "cat-18",
+    "name": "Nane",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-151-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-151-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-151-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-152",
+    "categoryId": "cat-18",
+    "name": "Şeftali",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-152-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-152-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-152-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-153",
+    "categoryId": "cat-18",
+    "name": "Çilek",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-153-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-153-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-153-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-154",
+    "categoryId": "cat-18",
+    "name": "Kavun",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-154-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-154-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-154-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-155",
+    "categoryId": "cat-18",
+    "name": "Karpuz",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-155-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-155-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-155-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-156",
+    "categoryId": "cat-18",
+    "name": "Elma",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-156-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-156-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-156-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-157",
+    "categoryId": "cat-18",
+    "name": "Damla Sakızı",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-157-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-157-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-157-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-158",
+    "categoryId": "cat-18",
+    "name": "Wot’s Special",
+    "description": "",
+    "price": 600,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-158-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-158-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-158-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-159",
+    "categoryId": "cat-18",
+    "name": "Kola",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-159-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-159-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-159-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-160",
+    "categoryId": "cat-18",
+    "name": "Anason",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-160-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-160-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-160-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-161",
+    "categoryId": "cat-18",
+    "name": "Üzüm",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-161-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-161-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-161-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-162",
+    "categoryId": "cat-18",
+    "name": "Vivident",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-162-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-162-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-162-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-163",
+    "categoryId": "cat-18",
+    "name": "Redbull",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-163-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-163-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-163-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-164",
+    "categoryId": "cat-18",
+    "name": "Dejavu",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-164-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-164-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-164-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-165",
+    "categoryId": "cat-18",
+    "name": "İzmir Romantik",
+    "description": "",
+    "price": 500,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-165-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-165-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-165-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-166",
+    "categoryId": "cat-18",
+    "name": "Ektra Kafa",
+    "description": "",
+    "price": 250,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-166-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-166-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-166-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  },
+  {
+    "id": "mi-167",
+    "categoryId": "cat-18",
+    "name": "Buzlu Marpuç",
+    "description": "",
+    "price": 100,
+    "station": "bar",
+    "available": true,
+    "modifierGroups": [
+      {
+        "id": "mg-mi-167-1",
+        "name": "Nargile Seçenekleri",
+        "type": "multiple",
+        "modifiers": [
+          {
+            "id": "mod-mi-167-1",
+            "name": "Buzlu Marpuç",
+            "price": 100,
+            "group": "Nargile"
+          },
+          {
+            "id": "mod-mi-167-2",
+            "name": "Ekstra Kafa",
+            "price": 250,
+            "group": "Nargile"
+          }
+        ]
+      }
+    ],
+    "preparationTime": 10,
+    "vat": 10
+  }
 ]
 
 // ─── STAFF ────────────────────────────────────────────────────
@@ -537,10 +3468,9 @@ export const inventoryItems: InventoryItem[] = [
 ]
 
 // ─── RECIPES ──────────────────────────────────────────────────
-// ─── RECIPES ──────────────────────────────────────────────────
 export const recipes: Recipe[] = [
   {
-    id: 'rec-1', menuItemId: 'mi-21', menuItemName: "Wot's Classic Burger", totalCost: 98,
+    id: 'rec-1', menuItemId: 'mi-42', menuItemName: "Classic Burger", totalCost: 140,
     items: [
       { inventoryItemId: 'inv-1', inventoryItemName: 'Dana Kıyma', quantity: 0.18, unit: 'kg' },
       { inventoryItemId: 'inv-3', inventoryItemName: 'Burger Ekmeği', quantity: 1, unit: 'adet' },
@@ -549,14 +3479,14 @@ export const recipes: Recipe[] = [
     ]
   },
   {
-    id: 'rec-2', menuItemId: 'mi-3', menuItemName: 'Menemen', totalCost: 32,
+    id: 'rec-2', menuItemId: 'mi-11', menuItemName: 'Sade Menemen', totalCost: 45,
     items: [
       { inventoryItemId: 'inv-5', inventoryItemName: 'Domates', quantity: 0.15, unit: 'kg' },
       { inventoryItemId: 'inv-6', inventoryItemName: 'Yumurta', quantity: 3, unit: 'adet' },
     ]
   },
   {
-    id: 'rec-3', menuItemId: 'mi-62', menuItemName: 'Cafe Latte', totalCost: 28,
+    id: 'rec-3', menuItemId: 'mi-94', menuItemName: 'Caffe Latte', totalCost: 35,
     items: [
       { inventoryItemId: 'inv-7', inventoryItemName: 'Kahve Çekirdeği', quantity: 0.02, unit: 'kg' },
       { inventoryItemId: 'inv-8', inventoryItemName: 'Süt', quantity: 0.25, unit: 'lt' },
@@ -654,6 +3584,19 @@ export async function seedDatabase(db: import('@/lib/db').PosDatabase) {
     return
   }
 
+  // Ensure latest scraped Wot's Cafe menu is applied to IndexedDB
+  if (typeof window !== 'undefined' && localStorage.getItem('wots_pos_v7_scraped_wots_menu') !== 'true') {
+    try {
+      await db.categories.clear()
+      await db.categories.bulkPut(categories)
+      await db.menuItems.clear()
+      await db.menuItems.bulkPut(menuItems)
+      localStorage.setItem('wots_pos_v7_scraped_wots_menu', 'true')
+    } catch (e) {
+      console.error('Failed to update scraped menu items:', e)
+    }
+  }
+
   // Ensure categories always exist
   const existingCatCount = await db.categories.count()
   if (existingCatCount === 0) {
@@ -662,14 +3605,11 @@ export async function seedDatabase(db: import('@/lib/db').PosDatabase) {
 
   // Ensure rich restaurant menu items exist
   const existingMenuCount = await db.menuItems.count()
-  if (existingMenuCount === 0 || (typeof window !== 'undefined' && localStorage.getItem('wots_pos_v5_rich_menu') !== 'true')) {
+  if (existingMenuCount === 0) {
     try {
       await db.menuItems.bulkPut(menuItems)
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('wots_pos_v5_rich_menu', 'true')
-      }
     } catch (e) {
-      console.error('Failed to seed rich menu items:', e)
+      console.error('Failed to seed menu items:', e)
     }
   }
 
