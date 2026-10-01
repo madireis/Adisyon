@@ -366,24 +366,24 @@ export default function SettingsPage() {
             </div>
 
             {/* Network Info Banner */}
-            <div className="bg-emerald-50 dark:bg-emerald-950/40 p-5 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shrink-0">
-                  <Wifi size={24} className="animate-pulse" />
+            <div className="bg-emerald-50 dark:bg-emerald-950/40 p-4 sm:p-5 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shrink-0">
+                  <Wifi size={22} className="animate-pulse" />
                 </div>
-                <div>
-                  <h3 className="font-extrabold text-sm text-emerald-900 dark:text-emerald-200">
+                <div className="min-w-0">
+                  <h3 className="font-extrabold text-sm text-emerald-900 dark:text-emerald-200 truncate">
                     Yerel Ağ Sunucusu Aktif & Dinleniyor
                   </h3>
-                  <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium mt-0.5">
-                    Ana PC IP Adresi: <code className="font-bold bg-white/70 dark:bg-stone-900/70 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-700">{networkInfo?.joinUrl || `http://${window.location.hostname && window.location.hostname !== 'localhost' ? window.location.hostname : '192.168.1.33'}:3001`}</code>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium mt-0.5 break-all">
+                    Ana PC IP Adresi: <code className="font-bold bg-white/70 dark:bg-stone-900/70 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-700 break-all">{networkInfo?.joinUrl || `http://${window.location.hostname && window.location.hostname !== 'localhost' ? window.location.hostname : '192.168.1.33'}:3001`}</code>
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={() => setIsNetworkModalOpen(true)}
-                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-2 transition-all cursor-pointer shrink-0"
+                className="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
               >
                 <QrCode size={16} />
                 <span>QR Kod & Cihaz Listesi</span>
@@ -391,13 +391,13 @@ export default function SettingsPage() {
             </div>
 
             {/* Active Connected Devices List */}
-            <div className="bg-stone-50 dark:bg-stone-950 p-5 rounded-2xl border border-stone-200 dark:border-stone-800">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-extrabold text-sm text-stone-800 dark:text-stone-200 flex items-center gap-2">
-                  <Smartphone size={16} className="text-orange-600" />
-                  WiFi Ağındaki Garson Telefonları ({connectedGarsons.filter(g => g.isOnline).length} Cihaz)
+            <div className="bg-stone-50 dark:bg-stone-950 p-4 sm:p-5 rounded-2xl border border-stone-200 dark:border-stone-800 min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-3">
+                <h3 className="font-extrabold text-xs sm:text-sm text-stone-800 dark:text-stone-200 flex items-center gap-2">
+                  <Smartphone size={16} className="text-orange-600 shrink-0" />
+                  <span>WiFi Ağındaki Garson Telefonları ({connectedGarsons.filter(g => g.isOnline).length} Cihaz)</span>
                 </h3>
-                <span className="text-xs text-stone-500 font-semibold">
+                <span className="text-xs text-stone-500 font-semibold self-start sm:self-auto">
                   Gecikme: {pingMs} ms
                 </span>
               </div>
@@ -410,18 +410,18 @@ export default function SettingsPage() {
                 ) : (
                   <div className="divide-y divide-stone-100 dark:divide-stone-800">
                     {connectedGarsons.filter(g => g.isOnline).map((garson) => (
-                      <div key={garson.id} className="p-3.5 flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-orange-600 text-white font-bold text-xs flex items-center justify-center">
+                      <div key={garson.id} className="p-3 sm:p-3.5 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-full bg-orange-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
                             {garson.name.split(' ').map(n => n[0]).join('')}
                           </div>
-                          <div>
-                            <span className="font-bold text-xs text-stone-900 dark:text-stone-100 block">{garson.name}</span>
-                            <span className="text-[10px] text-stone-500 dark:text-stone-400 font-semibold">{garson.deviceName} • {garson.ip}</span>
+                          <div className="min-w-0">
+                            <span className="font-bold text-xs sm:text-sm text-stone-900 dark:text-stone-100 block truncate">{garson.name}</span>
+                            <span className="text-[10px] text-stone-500 dark:text-stone-400 font-semibold truncate block">{garson.deviceName} • {garson.ip}</span>
                           </div>
                         </div>
 
-                        <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
+                        <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 shrink-0">
                           Aktif Bağlı
                         </span>
                       </div>
