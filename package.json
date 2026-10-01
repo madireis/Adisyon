@@ -7,6 +7,7 @@
     "dev": "vite",
     "server": "node server.js",
     "build": "tsc && vite build",
+    "build:exe": "npm run build && npx @yao-pkg/pkg -c pkg.config.json server.cjs -o Adisyon-Server.exe",
     "preview": "vite preview",
     "test:cross-platform": "node scripts/comprehensive-test.cjs"
   },

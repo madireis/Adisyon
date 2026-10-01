@@ -1,0 +1,7 @@
+{
+  "pkg": {
+    "scripts": ["server.cjs"],
+    "assets": ["dist/**/*"],
+    "targets": ["node22-win-x64"]
+  }
+}
