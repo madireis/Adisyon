@@ -25,7 +25,15 @@ import {
   ChevronDown,
   ChevronUp,
   Activity,
-  HardDrive
+  HardDrive,
+  FileText,
+  User,
+  UtensilsCrossed,
+  CreditCard,
+  ChefHat,
+  Crown,
+  QrCode,
+  Server
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { devLogger } from '@/lib/devLogger'
@@ -40,11 +48,17 @@ export default function DeveloperPage() {
 
   const [logs, setLogs] = useState<DevLogEntry[]>([])
   const [diagnostics, setDiagnostics] = useState<SystemDiagnosticInfo | null>(null)
-  const [activeTab, setActiveTab] = useState<'logs' | 'diagnostics' | 'database' | 'roles'>('logs')
+  const [activeTab, setActiveTab] = useState<'logs' | 'diskErrors' | 'diagnostics' | 'database' | 'roles'>('logs')
   const [selectedLevel, setSelectedLevel] = useState<string>('all')
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  // Local Disk Errors State
+  const [diskErrorLines, setDiskErrorLines] = useState<string[]>([])
+  const [isLoadingDiskErrors, setIsLoadingDiskErrors] = useState(false)
+  const [diskErrorMsg, setDiskErrorMsg] = useState<string | null>(null)
 
   // DB Explorer state
   const [selectedDbTable, setSelectedDbTable] = useState<string>('tables')
@@ -69,11 +83,35 @@ export default function DeveloperPage() {
     } catch {}
   }
 
+  // Fetch local disk errors from server
+  const loadDiskErrors = async () => {
+    setIsLoadingDiskErrors(true)
+    setDiskErrorMsg(null)
+    try {
+      const res = await devLogger.fetchTodayDiskErrors()
+      if (res.success) {
+        setDiskErrorLines(res.lines)
+      } else {
+        setDiskErrorMsg(res.error || 'Disk hata kütüğü yüklenemedi.')
+      }
+    } catch (err: any) {
+      setDiskErrorMsg(err?.message || 'Bağlantı hatası')
+    } finally {
+      setIsLoadingDiskErrors(false)
+    }
+  }
+
   useEffect(() => {
     refreshDiagnostics()
     const timer = setInterval(refreshDiagnostics, 5000)
     return () => clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    if (activeTab === 'diskErrors') {
+      loadDiskErrors()
+    }
+  }, [activeTab])
 
   // Load DB Table records for DB Explorer
   const loadDbTable = async (tableName: string) => {
@@ -96,10 +134,25 @@ export default function DeveloperPage() {
     }
   }, [activeTab, selectedDbTable])
 
-  // Filter logs
+  // Filter logs by level, role, and search query
   const filteredLogs = useMemo(() => {
     return logs.filter(log => {
       const matchesLevel = selectedLevel === 'all' || log.level === selectedLevel
+
+      // Role filter check
+      let matchesRole = true
+      if (selectedRoleFilter !== 'all') {
+        const roleLower = (log.userRole || '').toLowerCase()
+        if (selectedRoleFilter === 'waiter') matchesRole = roleLower.includes('waiter') || roleLower.includes('garson')
+        else if (selectedRoleFilter === 'cashier') matchesRole = roleLower.includes('cashier') || roleLower.includes('kasa')
+        else if (selectedRoleFilter === 'kitchen') matchesRole = roleLower.includes('kitchen') || roleLower.includes('mutfak') || roleLower.includes('bar')
+        else if (selectedRoleFilter === 'manager') matchesRole = roleLower.includes('manager') || roleLower.includes('yönetici')
+        else if (selectedRoleFilter === 'owner') matchesRole = roleLower.includes('owner') || roleLower.includes('patron')
+        else if (selectedRoleFilter === 'customer') matchesRole = roleLower.includes('müşteri') || roleLower.includes('qr') || roleLower.includes('guest')
+        else if (selectedRoleFilter === 'developer') matchesRole = roleLower.includes('developer') || roleLower.includes('dev') || roleLower.includes('geliştirici')
+        else if (selectedRoleFilter === 'system') matchesRole = roleLower.includes('sistem') || roleLower.includes('anon') || roleLower.includes('window')
+      }
+
       const query = searchQuery.trim().toLowerCase()
       const matchesQuery =
         !query ||
@@ -109,23 +162,45 @@ export default function DeveloperPage() {
         (log.route && log.route.toLowerCase().includes(query)) ||
         (log.userRole && log.userRole.toLowerCase().includes(query))
 
-      return matchesLevel && matchesQuery
+      return matchesLevel && matchesRole && matchesQuery
     })
-  }, [logs, selectedLevel, searchQuery])
+  }, [logs, selectedLevel, selectedRoleFilter, searchQuery])
 
-  // Count errors and warnings
+  // Count errors and breakdown by account role
   const stats = useMemo(() => {
     let errors = 0
     let warns = 0
     let networks = 0
     let syncs = 0
+
+    const roleBreakdown: Record<string, number> = {
+      waiter: 0,
+      cashier: 0,
+      kitchen: 0,
+      manager: 0,
+      owner: 0,
+      customer: 0,
+      system: 0,
+      developer: 0,
+    }
+
     logs.forEach(l => {
-      if (l.level === 'error') errors++
-      else if (l.level === 'warn') warns++
+      if (l.level === 'error') {
+        errors++
+        const r = (l.userRole || '').toLowerCase()
+        if (r.includes('waiter') || r.includes('garson')) roleBreakdown.waiter++
+        else if (r.includes('cashier') || r.includes('kasa')) roleBreakdown.cashier++
+        else if (r.includes('kitchen') || r.includes('mutfak') || r.includes('bar')) roleBreakdown.kitchen++
+        else if (r.includes('manager') || r.includes('yönetici')) roleBreakdown.manager++
+        else if (r.includes('owner') || r.includes('patron')) roleBreakdown.owner++
+        else if (r.includes('müşteri') || r.includes('qr')) roleBreakdown.customer++
+        else if (r.includes('dev')) roleBreakdown.developer++
+        else roleBreakdown.system++
+      } else if (l.level === 'warn') warns++
       else if (l.level === 'network') networks++
       else if (l.level === 'sync') syncs++
     })
-    return { errors, warns, networks, syncs, total: logs.length }
+    return { errors, warns, networks, syncs, total: logs.length, roleBreakdown }
   }, [logs])
 
   const copyLog = (log: DevLogEntry) => {
@@ -144,6 +219,19 @@ export default function DeveloperPage() {
     }
   }
 
+  const downloadDiskLogFile = () => {
+    const text = diskErrorLines.join('\n')
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `errors_${new Date().toISOString().split('T')[0]}.log`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="h-full flex flex-col bg-stone-900 text-stone-100 overflow-hidden font-sans select-none">
       {/* Top Dev Header */}
@@ -154,12 +242,12 @@ export default function DeveloperPage() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-black tracking-tight text-white">Geliştirici & Tanılama Konsolu</h1>
+              <h1 className="text-base sm:text-lg font-black tracking-tight text-white">Geliştirici & Hata Denetim Merkezi</h1>
               <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-orange-950 text-orange-400 border border-orange-800">
-                DEV MODE
+                DEV CONSOLE
               </span>
             </div>
-            <p className="text-xs text-stone-400">Tüm sistem hataları, cihaz ortamı, ağ senkronizasyonu ve Dexie logları</p>
+            <p className="text-xs text-stone-400">Garson, Kasa, Mutfak, Bar, Yönetici, QR Menü ve Yerel Disk Hata Kayıtları</p>
           </div>
         </div>
 
@@ -170,12 +258,17 @@ export default function DeveloperPage() {
             stats.errors > 0 ? "bg-red-950/80 text-red-400 border-red-800 animate-pulse" : "bg-stone-900 text-emerald-400 border-stone-800"
           )}>
             <AlertOctagon size={14} />
-            <span>{stats.errors} Hata</span>
+            <span>{stats.errors} Toplam Hata</span>
           </div>
 
           <div className="px-2.5 py-1 rounded-lg bg-stone-900 text-amber-400 border border-stone-800 font-bold flex items-center gap-1.5">
             <AlertTriangle size={14} />
             <span>{stats.warns} Uyarı</span>
+          </div>
+
+          <div className="px-2.5 py-1 rounded-lg bg-stone-900 text-sky-400 border border-stone-800 font-bold flex items-center gap-1.5">
+            <HardDrive size={14} />
+            <span>Disk Error Log Aktif</span>
           </div>
 
           {diagnostics && (
@@ -197,7 +290,18 @@ export default function DeveloperPage() {
           )}
         >
           <Activity size={16} />
-          <span>Canlı Loglar ({stats.total})</span>
+          <span>Tüm Hesapların Hataları & Canlı Loglar ({stats.total})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('diskErrors')}
+          className={cn(
+            "py-2.5 px-3 border-b-2 font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap",
+            activeTab === 'diskErrors' ? "border-orange-500 text-orange-400" : "border-transparent text-stone-400 hover:text-stone-200"
+          )}
+        >
+          <FileText size={16} />
+          <span>Yerel Disk Hata Dosyası (data/logs/)</span>
         </button>
 
         <button
@@ -230,29 +334,145 @@ export default function DeveloperPage() {
           )}
         >
           <UserCheck size={16} />
-          <span>Rol Simülatörü</span>
+          <span>Rol Simülatörü & Hesaplar</span>
         </button>
       </div>
 
       {/* Main Tab Content */}
       <div className="flex-1 overflow-hidden p-3 sm:p-5 flex flex-col">
-        {/* ── TAB 1: LIVE LOGS ── */}
+        {/* ── TAB 1: ALL ACCOUNTS LIVE LOGS & ERRORS ── */}
         {activeTab === 'logs' && (
           <div className="flex-1 flex flex-col min-h-0 space-y-3">
+            {/* Account Role Error Breakdown Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2 shrink-0 text-xs">
+              <button
+                onClick={() => setSelectedRoleFilter('waiter')}
+                className={cn(
+                  "p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between",
+                  selectedRoleFilter === 'waiter' ? "bg-orange-950/80 border-orange-500 text-orange-300" : "bg-stone-950 border-stone-800 text-stone-400 hover:border-stone-700"
+                )}
+              >
+                <div className="flex items-center justify-between text-[11px] font-bold">
+                  <span>Garson</span>
+                  <UtensilsCrossed size={13} className="text-orange-400" />
+                </div>
+                <div className="text-base font-black text-white mt-1">{stats.roleBreakdown.waiter} Hata</div>
+              </button>
+
+              <button
+                onClick={() => setSelectedRoleFilter('cashier')}
+                className={cn(
+                  "p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between",
+                  selectedRoleFilter === 'cashier' ? "bg-emerald-950/80 border-emerald-500 text-emerald-300" : "bg-stone-950 border-stone-800 text-stone-400 hover:border-stone-700"
+                )}
+              >
+                <div className="flex items-center justify-between text-[11px] font-bold">
+                  <span>Kasa</span>
+                  <CreditCard size={13} className="text-emerald-400" />
+                </div>
+                <div className="text-base font-black text-white mt-1">{stats.roleBreakdown.cashier} Hata</div>
+              </button>
+
+              <button
+                onClick={() => setSelectedRoleFilter('kitchen')}
+                className={cn(
+                  "p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between",
+                  selectedRoleFilter === 'kitchen' ? "bg-purple-950/80 border-purple-500 text-purple-300" : "bg-stone-950 border-stone-800 text-stone-400 hover:border-stone-700"
+                )}
+              >
+                <div className="flex items-center justify-between text-[11px] font-bold">
+                  <span>Mutfak / Bar</span>
+                  <ChefHat size={13} className="text-purple-400" />
+                </div>
+                <div className="text-base font-black text-white mt-1">{stats.roleBreakdown.kitchen} Hata</div>
+              </button>
+
+              <button
+                onClick={() => setSelectedRoleFilter('manager')}
+                className={cn(
+                  "p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between",
+                  selectedRoleFilter === 'manager' ? "bg-blue-950/80 border-blue-500 text-blue-300" : "bg-stone-950 border-stone-800 text-stone-400 hover:border-stone-700"
+                )}
+              >
+                <div className="flex items-center justify-between text-[11px] font-bold">
+                  <span>Yönetici</span>
+                  <User size={13} className="text-blue-400" />
+                </div>
+                <div className="text-base font-black text-white mt-1">{stats.roleBreakdown.manager} Hata</div>
+              </button>
+
+              <button
+                onClick={() => setSelectedRoleFilter('owner')}
+                className={cn(
+                  "p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between",
+                  selectedRoleFilter === 'owner' ? "bg-amber-950/80 border-amber-500 text-amber-300" : "bg-stone-950 border-stone-800 text-stone-400 hover:border-stone-700"
+                )}
+              >
+                <div className="flex items-center justify-between text-[11px] font-bold">
+                  <span>Patron</span>
+                  <Crown size={13} className="text-amber-400" />
+                </div>
+                <div className="text-base font-black text-white mt-1">{stats.roleBreakdown.owner} Hata</div>
+              </button>
+
+              <button
+                onClick={() => setSelectedRoleFilter('customer')}
+                className={cn(
+                  "p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between",
+                  selectedRoleFilter === 'customer' ? "bg-pink-950/80 border-pink-500 text-pink-300" : "bg-stone-950 border-stone-800 text-stone-400 hover:border-stone-700"
+                )}
+              >
+                <div className="flex items-center justify-between text-[11px] font-bold">
+                  <span>QR Müşteri</span>
+                  <QrCode size={13} className="text-pink-400" />
+                </div>
+                <div className="text-base font-black text-white mt-1">{stats.roleBreakdown.customer} Hata</div>
+              </button>
+
+              <button
+                onClick={() => setSelectedRoleFilter('system')}
+                className={cn(
+                  "p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between",
+                  selectedRoleFilter === 'system' ? "bg-red-950/80 border-red-500 text-red-300" : "bg-stone-950 border-stone-800 text-stone-400 hover:border-stone-700"
+                )}
+              >
+                <div className="flex items-center justify-between text-[11px] font-bold">
+                  <span>Sistem / Ağ</span>
+                  <Server size={13} className="text-red-400" />
+                </div>
+                <div className="text-base font-black text-white mt-1">{stats.roleBreakdown.system} Hata</div>
+              </button>
+
+              <button
+                onClick={() => setSelectedRoleFilter('all')}
+                className={cn(
+                  "p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between",
+                  selectedRoleFilter === 'all' ? "bg-stone-800 border-white text-white" : "bg-stone-950 border-stone-800 text-stone-400 hover:border-stone-700"
+                )}
+              >
+                <div className="flex items-center justify-between text-[11px] font-bold">
+                  <span>Tümü</span>
+                  <Activity size={13} className="text-stone-300" />
+                </div>
+                <div className="text-base font-black text-white mt-1">{stats.errors} Hata</div>
+              </button>
+            </div>
+
             {/* Filter and Action Toolbar */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shrink-0">
-              <div className="flex items-center gap-2 flex-1">
-                <div className="relative flex-1 max-w-md">
+              <div className="flex flex-wrap items-center gap-2 flex-1">
+                <div className="relative flex-1 min-w-[200px] max-w-md">
                   <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Loglarda ara (mesaj, stack, kategori, url)..."
+                    placeholder="Loglarda ve hesaplarda ara (mesaj, stack, garson, kasa)..."
                     className="w-full pl-9 pr-3 py-1.5 bg-stone-950 border border-stone-800 rounded-xl text-xs text-stone-100 placeholder-stone-500 focus:outline-none focus:border-orange-500"
                   />
                 </div>
 
+                {/* Level selector */}
                 <select
                   value={selectedLevel}
                   onChange={e => setSelectedLevel(e.target.value)}
@@ -266,31 +486,54 @@ export default function DeveloperPage() {
                   <option value="db">Veritabanı (DB)</option>
                   <option value="info">Bilgi (Info)</option>
                 </select>
+
+                {/* Role selector */}
+                <select
+                  value={selectedRoleFilter}
+                  onChange={e => setSelectedRoleFilter(e.target.value)}
+                  className="bg-stone-950 border border-stone-800 rounded-xl px-2.5 py-1.5 text-xs text-orange-400 font-bold focus:outline-none"
+                >
+                  <option value="all">Tüm Hesaplar & Roller</option>
+                  <option value="waiter">Garsonlar (Waiter)</option>
+                  <option value="cashier">Kasa & Kasiyerler</option>
+                  <option value="kitchen">Mutfak & Bar</option>
+                  <option value="manager">Yöneticiler (Manager)</option>
+                  <option value="owner">Patron (Owner)</option>
+                  <option value="customer">QR Menü / Müşteriler</option>
+                  <option value="developer">Geliştirici (Dev)</option>
+                  <option value="system">Sistem & Ağ</option>
+                </select>
               </div>
 
-              {/* Action Buttons */}
+              {/* Action Buttons & Role Error Simulators */}
               <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto">
-                {/* Error Simulator buttons */}
                 <button
-                  onClick={() => devLogger.simulateError('uncaught')}
-                  className="px-2 py-1.5 bg-red-950/60 hover:bg-red-900 text-red-300 border border-red-800 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
-                  title="Test Hata Fırlat"
+                  onClick={() => devLogger.simulateRoleError('waiter', 'order')}
+                  className="px-2 py-1.5 bg-orange-950/60 hover:bg-orange-900 text-orange-300 border border-orange-800 rounded-lg text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap"
+                  title="Garson Sipariş Hatası Simüle Et"
                 >
-                  + JS Hata Testi
+                  + Garson Hatası
                 </button>
                 <button
-                  onClick={() => devLogger.simulateError('rejection')}
-                  className="px-2 py-1.5 bg-amber-950/60 hover:bg-amber-900 text-amber-300 border border-amber-800 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
-                  title="Test Promise Reddi Fırlat"
+                  onClick={() => devLogger.simulateRoleError('cashier', 'payment')}
+                  className="px-2 py-1.5 bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 rounded-lg text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap"
+                  title="Kasa POS Terminal Hatası Simüle Et"
                 >
-                  + Promise Hata
+                  + Kasa POS Hatası
                 </button>
                 <button
-                  onClick={() => devLogger.simulateError('network')}
-                  className="px-2 py-1.5 bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
-                  title="Ağ Hatası Simüle Et"
+                  onClick={() => devLogger.simulateRoleError('kitchen', 'printer')}
+                  className="px-2 py-1.5 bg-purple-950/60 hover:bg-purple-900 text-purple-300 border border-purple-800 rounded-lg text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap"
+                  title="Mutfak Yazıcı Hatası Simüle Et"
                 >
-                  + Ağ Testi
+                  + Mutfak Hatası
+                </button>
+                <button
+                  onClick={() => devLogger.simulateRoleError('customer', 'sync')}
+                  className="px-2 py-1.5 bg-pink-950/60 hover:bg-pink-900 text-pink-300 border border-pink-800 rounded-lg text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap"
+                  title="QR Müşteri Sipariş Hatası Simüle Et"
+                >
+                  + QR Müşteri
                 </button>
 
                 <div className="h-4 w-px bg-stone-800 mx-1"></div>
@@ -317,8 +560,8 @@ export default function DeveloperPage() {
               {filteredLogs.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-stone-600 space-y-2 py-12">
                   <Check size={32} className="text-emerald-500/50" />
-                  <p className="font-sans text-sm font-bold text-stone-400">Kayıtlı hata veya log bulunmuyor</p>
-                  <p className="font-sans text-xs text-stone-600">Sistem sorunsuz ve stabil çalışıyor.</p>
+                  <p className="font-sans text-sm font-bold text-stone-400">Bu filtrede kayıtlı hata veya log bulunmuyor</p>
+                  <p className="font-sans text-xs text-stone-600">Sistem ve hesaplar sorunsuz çalışıyor.</p>
                 </div>
               ) : (
                 filteredLogs.map(log => {
@@ -403,9 +646,10 @@ export default function DeveloperPage() {
                       </div>
 
                       {/* Route & User info line */}
-                      <div className="mt-1 flex items-center gap-3 text-[10px] text-stone-500 font-sans">
+                      <div className="mt-1 flex flex-wrap items-center gap-3 text-[10px] text-stone-500 font-sans">
                         <span>Sayfa: <code className="text-stone-400 font-mono">{log.route || '/'}</code></span>
-                        <span>Kullanıcı: <span className="text-stone-400 font-medium">{log.userRole || 'Anonim'}</span></span>
+                        <span>Hesap / Rol: <span className="text-orange-400 font-bold">{log.userRole || 'Sistem'}</span></span>
+                        {log.userAgent && <span className="hidden md:inline text-stone-600 truncate max-w-[200px]">{log.userAgent}</span>}
                       </div>
 
                       {/* Expanded Stack & Data */}
@@ -438,7 +682,79 @@ export default function DeveloperPage() {
           </div>
         )}
 
-        {/* ── TAB 2: SYSTEM & DEVICE DIAGNOSTICS ── */}
+        {/* ── TAB 2: LOCAL DISK ERROR LOG VIEWER (data/logs/errors_YYYY-MM-DD.log) ── */}
+        {activeTab === 'diskErrors' && (
+          <div className="flex-1 flex flex-col min-h-0 space-y-3">
+            {/* Header / Actions */}
+            <div className="bg-stone-950 border border-stone-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+              <div>
+                <div className="flex items-center gap-2">
+                  <FileText className="text-orange-500" size={18} />
+                  <h3 className="font-bold text-sm text-white">Yerel PC Disk Hata Dosyası</h3>
+                  <span className="text-[10px] bg-red-950 text-red-400 px-2 py-0.5 rounded font-mono font-bold border border-red-800">
+                    errors_{new Date().toISOString().split('T')[0]}.log
+                  </span>
+                </div>
+                <p className="text-xs text-stone-400 mt-1">
+                  Sunucu diskinde <code className="text-stone-300 font-mono">data/logs/</code> klasöründe tutulan ve ani kapanmalarda dahi silinmeyen kalıcı hata kütüğü
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={loadDiskErrors}
+                  disabled={isLoadingDiskErrors}
+                  className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <RefreshCw size={14} className={cn(isLoadingDiskErrors && "animate-spin")} />
+                  <span>Yenile</span>
+                </button>
+
+                <button
+                  onClick={downloadDiskLogFile}
+                  disabled={diskErrorLines.length === 0}
+                  className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <Download size={14} />
+                  <span>Dosyayı İndir (.log)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Error logs text viewport */}
+            <div className="flex-1 bg-stone-950 border border-stone-800 rounded-2xl p-3 overflow-y-auto font-mono text-xs select-text space-y-1">
+              {isLoadingDiskErrors ? (
+                <div className="h-full flex items-center justify-center text-stone-500 gap-2">
+                  <RefreshCw size={18} className="animate-spin" />
+                  <span>Disk hata kütüğü yükleniyor...</span>
+                </div>
+              ) : diskErrorMsg ? (
+                <div className="h-full flex flex-col items-center justify-center text-red-400 gap-2">
+                  <AlertOctagon size={24} />
+                  <span>{diskErrorMsg}</span>
+                  <p className="text-xs text-stone-500">Yerel Node sunucusu (port 3001) çalışmıyor olabilir.</p>
+                </div>
+              ) : diskErrorLines.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-stone-600 gap-2 py-12">
+                  <Check size={32} className="text-emerald-500/50" />
+                  <p className="font-sans text-sm font-bold text-stone-400">Bugüne ait disk hata kaydı bulunmuyor</p>
+                  <p className="font-sans text-xs text-stone-600">Herhangi bir hata meydana geldiğinde anında bu dosyaya yazılır.</p>
+                </div>
+              ) : (
+                diskErrorLines.map((line, idx) => (
+                  <div
+                    key={idx}
+                    className="p-1.5 rounded hover:bg-stone-900 border-b border-stone-900/60 font-mono text-[11px] leading-relaxed break-all text-red-300/90"
+                  >
+                    {line}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB 3: SYSTEM & DEVICE DIAGNOSTICS ── */}
         {activeTab === 'diagnostics' && (
           <div className="flex-1 overflow-y-auto space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -557,7 +873,7 @@ export default function DeveloperPage() {
           </div>
         )}
 
-        {/* ── TAB 3: DATABASE EXPLORER ── */}
+        {/* ── TAB 4: DATABASE EXPLORER ── */}
         {activeTab === 'database' && (
           <div className="flex-1 flex flex-col min-h-0 space-y-3">
             <div className="flex items-center justify-between gap-3 shrink-0">
@@ -618,7 +934,7 @@ export default function DeveloperPage() {
           </div>
         )}
 
-        {/* ── TAB 4: ROLE SIMULATOR ── */}
+        {/* ── TAB 5: ROLE SIMULATOR ── */}
         {activeTab === 'roles' && (
           <div className="flex-1 overflow-y-auto space-y-4">
             <div className="bg-stone-950 border border-stone-800 rounded-2xl p-4 sm:p-5 space-y-3">
@@ -627,8 +943,8 @@ export default function DeveloperPage() {
                   <UserCheck size={18} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-white">Anında Rol Simülasyonu</h3>
-                  <p className="text-xs text-stone-400">Şifre girmeden tek tıkla herhangi bir role geçip o kullanıcının ekranını ve yetkilerini test edin.</p>
+                  <h3 className="font-bold text-sm text-white">Anında Rol Simülasyonu & Hesap Değişimi</h3>
+                  <p className="text-xs text-stone-400">Şifre girmeden tek tıkla herhangi bir role geçip o kullanıcının ekranını, yetkilerini ve hata yönetimini test edin.</p>
                 </div>
               </div>
 

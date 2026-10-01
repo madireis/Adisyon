@@ -19,7 +19,8 @@ import {
   Download,
   Terminal,
 } from 'lucide-react';
-import type { UserRole } from '@/types/pos';
+import type { UserRole, PosPermissions } from '@/types/pos';
+import { usePermissions } from '@/lib/permissions';
 import { useTheme } from '@/lib/theme';
 import { useLocalNetwork } from '@/lib/useLocalNetwork';
 import { disconnectLocalClient } from '@/lib/localNetwork';
@@ -33,12 +34,14 @@ interface NavItem {
   path: string;
   label: string;
   icon: React.ElementType;
-  roles: UserRole[];
+  roles?: UserRole[];
+  permission?: keyof PosPermissions;
 }
 
 export default function Layout() {
   const { state, dispatch } = useApp();
   const { theme, resolvedTheme, toggleTheme } = useTheme();
+  const { hasPermission } = usePermissions();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -69,10 +72,10 @@ export default function Layout() {
   const allNavItems: NavItem[] = [
     { path: '/tables', label: 'Masalar', icon: Grid2X2, roles: ['waiter', 'cashier', 'owner', 'manager', 'developer'] },
     { path: '/kitchen', label: 'Mutfak', icon: ChefHat, roles: ['kitchen', 'bar', 'owner', 'manager', 'developer'] },
-    { path: '/reports', label: 'Kasa', icon: Banknote, roles: ['cashier', 'owner', 'manager', 'developer'] },
-    { path: '/menu', label: 'Menü', icon: MenuSquare, roles: ['owner', 'manager', 'developer'] },
-    { path: '/staff', label: 'Personel', icon: Users, roles: ['owner', 'manager', 'developer'] },
-    { path: '/settings', label: 'Ayarlar', icon: Settings, roles: ['owner', 'manager', 'developer'] },
+    { path: '/reports', label: 'Kasa', icon: Banknote, permission: 'canViewReports', roles: ['cashier', 'owner', 'manager', 'developer'] },
+    { path: '/menu', label: 'Menü', icon: MenuSquare, permission: 'canManageMenu', roles: ['owner', 'manager', 'developer'] },
+    { path: '/staff', label: 'Personel', icon: Users, permission: 'canManageStaff', roles: ['owner', 'manager', 'developer'] },
+    { path: '/settings', label: 'Ayarlar', icon: Settings, permission: 'canManageStaff', roles: ['owner', 'manager', 'developer'] },
     { path: '/guide', label: 'Rehber', icon: BookOpen, roles: ['owner', 'manager', 'developer'] },
     { path: '/developer', label: 'Geliştirici', icon: Terminal, roles: ['developer'] },
   ];
@@ -87,32 +90,48 @@ export default function Layout() {
         { path: '/developer', label: 'Dev Log', icon: Terminal },
       ];
     }
-    if (user.role === 'waiter') {
-      return [{ path: '/tables', label: 'Masalar', icon: Grid2X2 }];
-    }
+    const items = [];
     if (user.role === 'kitchen' || user.role === 'bar') {
-      return [{ path: '/kitchen', label: 'Mutfak', icon: ChefHat }];
+      items.push({ path: '/kitchen', label: 'Mutfak', icon: ChefHat });
+    } else {
+      items.push({ path: '/tables', label: 'Masalar', icon: Grid2X2 });
     }
-    return [
-      { path: '/tables', label: 'Masalar', icon: Grid2X2 },
-      { path: '/kitchen', label: 'Mutfak', icon: ChefHat },
-      { path: '/reports', label: 'Kasa', icon: Banknote },
-      { path: '/menu', label: 'Menü', icon: MenuSquare },
-    ];
+    if (user.role === 'kitchen' || user.role === 'bar' || user.role === 'owner' || user.role === 'manager') {
+      if (!items.some(i => i.path === '/kitchen')) {
+        items.push({ path: '/kitchen', label: 'Mutfak', icon: ChefHat });
+      }
+    }
+    if (hasPermission('canViewReports')) {
+      items.push({ path: '/reports', label: 'Kasa', icon: Banknote });
+    }
+    if (hasPermission('canManageMenu') && items.length < 4) {
+      items.push({ path: '/menu', label: 'Menü', icon: MenuSquare });
+    }
+    return items;
   };
 
-  const visibleNavItems = allNavItems.filter(item => item.roles.includes(user.role));
+  const visibleNavItems = allNavItems.filter(item => {
+    if (user.role === 'developer' || user.role === 'owner') return true;
+    if (item.permission) {
+      return hasPermission(item.permission);
+    }
+    return item.roles ? item.roles.includes(user.role) : true;
+  });
+
   const isOrderPage = location.pathname.startsWith('/order/');
 
   const isAuthorized = () => {
-    if (user.role === 'developer') return true;
+    if (user.role === 'developer' || user.role === 'owner') return true;
     const currentPath = location.pathname;
     if (currentPath.startsWith('/order/')) {
-      return user.role === 'waiter' || user.role === 'cashier' || user.role === 'owner' || user.role === 'manager';
+      return true;
     }
     const matchedItem = allNavItems.find(item => item.path === currentPath);
     if (!matchedItem) return true;
-    return matchedItem.roles.includes(user.role);
+    if (matchedItem.permission) {
+      return hasPermission(matchedItem.permission);
+    }
+    return matchedItem.roles ? matchedItem.roles.includes(user.role) : true;
   };
 
   useEffect(() => {

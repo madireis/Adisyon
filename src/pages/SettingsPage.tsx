@@ -1,10 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Printer, CreditCard, Bell, Store, CheckCircle2, Database, Trash2, Plus, X, AlertTriangle, Sun, Moon, Monitor, Wifi, QrCode, Smartphone } from 'lucide-react';
+import { 
+  Settings, Printer, CreditCard, Bell, Store, CheckCircle2, Database, Trash2, 
+  Plus, X, AlertTriangle, Sun, Moon, Monitor, Wifi, QrCode, Smartphone,
+  HardDrive, ShieldCheck, FileText, Download, RefreshCw, FolderTree, ArrowDownToLine, Clock
+} from 'lucide-react';
 import { cn, generateId } from '@/lib/utils';
 import { db } from '@/lib/db';
 import { resetDatabaseToCleanState } from '@/lib/mockData';
 import { useTheme } from '@/lib/theme';
-import { useLocalNetwork } from '@/lib/useLocalNetwork';
+import { 
+  useLocalNetwork 
+} from '@/lib/useLocalNetwork';
+import { 
+  fetchStorageStatus, 
+  fetchStorageBackups, 
+  triggerStorageBackup, 
+  restoreStorageBackup, 
+  fetchTodayStorageLogs,
+  type StorageStatusInfo,
+  type BackupFileInfo 
+} from '@/lib/localNetwork';
 import LocalNetworkModal from '@/components/common/LocalNetworkModal';
 import { generateQRCodeSVG } from '@/lib/qrCodeGenerator';
 import wotsLogo from '@/assets/logo.jpg';
@@ -25,6 +40,82 @@ export default function SettingsPage() {
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false);
 
   const { networkInfo, connectedGarsons, isWifiConnected, pingMs } = useLocalNetwork();
+
+  // Storage, Backups & Crash Recovery states
+  const [storageStatus, setStorageStatus] = useState<StorageStatusInfo | null>(null);
+  const [backupsList, setBackupsList] = useState<BackupFileInfo[]>([]);
+  const [todayLogs, setTodayLogs] = useState<string[]>([]);
+  const [isLogsModalOpen, setIsLogsModalOpen] = useState(false);
+  const [isBackingUp, setIsBackingUp] = useState(false);
+  const [backupSuccessMsg, setBackupSuccessMsg] = useState<string | null>(null);
+  const [restoreSuccessMsg, setRestoreSuccessMsg] = useState<string | null>(null);
+  const [isRestoringFile, setIsRestoringFile] = useState<string | null>(null);
+
+  const refreshStorageData = async () => {
+    try {
+      const [status, backups] = await Promise.all([
+        fetchStorageStatus(),
+        fetchStorageBackups(),
+      ]);
+      setStorageStatus(status);
+      setBackupsList(backups);
+    } catch {}
+  };
+
+  useEffect(() => {
+    refreshStorageData();
+  }, [activeSection]);
+
+  const handleCreateBackup = async () => {
+    setIsBackingUp(true);
+    setBackupSuccessMsg(null);
+    try {
+      const res = await triggerStorageBackup('manuel');
+      if (res.success) {
+        setBackupSuccessMsg(`Yedek oluşturuldu: ${res.filename}`);
+        await refreshStorageData();
+        setTimeout(() => setBackupSuccessMsg(null), 4000);
+      } else {
+        alert(res.error || 'Yedek alınamadı');
+      }
+    } catch (err: any) {
+      alert('Yedek alma hatası: ' + err?.message);
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
+
+  const handleRestoreBackup = async (filename: string) => {
+    if (!confirm(`DİKKAT: "${filename}" yedeğini geri yüklemek istiyor musunuz? Mevcut durumunuz yedeklenip bu snapshot yüklenecektir.`)) {
+      return;
+    }
+    setIsRestoringFile(filename);
+    setRestoreSuccessMsg(null);
+    try {
+      const res = await restoreStorageBackup(filename);
+      if (res.success) {
+        setRestoreSuccessMsg(`"${filename}" başarıyla geri yüklendi!`);
+        await refreshStorageData();
+        setTimeout(() => setRestoreSuccessMsg(null), 5000);
+      } else {
+        alert(res.error || 'Geri yükleme başarısız');
+      }
+    } catch (err: any) {
+      alert('Geri yükleme hatası: ' + err?.message);
+    } finally {
+      setIsRestoringFile(null);
+    }
+  };
+
+  const handleOpenTodayLogs = async () => {
+    try {
+      const lines = await fetchTodayStorageLogs();
+      setTodayLogs(lines);
+      setIsLogsModalOpen(true);
+    } catch {
+      alert('Loglar okunamadı');
+    }
+  };
 
   // Business Profile states
   const [profile, setProfile] = useState({
@@ -503,20 +594,157 @@ export default function SettingsPage() {
         )}
 
         {activeSection === 'database' && (
-          <div>
-            <h2 className="text-xl font-black text-stone-900 dark:text-stone-100 mb-1">Sistem & Veri Yönetimi</h2>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mb-6">İşlem verileri temizliği, sıfırdan başlama ve fabrika ayarları</p>
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-xl font-black text-stone-900 dark:text-stone-100 mb-1">Yerel Veri Depolama & Ani Kapanma Koruması</h2>
+              <p className="text-xs text-stone-500 dark:text-stone-400 mb-6">
+                Elektrik kesintisi veya ani kapanmalara karşı atomik çift yedekleme, organize dosya dizinleri ve günlük işlem kayıtları
+              </p>
 
-            <div className="max-w-xl space-y-6">
+              {/* Status Banner */}
+              <div className="p-5 rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950/80 space-y-4 max-w-3xl mb-6 shadow-2xs">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                      <ShieldCheck size={24} />
+                    </div>
+                    <div>
+                      <h3 className="font-black text-stone-900 dark:text-stone-100 text-sm">
+                        Otomatik Çift Yedekleme & Ani Kapanma Koruması: <span className="text-emerald-600 dark:text-emerald-400">Aktif</span>
+                      </h3>
+                      <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                        {storageStatus?.resilience || 'Atomik Temp-Rename Yazma + Çift Kurtarma Dosyası + Dönen Yedekler'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleCreateBackup}
+                    disabled={isBackingUp}
+                    className="bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer shadow-xs shrink-0"
+                  >
+                    <RefreshCw size={14} className={cn(isBackingUp && "animate-spin")} />
+                    <span>{isBackingUp ? 'Yedek Alınıyor...' : 'Şimdi Anlık Yedek Al'}</span>
+                  </button>
+                </div>
+
+                {backupSuccessMsg && (
+                  <div className="p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 rounded-xl text-xs font-bold flex items-center gap-2">
+                    <CheckCircle2 size={16} /> {backupSuccessMsg}
+                  </div>
+                )}
+
+                {restoreSuccessMsg && (
+                  <div className="p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 rounded-xl text-xs font-bold flex items-center gap-2">
+                    <CheckCircle2 size={16} /> {restoreSuccessMsg}
+                  </div>
+                )}
+
+                {/* Directory & Stats Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                  <div className="p-3.5 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800">
+                    <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400 text-xs font-semibold mb-1">
+                      <FolderTree size={15} className="text-orange-500" />
+                      <span>Sipariş Dosyaları</span>
+                    </div>
+                    <div className="font-mono font-black text-sm text-stone-800 dark:text-stone-100">data/orders/</div>
+                    <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-1">
+                      {storageStatus?.orderFilesCount ?? 1} günlük dosya (.jsonl & .json)
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800">
+                    <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400 text-xs font-semibold mb-1">
+                      <FileText size={15} className="text-sky-500" />
+                      <span>Sistem Günlükleri</span>
+                    </div>
+                    <div className="font-mono font-black text-sm text-stone-800 dark:text-stone-100">data/logs/</div>
+                    <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-1">
+                      {storageStatus?.logFilesCount ?? 1} log dosyası (.log & .jsonl)
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800">
+                    <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400 text-xs font-semibold mb-1">
+                      <HardDrive size={15} className="text-emerald-500" />
+                      <span>Snapshot Yedekler</span>
+                    </div>
+                    <div className="font-mono font-black text-sm text-stone-800 dark:text-stone-100">data/backups/</div>
+                    <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-1">
+                      {backupsList.length} kayıtlı geri yükleme noktası
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <button
+                    onClick={handleOpenTodayLogs}
+                    className="text-xs font-bold text-stone-700 dark:text-stone-300 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800 px-3.5 py-2 rounded-xl flex items-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <FileText size={14} className="text-orange-500" />
+                    <span>Bugünün Sistem & Sipariş Loglarını Gör</span>
+                  </button>
+                  <button
+                    onClick={refreshStorageData}
+                    className="text-xs font-bold text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 px-3 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors"
+                  >
+                    <RefreshCw size={13} />
+                    <span>Yenile</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Historical Snapshots Table */}
+              <div className="max-w-3xl space-y-3">
+                <h3 className="font-black text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                  <Clock size={16} className="text-orange-500" />
+                  <span>Kayıtlı Geri Yükleme Noktaları (Otomatik & Manuel Snapshotlar)</span>
+                </h3>
+
+                {backupsList.length === 0 ? (
+                  <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-500 text-xs text-center font-medium">
+                    Henüz snapshot yedek bulunmuyor. "Şimdi Anlık Yedek Al" butonuna tıklayarak ilk yedeğinizi oluşturabilirsiniz.
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden bg-white dark:bg-stone-900 divide-y divide-stone-100 dark:divide-stone-800">
+                    {backupsList.slice(0, 8).map((b) => (
+                      <div key={b.filename} className="p-3.5 flex items-center justify-between gap-3 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors">
+                        <div className="min-w-0">
+                          <div className="font-mono font-bold text-xs text-stone-800 dark:text-stone-200 truncate">
+                            {b.filename}
+                          </div>
+                          <div className="text-[11px] text-stone-400 flex items-center gap-2 mt-0.5">
+                            <span>{new Date(b.createdAt).toLocaleString('tr-TR')}</span>
+                            <span>•</span>
+                            <span>{b.sizeKb} KB</span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleRestoreBackup(b.filename)}
+                          disabled={isRestoringFile === b.filename}
+                          className="px-3 py-1.5 bg-stone-100 dark:bg-stone-800 hover:bg-orange-600 hover:text-white dark:hover:bg-orange-600 text-stone-700 dark:text-stone-300 rounded-xl text-xs font-bold transition-colors cursor-pointer shrink-0"
+                        >
+                          {isRestoringFile === b.filename ? 'Yükleniyor...' : 'Geri Yükle'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <hr className="border-stone-200 dark:border-stone-800 max-w-3xl" />
+
+            {/* Reset Database Card */}
+            <div className="max-w-3xl space-y-6">
               <div className="p-6 rounded-2xl border-2 border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/20 space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="p-2.5 bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 rounded-xl">
                     <AlertTriangle size={24} />
                   </div>
                   <div>
-                    <h3 className="font-black text-stone-900 dark:text-stone-100 text-base">İşlem Verilerini Temizle (Temiz Başlangıç)</h3>
+                    <h3 className="font-black text-stone-900 dark:text-stone-100 text-base">İşlem Verilerini Temizle (Temiz Gün Başlangıcı)</h3>
                     <p className="text-xs text-stone-600 dark:text-stone-300 mt-1 leading-relaxed">
-                      Tüm test siparişlerini, mutfak fişlerini, tahsilatları ve denetim kayıtlarını temizler. Masaların durumunu sıfırlar ("Boş" duruma getirir). Menünüz, personel listeniz ve masalarınız korunur.
+                      Tüm aktif/geçmiş siparişleri, mutfak fişlerini ve tahsilatları temizler. Masaların durumunu sıfırlar ("Boş" duruma getirir). Menü (18 kategori, 167 ürün), personel listeniz ve masalarınız aynen korunur.
                     </p>
                   </div>
                 </div>
@@ -540,6 +768,50 @@ export default function SettingsPage() {
           </div>
         )}
       </div>
+
+      {/* Logs Viewer Modal */}
+      {isLogsModalOpen && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 w-full max-w-4xl h-[80vh] rounded-3xl p-6 shadow-2xl border border-stone-200 dark:border-stone-800 flex flex-col">
+            <div className="flex justify-between items-center pb-4 border-b border-stone-200 dark:border-stone-800">
+              <div className="flex items-center gap-2.5">
+                <FileText className="text-orange-500" size={20} />
+                <div>
+                  <h3 className="font-black text-base">Bugünün Sistem & Sipariş Günlüğü (Activity Log)</h3>
+                  <p className="text-xs text-stone-400">data/logs/ dizinindeki gerçek zamanlı operasyonel kayıtlar</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsLogsModalOpen(false)}
+                className="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full text-stone-400 hover:text-stone-600 cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-auto bg-stone-950 text-emerald-400 p-4 rounded-2xl font-mono text-xs my-4 space-y-1 select-text">
+              {todayLogs.length === 0 ? (
+                <div className="text-stone-500 py-8 text-center">Henüz bugüne ait log kaydı bulunmuyor.</div>
+              ) : (
+                todayLogs.map((line, idx) => (
+                  <div key={idx} className="leading-relaxed hover:bg-stone-900/60 px-1.5 py-0.5 rounded">
+                    {line}
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setIsLogsModalOpen(false)}
+                className="px-5 py-2 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-bold text-xs rounded-xl cursor-pointer"
+              >
+                Kapat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <LocalNetworkModal 
         isOpen={isNetworkModalOpen} 

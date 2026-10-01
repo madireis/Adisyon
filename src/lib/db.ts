@@ -2,7 +2,8 @@ import Dexie, { type Table } from 'dexie'
 import type {
   Table as PosTable, Floor, Category, MenuItem, Order, Payment,
   CashTransaction, KitchenTicket, Staff, InventoryItem, Recipe, Customer,
-  Reservation, AuditLog, OnlineOrder, SyncQueueItem, DevLogEntry
+  Reservation, AuditLog, OnlineOrder, SyncQueueItem, DevLogEntry,
+  RolePermissionsRecord, UserRole
 } from '@/types/pos'
 
 export class PosDatabase extends Dexie {
@@ -25,6 +26,7 @@ export class PosDatabase extends Dexie {
   onlineOrders!: Table<OnlineOrder>
   syncQueue!: Table<SyncQueueItem, number>
   devLogs!: Table<DevLogEntry>
+  rolePermissions!: Table<RolePermissionsRecord, UserRole>
 
   constructor() {
     super('WotsCafePOS')
@@ -57,6 +59,10 @@ export class PosDatabase extends Dexie {
 
     this.version(4).stores({
       devLogs: 'id, timestamp, level, category',
+    })
+
+    this.version(5).stores({
+      rolePermissions: 'role',
     })
 
     // Expose posTables helper on instance for easy and safe access to restaurant tables

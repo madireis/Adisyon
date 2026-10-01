@@ -3,6 +3,7 @@ import { X, CreditCard, Banknote, Gift, CheckCircle2, Trash2, Delete } from 'luc
 import { db } from '@/lib/db';
 import { useApp } from '@/lib/store';
 import { cn, formatCurrency, generateId } from '@/lib/utils';
+import { hasPermission } from '@/lib/permissions';
 import type { Order, Table, Payment, PaymentMethod, PaymentPart } from '@/types/pos';
 
 interface PaymentModalProps {
@@ -16,6 +17,9 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
   const { state } = useApp();
   const [parts, setParts] = useState<PaymentPart[]>([]);
   const [currentInput, setCurrentInput] = useState<string>('');
+
+  const canPay = hasPermission(state.currentUser, 'canTakePayment');
+  const canDiscount = hasPermission(state.currentUser, 'canApplyDiscount');
   
   const totalPaid = parts.reduce((acc, p) => acc + p.amount, 0);
   const remaining = Math.max(0, order.total - totalPaid);
@@ -28,7 +32,7 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
     { id: 'multinet', label: 'Multinet', icon: CreditCard, color: 'bg-amber-600 text-white hover:bg-amber-700' },
     { id: 'ticket', label: 'Ticket Edenred', icon: CreditCard, color: 'bg-red-600 text-white hover:bg-red-700' },
     { id: 'metropol', label: 'Metropol', icon: CreditCard, color: 'bg-purple-600 text-white hover:bg-purple-700' },
-    { id: 'ikram', label: 'Müdür İkramı', icon: Gift, color: 'bg-stone-700 text-white hover:bg-stone-800' },
+    ...(canDiscount ? [{ id: 'ikram' as PaymentMethod, label: 'Müdür İkramı', icon: Gift, color: 'bg-stone-700 text-white hover:bg-stone-800' }] : []),
   ];
 
   const handleKeypad = (val: string) => {
@@ -47,6 +51,14 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
   };
 
   const addPaymentPart = (method: PaymentMethod) => {
+    if (!canPay) {
+      alert('Ödeme alma yetkiniz bulunmamaktadır.');
+      return;
+    }
+    if (method === 'ikram' && !canDiscount) {
+      alert('İkram ve indirim tanımlama yetkiniz bulunmamaktadır.');
+      return;
+    }
     const amount = parseFloat(currentInput) || remaining;
     if (amount <= 0) return;
 
@@ -59,6 +71,10 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
   };
 
   const handleConfirm = async () => {
+    if (!canPay) {
+      alert('Ödeme alma yetkiniz bulunmamaktadır.');
+      return;
+    }
     if (totalPaid < order.total) {
       alert('Alınan ödeme tutarı adisyon toplamından az olamaz!');
       return;
@@ -138,6 +154,14 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
   };
 
   const handleQuickFullPay = async (method: PaymentMethod) => {
+    if (!canPay) {
+      alert('Ödeme alma yetkiniz bulunmamaktadır.');
+      return;
+    }
+    if (method === 'ikram' && !canDiscount) {
+      alert('İkram ve indirim tanımlama yetkiniz bulunmamaktadır.');
+      return;
+    }
     const fullAmount = order.total;
     const nowIso = new Date().toISOString();
     const durationMinutes = order.createdAt 

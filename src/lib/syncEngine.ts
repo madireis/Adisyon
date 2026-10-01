@@ -1,7 +1,9 @@
 import type { PosDatabase } from '@/lib/db';
 import { getLocalServerBaseUrl, isTestEnv } from '@/lib/localNetwork';
+import { ingestRemoteLog } from '@/lib/devLogger';
 
 // ─────────────────────────────────────────────────────────────
+
 // CLIENT IDENTIFICATION
 // ─────────────────────────────────────────────────────────────
 
@@ -222,6 +224,12 @@ export async function applyRemoteSync(
 function handleIncomingNetworkMessage(db: PosDatabase, payload: any) {
   if (!payload || payload.senderId === CLIENT_ID) return;
 
+  // Real-time error log from peer
+  if (payload.type === 'dev_log_entry' && payload.entry) {
+    ingestRemoteLog(payload.entry);
+    return;
+  }
+
   // Deduplicate messages across transports
   if (payload.msgId && markAndCheckProcessed(payload.msgId)) {
     return;
@@ -379,6 +387,10 @@ function setupLocalServerSSE(db: PosDatabase) {
     localEventSourceInstance.addEventListener('sync', (e: MessageEvent) => {
       try {
         const payload = JSON.parse(e.data);
+        if (payload.type === 'dev_log_entry' && payload.entry) {
+          ingestRemoteLog(payload.entry);
+          return;
+        }
         if (payload.senderId !== CLIENT_ID) {
           if (payload.msgId && markAndCheckProcessed(payload.msgId)) return;
           applyRemoteSync(db, payload.changes, payload.deleted, payload.senderId);

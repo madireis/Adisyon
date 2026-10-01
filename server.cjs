@@ -2,7 +2,6 @@ const http = require('node:http');
 const os = require('node:os');
 const fs = require('node:fs');
 const path = require('node:path');
-const { exec } = require('node:child_process');
 
 const PORT = process.env.PORT || 3001;
 const VITE_PORT = 5173;
@@ -25,13 +24,25 @@ function getLocalIpAddress() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// REAL-TIME POS DATA SYNCHRONIZATION STORE & PERSISTENCE
+// ORGANIZED STORAGE, LOGGING & CRASH RECOVERY ENGINE
 // ─────────────────────────────────────────────────────────────
 
-// Data directory on the real filesystem next to the executable
 const BASE_DIR = typeof process.pkg !== 'undefined' ? path.dirname(process.execPath) : __dirname;
 const DATA_DIR = path.join(BASE_DIR, 'data');
+const ORDERS_DIR = path.join(DATA_DIR, 'orders');
+const LOGS_DIR = path.join(DATA_DIR, 'logs');
+const BACKUPS_DIR = path.join(DATA_DIR, 'backups');
+
 const STORE_FILE = path.join(DATA_DIR, 'pos_sync_store.json');
+const STORE_TMP_FILE = path.join(DATA_DIR, 'pos_sync_store.json.tmp');
+const EMERGENCY_BACKUP_FILE = path.join(BACKUPS_DIR, 'emergency_latest_recovery.json');
+
+// Ensure all organized directories exist
+[DATA_DIR, ORDERS_DIR, LOGS_DIR, BACKUPS_DIR].forEach((dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
 
 const SYNC_TABLES = [
   'floors',
@@ -62,37 +73,290 @@ function createEmptyState() {
   return state;
 }
 
-let serverState = createEmptyState();
-
-// Load persistent store from disk if available
-try {
-  if (fs.existsSync(STORE_FILE)) {
-    const raw = fs.readFileSync(STORE_FILE, 'utf-8');
-    const parsed = JSON.parse(raw);
-    serverState = { ...createEmptyState(), ...parsed };
-    console.log(`[Sync Engine] Loaded persistent POS state (Revision: ${serverState.revision})`);
-  }
-} catch (err) {
-  console.error('[Sync Engine] Error reading pos_sync_store.json:', err);
+function getTodayString() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
-// Debounced disk writer
+function getTimestampString() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
+}
+
+// ─── LOGGING & ERROR UTILITIES ────────────────────────────────
+
+function logSystemActivity(category, message, details = null) {
+  const timestamp = new Date().toISOString();
+  const today = getTodayString();
+  const logFile = path.join(LOGS_DIR, `system_activity_${today}.log`);
+  const line = `[${timestamp}] [${category.toUpperCase()}] ${message}${details ? ' ' + JSON.stringify(details) : ''}\n`;
+
+  try {
+    fs.appendFileSync(logFile, line, 'utf-8');
+  } catch (err) {
+    console.error('[Storage Logger] Failed to write system activity log:', err);
+  }
+}
+
+function logErrorEvent(category, message, errorInfo = {}) {
+  const timestamp = new Date().toISOString();
+  const today = getTodayString();
+  const errorLogFile = path.join(LOGS_DIR, `errors_${today}.log`);
+  const errorJsonlFile = path.join(LOGS_DIR, `errors_${today}.jsonl`);
+
+  const userRole = errorInfo.userRole || 'Sistem / Anonim';
+  const route = errorInfo.route || '-';
+  const stack = errorInfo.stack ? `\nSTACK: ${errorInfo.stack}` : '';
+  const data = errorInfo.data ? `\nDATA: ${typeof errorInfo.data === 'object' ? JSON.stringify(errorInfo.data) : errorInfo.data}` : '';
+
+  const logLine = `[${timestamp}] [ERROR] [${category.toUpperCase()}] [Kullanıcı: ${userRole}] [Rota: ${route}] ${message}${stack}${data}\n`;
+
+  try {
+    fs.appendFileSync(errorLogFile, logLine, 'utf-8');
+  } catch (err) {
+    console.error('[Error Logger] Failed to write error log file:', err);
+  }
+
+  try {
+    const jsonRecord = {
+      timestamp,
+      level: 'error',
+      category,
+      message,
+      userRole,
+      route,
+      stack: errorInfo.stack,
+      data: errorInfo.data,
+      userAgent: errorInfo.userAgent,
+    };
+    fs.appendFileSync(errorJsonlFile, JSON.stringify(jsonRecord) + '\n', 'utf-8');
+  } catch (err) {
+    console.error('[Error Logger] Failed to write error jsonl:', err);
+  }
+
+  logSystemActivity('ERROR', `[${category}] (${userRole}): ${message}`);
+}
+
+function logOrderEvent(eventType, orderData, sender = 'system') {
+  const today = getTodayString();
+  const jsonlFile = path.join(ORDERS_DIR, `orders_${today}.jsonl`);
+  const record = {
+    timestamp: new Date().toISOString(),
+    event: eventType,
+    sender,
+    orderId: orderData?.id,
+    tableId: orderData?.tableId,
+    tableLabel: orderData?.tableLabel,
+    waiterName: orderData?.waiterName,
+    itemsCount: Array.isArray(orderData?.items) ? orderData.items.length : 0,
+    total: orderData?.total || 0,
+    status: orderData?.status,
+    orderSnapshot: orderData,
+  };
+
+  try {
+    fs.appendFileSync(jsonlFile, JSON.stringify(record) + '\n', 'utf-8');
+  } catch (err) {
+    console.error('[Storage Logger] Failed to append order JSONL:', err);
+  }
+
+  try {
+    const dailyFile = path.join(ORDERS_DIR, `daily_orders_${today}.json`);
+    let dailyMap = {};
+    if (fs.existsSync(dailyFile)) {
+      try {
+        dailyMap = JSON.parse(fs.readFileSync(dailyFile, 'utf-8'));
+      } catch {}
+    }
+    if (orderData?.id) {
+      dailyMap[orderData.id] = {
+        id: orderData.id,
+        tableLabel: orderData.tableLabel,
+        waiterName: orderData.waiterName,
+        total: orderData.total,
+        status: orderData.status,
+        items: orderData.items,
+        lastUpdated: new Date().toISOString(),
+      };
+      fs.writeFileSync(dailyFile, JSON.stringify(dailyMap, null, 2), 'utf-8');
+    }
+  } catch {}
+}
+
+function logAuditRecord(auditItem) {
+  const today = getTodayString();
+  const jsonlFile = path.join(LOGS_DIR, `audit_${today}.jsonl`);
+  try {
+    const record = {
+      timestamp: auditItem.timestamp || new Date().toISOString(),
+      ...auditItem,
+    };
+    fs.appendFileSync(jsonlFile, JSON.stringify(record) + '\n', 'utf-8');
+  } catch (err) {
+    console.error('[Storage Logger] Failed to append audit JSONL:', err);
+  }
+}
+
+// Global server process error listeners
+process.on('uncaughtException', (err) => {
+  console.error('[Server UncaughtException]', err);
+  logErrorEvent('ServerUncaughtException', err.message, { stack: err.stack, userRole: 'Node.js Backend Server' });
+});
+
+process.on('unhandledRejection', (reason) => {
+  const msg = reason instanceof Error ? reason.message : String(reason);
+  const stack = reason instanceof Error ? reason.stack : undefined;
+  console.error('[Server UnhandledRejection]', reason);
+  logErrorEvent('ServerUnhandledRejection', msg, { stack, userRole: 'Node.js Backend Server' });
+});
+
+// ─── CRASH RECOVERY ENGINE ────────────────────────────────────
+
+function loadStateWithCrashRecovery() {
+  if (fs.existsSync(STORE_FILE)) {
+    try {
+      const raw = fs.readFileSync(STORE_FILE, 'utf-8');
+      if (raw && raw.trim().length > 0) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          console.log(`[Storage Engine] Loaded master POS store (Revision: ${parsed.revision || 0})`);
+          logSystemActivity('STORAGE', `Master store loaded normally (Revision: ${parsed.revision || 0})`);
+          return { ...createEmptyState(), ...parsed };
+        }
+      }
+    } catch (err) {
+      console.error('[Storage Engine] WARNING: pos_sync_store.json was corrupted or incomplete (possible sudden shutdown)! Initiating auto-recovery...', err);
+      logErrorEvent('CorruptedStoreFile', 'pos_sync_store.json was unparseable. Recovering...', { stack: err.stack });
+    }
+  }
+
+  if (fs.existsSync(EMERGENCY_BACKUP_FILE)) {
+    try {
+      const raw = fs.readFileSync(EMERGENCY_BACKUP_FILE, 'utf-8');
+      if (raw && raw.trim().length > 0) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          console.log(`[Storage Engine] RECOVERED from emergency latest backup! (Revision: ${parsed.revision || 0})`);
+          logSystemActivity('CRASH_RECOVERY', `Successfully recovered from emergency latest backup (Revision: ${parsed.revision || 0})`);
+          fs.writeFileSync(STORE_FILE, JSON.stringify(parsed, null, 2), 'utf-8');
+          return { ...createEmptyState(), ...parsed };
+        }
+      }
+    } catch (e) {
+      console.error('[Storage Engine] Emergency latest backup failed:', e);
+    }
+  }
+
+  try {
+    if (fs.existsSync(BACKUPS_DIR)) {
+      const files = fs
+        .readdirSync(BACKUPS_DIR)
+        .filter((f) => f.startsWith('snapshot_') && f.endsWith('.json'))
+        .sort()
+        .reverse();
+
+      for (const f of files) {
+        try {
+          const raw = fs.readFileSync(path.join(BACKUPS_DIR, f), 'utf-8');
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            console.log(`[Storage Engine] RECOVERED from rolling snapshot: ${f} (Revision: ${parsed.revision || 0})`);
+            logSystemActivity('CRASH_RECOVERY', `Recovered state from rolling snapshot ${f} (Revision: ${parsed.revision || 0})`);
+            fs.writeFileSync(STORE_FILE, JSON.stringify(parsed, null, 2), 'utf-8');
+            return { ...createEmptyState(), ...parsed };
+          }
+        } catch (e) {}
+      }
+    }
+  } catch (e) {
+    console.error('[Storage Engine] Failed to search snapshots:', e);
+  }
+
+  console.log('[Storage Engine] No existing store found. Initialized fresh state.');
+  logSystemActivity('STORAGE', 'Initialized fresh empty POS state');
+  return createEmptyState();
+}
+
+let serverState = loadStateWithCrashRecovery();
+let lastSnapshotTime = 0;
+
+// ─── ATOMIC DISK SAVER & ROLLING SNAPSHOTS ────────────────────
+
+function pruneOldSnapshots(maxKeep = 50) {
+  try {
+    const files = fs
+      .readdirSync(BACKUPS_DIR)
+      .filter((f) => f.startsWith('snapshot_') && f.endsWith('.json'))
+      .sort();
+
+    if (files.length > maxKeep) {
+      const toDelete = files.slice(0, files.length - maxKeep);
+      for (const file of toDelete) {
+        fs.unlinkSync(path.join(BACKUPS_DIR, file));
+      }
+    }
+  } catch (err) {
+    console.error('[Storage Engine] Snapshot pruning error:', err);
+  }
+}
+
+function createSnapshotNow(label = 'auto') {
+  try {
+    const stamp = getTimestampString();
+    const filename = `snapshot_${stamp}_${label}.json`;
+    const fullPath = path.join(BACKUPS_DIR, filename);
+    const jsonStr = JSON.stringify(serverState, null, 2);
+
+    fs.writeFileSync(fullPath, jsonStr, 'utf-8');
+    lastSnapshotTime = Date.now();
+    pruneOldSnapshots(50);
+    logSystemActivity('BACKUP', `Snapshot created: ${filename} (Revision: ${serverState.revision})`);
+    return { success: true, filename, timestamp: new Date().toISOString() };
+  } catch (err) {
+    console.error('[Storage Engine] Failed to create snapshot:', err);
+    logErrorEvent('SnapshotError', err.message, { stack: err.stack });
+    return { success: false, error: err.message };
+  }
+}
+
+// Debounced atomic disk writer
 let saveTimeout = null;
 function scheduleSave() {
   if (saveTimeout) clearTimeout(saveTimeout);
   saveTimeout = setTimeout(() => {
     try {
-      if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
+      const jsonStr = JSON.stringify(serverState, null, 2);
+
+      fs.writeFileSync(STORE_TMP_FILE, jsonStr, 'utf-8');
+      fs.renameSync(STORE_TMP_FILE, STORE_FILE);
+
+      const emergencyTmp = EMERGENCY_BACKUP_FILE + '.tmp';
+      fs.writeFileSync(emergencyTmp, jsonStr, 'utf-8');
+      fs.renameSync(emergencyTmp, EMERGENCY_BACKUP_FILE);
+
+      const now = Date.now();
+      if (now - lastSnapshotTime > 10 * 60 * 1000 || serverState.revision % 25 === 0) {
+        createSnapshotNow('interval');
       }
-      fs.writeFileSync(STORE_FILE, JSON.stringify(serverState, null, 2), 'utf-8');
     } catch (err) {
-      console.error('[Sync Engine] Failed to save pos_sync_store.json:', err);
+      console.error('[Storage Engine] Critical error writing store:', err);
+      logErrorEvent('StoreSaveError', 'Failed to save store atomically', { stack: err.stack });
     }
-  }, 250);
+  }, 200);
 }
 
-// Connected SSE clients for instantaneous real-time sync across devices
+setInterval(() => {
+  if (serverState.revision > 0) {
+    createSnapshotNow('timer');
+  }
+}, 15 * 60 * 1000);
+
+// ─── SSE CLIENTS & PRESENCE ───────────────────────────────────
+
 const sseClients = new Set();
 
 function broadcastSync(eventData, excludeRes = null) {
@@ -108,7 +372,6 @@ function broadcastSync(eventData, excludeRes = null) {
   }
 }
 
-// Heartbeat ping to keep SSE connections open through firewalls and routers
 setInterval(() => {
   for (const clientRes of sseClients) {
     try {
@@ -119,14 +382,12 @@ setInterval(() => {
   }
 }, 15000);
 
-// In-memory store for connected staff / garsons (presence tracking)
 const connectedClients = new Map();
 
 function cleanupInactiveClients() {
   const now = Date.now();
   let changed = false;
   for (const [id, client] of connectedClients.entries()) {
-    // If no heartbeat received in last 8 seconds, client has closed app / lost connection
     if (now - client.lastSeen > 8000) {
       connectedClients.delete(id);
       changed = true;
@@ -147,7 +408,6 @@ setInterval(cleanupInactiveClients, 3000);
 // ─────────────────────────────────────────────────────────────
 
 const server = http.createServer((req, res) => {
-  // CORS Headers for seamless local network WiFi access
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -161,7 +421,7 @@ const server = http.createServer((req, res) => {
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
   const localIp = getLocalIpAddress();
 
-  // 1. SSE Real-Time Sync Stream (Server-Sent Events)
+  // 1. SSE Real-Time Sync Stream
   if (url.pathname === '/api/sync/stream') {
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
@@ -179,18 +439,20 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 2. Full State Fetch (Used on boot, reconnect, or safety polling)
+  // 2. Full State Fetch
   if (url.pathname === '/api/sync/state') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-      revision: serverState.revision,
-      lastUpdated: serverState.lastUpdated,
-      data: serverState,
-    }));
+    res.end(
+      JSON.stringify({
+        revision: serverState.revision,
+        lastUpdated: serverState.lastUpdated,
+        data: serverState,
+      })
+    );
     return;
   }
 
-  // 3. Push Mutations (Any client modification to orders, tables, tickets, etc.)
+  // 3. Push Mutations
   if (url.pathname === '/api/sync/push' && req.method === 'POST') {
     let body = '';
     req.on('data', (chunk) => { body += chunk; });
@@ -203,7 +465,6 @@ const server = http.createServer((req, res) => {
 
         let hasMutations = false;
 
-        // Upsert modified records
         for (const [table, items] of Object.entries(changes)) {
           if (!Array.isArray(items) || items.length === 0) continue;
           if (!Array.isArray(serverState[table])) serverState[table] = [];
@@ -227,10 +488,25 @@ const server = http.createServer((req, res) => {
             } else {
               serverState[table].push(item);
             }
+
+            if (table === 'orders') {
+              logOrderEvent(idx >= 0 ? 'order_update' : 'order_created', item, senderId);
+              logSystemActivity(
+                'ORDER',
+                `Table ${item.tableLabel || item.tableId}: Total ₺${item.total || 0} (${item.status || 'open'}) by ${item.waiterName || senderId}`
+              );
+            }
+
+            if (table === 'payments') {
+              logSystemActivity('PAYMENT', `Payment processed: ₺${item.totalAmount || item.amount || 0} for Order ${item.orderId || '-'}`);
+            }
+
+            if (table === 'auditLogs') {
+              logAuditRecord(item);
+            }
           }
         }
 
-        // Remove deleted records
         for (const [table, ids] of Object.entries(deleted)) {
           if (!Array.isArray(ids) || ids.length === 0) continue;
           if (!Array.isArray(serverState[table])) continue;
@@ -238,6 +514,7 @@ const server = http.createServer((req, res) => {
           hasMutations = true;
           const idSet = new Set(ids);
           serverState[table] = serverState[table].filter((x) => !idSet.has(x.id));
+          logSystemActivity('DELETE', `Deleted ${ids.length} records from table '${table}'`, { ids });
         }
 
         if (hasMutations) {
@@ -245,7 +522,6 @@ const server = http.createServer((req, res) => {
           serverState.lastUpdated = Date.now();
           scheduleSave();
 
-          // Push instantly to all connected phones/tablets/PCs
           broadcastSync({
             revision: serverState.revision,
             senderId,
@@ -265,14 +541,52 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 4. Initial Seed (Bootstrap master state from first running client if empty)
+  // 4. Client & Account Error Logging Endpoint (POST /api/logs/error)
+  if (url.pathname === '/api/logs/error' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (chunk) => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const errorData = JSON.parse(body || '{}');
+        const category = errorData.category || 'ClientRuntime';
+        const message = errorData.message || 'Unknown client error';
+
+        logErrorEvent(category, message, errorData);
+
+        broadcastSync({
+          type: 'dev_log_entry',
+          entry: {
+            id: 'srv_' + Date.now(),
+            timestamp: new Date().toISOString(),
+            level: 'error',
+            category,
+            message,
+            stack: errorData.stack,
+            data: errorData.data,
+            route: errorData.route,
+            userRole: errorData.userRole,
+            userAgent: errorData.userAgent,
+          },
+        });
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true }));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Failed to record error log' }));
+      }
+    });
+    return;
+  }
+
+  // 5. Initial Seed
   if (url.pathname === '/api/sync/seed' && req.method === 'POST') {
     let body = '';
     req.on('data', (chunk) => { body += chunk; });
     req.on('end', () => {
       try {
         const payload = JSON.parse(body || '{}');
-        const isFresh = serverState.revision === 0 || (!serverState.tables || serverState.tables.length === 0);
+        const isFresh = serverState.revision === 0 || !serverState.tables || serverState.tables.length === 0;
         if (isFresh && payload.state) {
           for (const table of SYNC_TABLES) {
             if (Array.isArray(payload.state[table]) && payload.state[table].length > 0) {
@@ -282,7 +596,9 @@ const server = http.createServer((req, res) => {
           serverState.revision = 1;
           serverState.lastUpdated = Date.now();
           scheduleSave();
-          console.log('[Sync Engine] Server store initialized with initial seed data');
+          createSnapshotNow('seed_bootstrap');
+          console.log('[Storage Engine] Server store initialized with initial seed data');
+          logSystemActivity('SEED', 'Server store initialized with initial seed data');
 
           broadcastSync({
             revision: serverState.revision,
@@ -302,8 +618,10 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 5. Hard Reset (Manager clean day start / reset)
+  // 6. Hard Reset
   if (url.pathname === '/api/sync/reset' && req.method === 'POST') {
+    createSnapshotNow('pre_reset_backup');
+
     serverState.orders = [];
     serverState.kitchenTickets = [];
     serverState.payments = [];
@@ -320,6 +638,7 @@ const server = http.createServer((req, res) => {
     serverState.revision++;
     serverState.lastUpdated = Date.now();
     scheduleSave();
+    logSystemActivity('RESET', 'Manager day reset executed');
 
     broadcastSync({
       revision: serverState.revision,
@@ -341,14 +660,14 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 6. Fast Ping
+  // 7. Fast Ping
   if (url.pathname === '/api/ping') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true, timestamp: Date.now() }));
     return;
   }
 
-  // 7. Network Info & Server Status
+  // 8. Network Info
   if (url.pathname === '/api/network-info') {
     cleanupInactiveClients();
     const garsonsList = Array.from(connectedClients.values());
@@ -369,7 +688,179 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 8. Garsons List
+  // 9. Storage & Crash Recovery Health
+  if (url.pathname === '/api/storage/status') {
+    try {
+      const backupFiles = fs.existsSync(BACKUPS_DIR)
+        ? fs.readdirSync(BACKUPS_DIR).filter((f) => f.endsWith('.json'))
+        : [];
+      const orderFiles = fs.existsSync(ORDERS_DIR) ? fs.readdirSync(ORDERS_DIR) : [];
+      const logFiles = fs.existsSync(LOGS_DIR) ? fs.readdirSync(LOGS_DIR) : [];
+
+      const todayOrderCount = Array.isArray(serverState.orders) ? serverState.orders.length : 0;
+      const activeTablesCount = Array.isArray(serverState.tables)
+        ? serverState.tables.filter((t) => t.status === 'occupied').length
+        : 0;
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(
+        JSON.stringify({
+          status: 'healthy',
+          dataDir: DATA_DIR,
+          revision: serverState.revision,
+          lastUpdated: serverState.lastUpdated,
+          lastSnapshotTime: lastSnapshotTime ? new Date(lastSnapshotTime).toISOString() : null,
+          backupsCount: backupFiles.length,
+          orderFilesCount: orderFiles.length,
+          logFilesCount: logFiles.length,
+          todayOrdersCount: todayOrderCount,
+          activeTablesCount,
+          resilience: 'Atomic Temp-Rename Writes + Dual Recovery File + Rolling Backups Active',
+          directories: {
+            orders: ORDERS_DIR,
+            logs: LOGS_DIR,
+            backups: BACKUPS_DIR,
+          },
+        })
+      );
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+    return;
+  }
+
+  // 10. List All Backups
+  if (url.pathname === '/api/storage/backups') {
+    try {
+      const list = [];
+      if (fs.existsSync(BACKUPS_DIR)) {
+        const files = fs.readdirSync(BACKUPS_DIR).filter((f) => f.endsWith('.json'));
+        for (const file of files) {
+          const stat = fs.statSync(path.join(BACKUPS_DIR, file));
+          list.push({
+            filename: file,
+            sizeBytes: stat.size,
+            sizeKb: Math.round(stat.size / 1024),
+            createdAt: stat.mtime.toISOString(),
+          });
+        }
+      }
+      list.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ backups: list }));
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+    return;
+  }
+
+  // 11. Manual Snapshot Trigger
+  if (url.pathname === '/api/storage/backup-now' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (chunk) => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        const label = (payload.label || 'manual').replace(/[^a-zA-Z0-9_-]/g, '_');
+        const result = createSnapshotNow(label);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // 12. Restore State from Backup
+  if (url.pathname === '/api/storage/restore' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (chunk) => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        const filename = payload.filename;
+        if (!filename || !fs.existsSync(path.join(BACKUPS_DIR, filename))) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Backup file not found' }));
+          return;
+        }
+
+        const raw = fs.readFileSync(path.join(BACKUPS_DIR, filename), 'utf-8');
+        const parsed = JSON.parse(raw);
+
+        createSnapshotNow('pre_restore_safety');
+
+        serverState = { ...createEmptyState(), ...parsed };
+        serverState.revision++;
+        serverState.lastUpdated = Date.now();
+        scheduleSave();
+
+        logSystemActivity('RESTORE', `State restored from backup file: ${filename}`);
+
+        broadcastSync({
+          revision: serverState.revision,
+          senderId: 'restore',
+          changes: serverState,
+          timestamp: serverState.lastUpdated,
+        });
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, revision: serverState.revision, restoredFrom: filename }));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // 13. View Today's Activity Logs
+  if (url.pathname === '/api/storage/logs/today') {
+    try {
+      const today = getTodayString();
+      const logFile = path.join(LOGS_DIR, `system_activity_${today}.log`);
+      if (fs.existsSync(logFile)) {
+        const content = fs.readFileSync(logFile, 'utf-8');
+        const lines = content.trim().split('\n').slice(-150);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ lines }));
+      } else {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ lines: [] }));
+      }
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+    return;
+  }
+
+  // 14. View Today's Dedicated Error Logs (GET /api/storage/errors/today)
+  if (url.pathname === '/api/storage/errors/today') {
+    try {
+      const today = getTodayString();
+      const errorFile = path.join(LOGS_DIR, `errors_${today}.log`);
+      if (fs.existsSync(errorFile)) {
+        const content = fs.readFileSync(errorFile, 'utf-8');
+        const lines = content.trim().split('\n').filter(Boolean).slice(-200);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ lines }));
+      } else {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ lines: [] }));
+      }
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+    return;
+  }
+
+  // 15. Garsons List
   if (url.pathname === '/api/garsons') {
     cleanupInactiveClients();
     const now = Date.now();
@@ -384,7 +875,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 9. Heartbeat from Garson Phone / Tablet / Browser (Only for authenticated staff)
+  // 16. Heartbeat from Garson Phone / Tablet / Browser
   if (url.pathname === '/api/heartbeat' && req.method === 'POST') {
     let body = '';
     req.on('data', (chunk) => { body += chunk; });
@@ -443,7 +934,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 9b. Disconnect Endpoint (App closed, tab closed, logout, beforeunload/pagehide)
+  // 17. Disconnect Endpoint
   if (url.pathname === '/api/disconnect') {
     const handleDisconnectId = (staffId) => {
       if (staffId && connectedClients.has(staffId)) {
@@ -479,27 +970,23 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 10. Default: Serve built Vite static files (From real disk if exists, or bundled snapshot)
-  const diskDist = path.join(BASE_DIR, 'dist');
-  const snapshotDist = path.join(__dirname, 'dist');
-  const distDir = fs.existsSync(diskDist) ? diskDist : snapshotDist;
-
+  // 18. Default: Serve built Vite static files if dist directory exists
+  const distDir = path.join(BASE_DIR, 'dist');
   if (fs.existsSync(distDir)) {
     let cleanPath = url.pathname.replace(/^\/Adisyon\/?/, '/');
     let filePath = path.join(distDir, cleanPath === '/' ? 'index.html' : cleanPath);
     if (!fs.existsSync(filePath)) {
-      filePath = path.join(distDir, 'index.html'); // SPA fallback
+      filePath = path.join(distDir, 'index.html');
     }
 
     const ext = path.extname(filePath);
     const mimeTypes = {
-      '.html': 'text/html; charset=utf-8',
-      '.js': 'text/javascript; charset=utf-8',
-      '.css': 'text/css; charset=utf-8',
-      '.json': 'application/json; charset=utf-8',
+      '.html': 'text/html',
+      '.js': 'text/javascript',
+      '.css': 'text/css',
+      '.json': 'application/json',
       '.png': 'image/png',
       '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
       '.svg': 'image/svg+xml',
       '.webmanifest': 'application/manifest+json',
       '.woff2': 'font/woff2',
@@ -524,7 +1011,6 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Standard response if dist is not built yet
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(`
     <h2>Wot's Cafe Adisyon Yerel Ağ Sunucusu Aktif!</h2>
@@ -535,21 +1021,13 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, '0.0.0.0', () => {
   const localIp = getLocalIpAddress();
-  console.log(`\n============================================================`);
-  console.log(`  🚀 WOT'S CAFE ADİSYON - RESTORAN & YEREL AĞ SUNUCUSU  `);
-  console.log(`============================================================`);
-  console.log(`  [✓] Sunucu Başarıyla Başlatıldı!`);
-  console.log(`  [💻] Kasa / Ana Bilgisayar  : http://localhost:${PORT}`);
-  console.log(`  [📱] Garson Telefonları (WiFi): http://${localIp}:${PORT}`);
-  console.log(`  [📡] Senkronizasyon (SSE & WiFi): Aktif`);
-  console.log(`============================================================`);
-  console.log(`  Tarayıcınız otomatik olarak açılıyor...\n`);
-  console.log(`  (Bu pencere açık kaldığı sürece sistem çalışmaya devam eder.)\n`);
-
-  // Open default browser on Windows
-  try {
-    exec(`start http://localhost:${PORT}`);
-  } catch (err) {
-    // Ignore error if start command fails
-  }
+  console.log(`\n==================================================`);
+  console.log(`🚀 ADİSYON REAL-TIME SYNC & YEREL AĞ SUNUCUSU ÇALIŞIYOR`);
+  console.log(`📍 Ana PC Yerel IP: http://${localIp}:${PORT}`);
+  console.log(`📲 Garson Telefon Bağlantı URL: http://${localIp}:${PORT}`);
+  console.log(`📁 Veri & Log Depolama Dizini: ${DATA_DIR}`);
+  console.log(`🛑 Hata Kayıt Dosyası: ${path.join(LOGS_DIR, `errors_${getTodayString()}.log`)}`);
+  console.log(`🛡️ Ani Kapanma Koruması & Atomik Yazma: Aktif`);
+  console.log(`📡 Gerçek Zamanlı Senkronizasyon (SSE & WiFi): Aktif`);
+  console.log(`==================================================\n`);
 });

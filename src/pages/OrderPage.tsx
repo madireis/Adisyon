@@ -10,12 +10,22 @@ import PaymentModal from '@/components/pos/PaymentModal';
 import ThermalSlipModal from '@/components/pos/ThermalSlipModal';
 import TableTransferModal from '@/components/pos/TableTransferModal';
 import PosIcon from '@/components/common/PosIcon';
+import { usePermissions } from '@/lib/permissions';
 import type { OrderItem, MenuItem, Order, OrderItemModifier, KitchenTicket, KitchenStation, Table } from '@/types/pos';
 
 export default function OrderPage() {
   const { tableId } = useParams<{ tableId: string }>();
   const navigate = useNavigate();
   const { state } = useApp();
+  const { hasPermission } = usePermissions();
+
+  const canDeleteOrderItem = hasPermission('canDeleteOrderItem');
+  const canDeleteTable = hasPermission('canDeleteTable');
+  const canTransferTable = hasPermission('canTransferTable');
+  const canTakePayment = hasPermission('canTakePayment');
+  const canPrintReceipt = hasPermission('canPrintReceipt');
+  const canApplyDiscount = hasPermission('canApplyDiscount');
+  const canCancelOrder = hasPermission('canCancelOrder');
   
   const [activeCategoryId, setActiveCategoryId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,7 +39,7 @@ export default function OrderPage() {
   const [notes, setNotes] = useState('');
   const [orderStartedAt] = useState<string>(() => new Date().toISOString());
 
-  const isCashierOrManager = state.currentUser?.role === 'cashier' || state.currentUser?.role === 'manager' || state.currentUser?.role === 'owner';
+  const isCashierOrManager = canDeleteOrderItem;
   
   const table = useLiveQuery(() => db.table<Table>('tables').get(tableId || ''), [tableId]);
   
@@ -116,8 +126,8 @@ export default function OrderPage() {
   };
 
   const handleCashierDeleteItem = async (item: OrderItem) => {
-    if (!isCashierOrManager) {
-      alert('Yalnızca kasiyer veya yöneticiler iletilmiş ürünleri silebilir.');
+    if (!canDeleteOrderItem) {
+      alert('Adisyondan ürün silme / iptal etme yetkiniz bulunmamaktadır. Lütfen yönetici veya patron ile görüşün.');
       return;
     }
 
@@ -133,6 +143,17 @@ export default function OrderPage() {
         if (remainingItems.length === 0) {
           const freeTable = window.confirm('Masadaki tüm ürünler silindi. Masa boşaltılsın ve kapatılsın mı?');
           if (freeTable) {
+            if (!canDeleteTable) {
+              alert('Masadaki ürünler silindi fakat masayı kapatma / boşaltma yetkiniz bulunmadığından masa açık bırakıldı.');
+              await db.orders.update(order.id, {
+                items: [],
+                subtotal: 0,
+                total: 0,
+                updatedAt: nowIso,
+              });
+              return;
+            }
+
             await db.orders.update(order.id, {
               items: [],
               status: 'cancelled',
@@ -148,7 +169,7 @@ export default function OrderPage() {
             await db.auditLogs.add({
               id: generateId(),
               userId: state.currentUser?.id || 'staff',
-              userName: state.currentUser?.name || 'Kasiyer',
+              userName: state.currentUser?.name || 'Personel',
               action: 'Adisyon İptali / Masa Boşaltma',
               details: `Masa ${table?.label || ''} adisyonundaki son ürün ("${item.name}") silindi ve masa kapatıldı.`,
               entityType: 'order',
@@ -431,14 +452,16 @@ export default function OrderPage() {
           </span>
         </div>
         <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setIsTransferModalOpen(true)}
-            className="flex items-center justify-center p-2 rounded-full bg-stone-800 text-stone-200 border border-stone-700 active:scale-95 cursor-pointer min-h-[38px] min-w-[38px]"
-            title="Masayı / Ürünleri Başka Masaya Taşı"
-          >
-            <ArrowRightLeft className="w-3.5 h-3.5 text-orange-400" />
-          </button>
+          {canTransferTable && (
+            <button
+              type="button"
+              onClick={() => setIsTransferModalOpen(true)}
+              className="flex items-center justify-center p-2 rounded-full bg-stone-800 text-stone-200 border border-stone-700 active:scale-95 cursor-pointer min-h-[38px] min-w-[38px]"
+              title="Masayı / Ürünleri Başka Masaya Taşı"
+            >
+              <ArrowRightLeft className="w-3.5 h-3.5 text-orange-400" />
+            </button>
+          )}
           <button
             onClick={() => setIsMobileTicketOpen(true)}
             className={cn(
@@ -670,18 +693,20 @@ export default function OrderPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMobileTicketOpen(false);
-                    setIsTransferModalOpen(true);
-                  }}
-                  className="px-2.5 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer active:scale-95 transition-colors"
-                  title="Ürünleri veya masayı başka masaya taşı"
-                >
-                  <ArrowRightLeft className="w-3.5 h-3.5 text-orange-400" />
-                  <span>Taşı</span>
-                </button>
+                {canTransferTable && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileTicketOpen(false);
+                      setIsTransferModalOpen(true);
+                    }}
+                    className="px-2.5 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer active:scale-95 transition-colors"
+                    title="Ürünleri veya masayı başka masaya taşı"
+                  >
+                    <ArrowRightLeft className="w-3.5 h-3.5 text-orange-400" />
+                    <span>Taşı</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setIsMobileTicketOpen(false)}
@@ -825,11 +850,11 @@ export default function OrderPage() {
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                      ) : isCashierOrManager ? (
+                      ) : canDeleteOrderItem ? (
                         <div className="flex items-center justify-between pt-2 border-t border-stone-800 mt-1">
                           <span className="text-[10px] text-stone-400 flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-                            Kasiyer Yetkisi
+                            Yetkili İptal
                           </span>
                           <button
                             type="button"
@@ -883,34 +908,43 @@ export default function OrderPage() {
                 <span>MUTFAĞA GÖNDER</span>
               </button>
 
-              {/* Secondary Actions: 2 Clean Grid Buttons */}
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSlipModalType('receipt');
-                    setIsSlipModalOpen(true);
-                  }}
-                  disabled={!order && localItems.length === 0}
-                  className="py-3 px-2 bg-white text-stone-950 font-black text-xs rounded-xl shadow-xs hover:bg-stone-100 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 border border-stone-300 disabled:opacity-50"
-                >
-                  <Printer className="w-3.5 h-3.5 text-stone-950" />
-                  <span>Fiş Yazdır</span>
-                </button>
+              {/* Secondary Actions: Fiş Yazdır & Ödeme Al */}
+              {(canPrintReceipt || canTakePayment) && (
+                <div className={cn(
+                  "grid gap-2",
+                  canPrintReceipt && canTakePayment ? "grid-cols-2" : "grid-cols-1"
+                )}>
+                  {canPrintReceipt && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSlipModalType('receipt');
+                        setIsSlipModalOpen(true);
+                      }}
+                      disabled={!order && localItems.length === 0}
+                      className="py-3 px-2 bg-white text-stone-950 font-black text-xs rounded-xl shadow-xs hover:bg-stone-100 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 border border-stone-300 disabled:opacity-50"
+                    >
+                      <Printer className="w-3.5 h-3.5 text-stone-950" />
+                      <span>Fiş Yazdır</span>
+                    </button>
+                  )}
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMobileTicketOpen(false);
-                    setIsPaymentModalOpen(true);
-                  }}
-                  disabled={!order && localItems.length === 0}
-                  className="py-3 px-2 bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
-                >
-                  <CreditCard className="w-3.5 h-3.5" />
-                  <span>Ödeme Al</span>
-                </button>
-              </div>
+                  {canTakePayment && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMobileTicketOpen(false);
+                        setIsPaymentModalOpen(true);
+                      }}
+                      disabled={!order && localItems.length === 0}
+                      className="py-3 px-2 bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
+                    >
+                      <CreditCard className="w-3.5 h-3.5" />
+                      <span>Ödeme Al</span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -936,15 +970,17 @@ export default function OrderPage() {
             </p>
           </div>
           <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => setIsTransferModalOpen(true)}
-              className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer active:scale-95 transition-colors"
-              title="Ürünleri veya masayı başka masaya taşı"
-            >
-              <ArrowRightLeft className="w-3.5 h-3.5 text-orange-400" />
-              <span>Taşı</span>
-            </button>
+            {canTransferTable && (
+              <button
+                type="button"
+                onClick={() => setIsTransferModalOpen(true)}
+                className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer active:scale-95 transition-colors"
+                title="Ürünleri veya masayı başka masaya taşı"
+              >
+                <ArrowRightLeft className="w-3.5 h-3.5 text-orange-400" />
+                <span>Taşı</span>
+              </button>
+            )}
             <div className="text-right">
               <span className="text-[10px] text-stone-400 uppercase tracking-wider block font-bold">Adisyon</span>
               <span className="font-mono font-black text-sm text-stone-200">
@@ -1084,11 +1120,11 @@ export default function OrderPage() {
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                  ) : isCashierOrManager ? (
+                  ) : canDeleteOrderItem ? (
                     <div className="flex items-center justify-between pt-2 border-t border-stone-800 mt-1">
                       <span className="text-[10px] text-stone-400 flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-                        Kasiyer Yetkisi
+                        Yetkili İptal
                       </span>
                       <button
                         type="button"
@@ -1135,27 +1171,31 @@ export default function OrderPage() {
               <Send className="w-4 h-4" />
               <span>MUTFAĞA GÖNDER</span>
             </button>
-            <button 
-              type="button"
-              onClick={() => {
-                setSlipModalType('receipt');
-                setIsSlipModalOpen(true);
-              }} 
-              disabled={!order && localItems.length === 0}
-              className="w-full py-2.5 px-3 rounded-xl font-bold text-xs bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50 transition-colors"
-            >
-              <Printer className="w-4 h-4 text-stone-300" />
-              <span>Fiş Yazdır</span>
-            </button>
-            <button 
-              type="button"
-              onClick={() => setIsPaymentModalOpen(true)} 
-              disabled={!order && localItems.length === 0}
-              className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-orange-600 text-white hover:bg-orange-500 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-colors"
-            >
-              <CreditCard className="w-4 h-4" />
-              <span>Ödeme Al</span>
-            </button>
+            {canPrintReceipt && (
+              <button 
+                type="button"
+                onClick={() => {
+                  setSlipModalType('receipt');
+                  setIsSlipModalOpen(true);
+                }} 
+                disabled={!order && localItems.length === 0}
+                className="w-full py-2.5 px-3 rounded-xl font-bold text-xs bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50 transition-colors"
+              >
+                <Printer className="w-4 h-4 text-stone-300" />
+                <span>Fiş Yazdır</span>
+              </button>
+            )}
+            {canTakePayment && (
+              <button 
+                type="button"
+                onClick={() => setIsPaymentModalOpen(true)} 
+                disabled={!order && localItems.length === 0}
+                className="w-full py-3 px-4 rounded-xl font-bold text-sm bg-orange-600 text-white hover:bg-orange-500 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-colors"
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>Ödeme Al</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

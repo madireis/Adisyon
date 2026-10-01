@@ -494,3 +494,102 @@ export async function fetchConnectedGarsonsList(currentUser?: Staff | null): Pro
 
   return Array.from(mergedMap.values());
 }
+
+// ─────────────────────────────────────────────────────────────
+// STORAGE, BACKUP & CRASH RECOVERY API CLIENT
+// ─────────────────────────────────────────────────────────────
+
+export interface StorageStatusInfo {
+  status: string;
+  dataDir: string;
+  revision: number;
+  lastUpdated: number;
+  lastSnapshotTime: string | null;
+  backupsCount: number;
+  orderFilesCount: number;
+  logFilesCount: number;
+  todayOrdersCount: number;
+  activeTablesCount: number;
+  resilience: string;
+  directories: {
+    orders: string;
+    logs: string;
+    backups: string;
+  };
+}
+
+export interface BackupFileInfo {
+  filename: string;
+  sizeBytes: number;
+  sizeKb: number;
+  createdAt: string;
+}
+
+export async function fetchStorageStatus(): Promise<StorageStatusInfo | null> {
+  const baseUrl = getLocalServerBaseUrl();
+  if (!baseUrl) return null;
+  try {
+    const res = await fetch(`${baseUrl}/api/storage/status`);
+    if (res.ok) return await res.json();
+  } catch {}
+  return null;
+}
+
+export async function fetchStorageBackups(): Promise<BackupFileInfo[]> {
+  const baseUrl = getLocalServerBaseUrl();
+  if (!baseUrl) return [];
+  try {
+    const res = await fetch(`${baseUrl}/api/storage/backups`);
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data.backups) ? data.backups : [];
+    }
+  } catch {}
+  return [];
+}
+
+export async function triggerStorageBackup(label = 'manual'): Promise<{ success: boolean; filename?: string; error?: string }> {
+  const baseUrl = getLocalServerBaseUrl();
+  if (!baseUrl) return { success: false, error: 'Yerel sunucuya bağlanılamadı' };
+  try {
+    const res = await fetch(`${baseUrl}/api/storage/backup-now`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ label }),
+    });
+    if (res.ok) return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+  return { success: false, error: 'Yedek alınamadı' };
+}
+
+export async function restoreStorageBackup(filename: string): Promise<{ success: boolean; error?: string }> {
+  const baseUrl = getLocalServerBaseUrl();
+  if (!baseUrl) return { success: false, error: 'Yerel sunucuya bağlanılamadı' };
+  try {
+    const res = await fetch(`${baseUrl}/api/storage/restore`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename }),
+    });
+    if (res.ok) return await res.json();
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+  return { success: false, error: 'Geri yükleme başarısız' };
+}
+
+export async function fetchTodayStorageLogs(): Promise<string[]> {
+  const baseUrl = getLocalServerBaseUrl();
+  if (!baseUrl) return [];
+  try {
+    const res = await fetch(`${baseUrl}/api/storage/logs/today`);
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data.lines) ? data.lines : [];
+    }
+  } catch {}
+  return [];
+}
+

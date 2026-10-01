@@ -4,6 +4,7 @@ import { X, ArrowRightLeft, Check, Minus, Plus, Users, UtensilsCrossed, AlertCir
 import { db } from '@/lib/db';
 import { useApp } from '@/lib/store';
 import { cn, formatCurrency, generateId } from '@/lib/utils';
+import { hasPermission } from '@/lib/permissions';
 import type { Order, Table, OrderItem, Floor } from '@/types/pos';
 
 interface TableTransferModalProps {
@@ -117,6 +118,11 @@ export default function TableTransferModal({
   }, [transferMode, allAvailableItems, checkedItemIds, selectedItems]);
 
   const handleExecuteTransfer = async () => {
+    if (!hasPermission(state.currentUser, 'canTransferTable')) {
+      alert('Masa veya ürün taşıma yetkiniz bulunmamaktadır.');
+      return;
+    }
+
     if (!selectedTargetTable) {
       alert('Lütfen ürünleri aktarmak istediğiniz hedef masayı seçin.');
       return;

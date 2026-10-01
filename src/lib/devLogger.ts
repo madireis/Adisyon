@@ -22,16 +22,55 @@ function getCurrentRoute(): string {
   }
 }
 
-// Helper to get active user role from session
-function getCurrentRole(): string {
+// Local server base URL resolver
+function getLocalServerUrl(): string {
   try {
-    const raw = sessionStorage.getItem('pos_current_user')
-    if (raw) {
-      const u = JSON.parse(raw)
-      return `${u.name || u.username} (${u.role})`
+    if (typeof localStorage !== 'undefined') {
+      const custom = localStorage.getItem('wots_custom_local_ip')
+      if (custom && custom.trim()) {
+        return `http://${custom.trim()}:3001`
+      }
+    }
+    const hostname = (typeof window !== 'undefined' && window.location.hostname) || 'localhost'
+    if (hostname.includes('github.io')) return ''
+    return `http://${hostname}:3001`
+  } catch {
+    return 'http://localhost:3001'
+  }
+}
+
+// Helper to get active user role from session, local storage or current route context
+export function getCurrentRole(): string {
+  try {
+    if (typeof sessionStorage !== 'undefined') {
+      const raw = sessionStorage.getItem('pos_current_user')
+      if (raw) {
+        const u = JSON.parse(raw)
+        const roleStr = u.role ? ` (${u.role})` : ''
+        return `${u.name || u.username || 'Personel'}${roleStr}`
+      }
+      const rawRole = sessionStorage.getItem('wots_role')
+      if (rawRole) return `Rol: ${rawRole}`
+    }
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem('pos_current_user') || localStorage.getItem('pos_user')
+      if (raw) {
+        const u = JSON.parse(raw)
+        const roleStr = u.role ? ` (${u.role})` : ''
+        return `${u.name || u.username || 'Personel'}${roleStr}`
+      }
+    }
+    if (typeof window !== 'undefined') {
+      const path = (window.location.hash || window.location.pathname || '').toLowerCase()
+      if (path.includes('/qr/') || path.includes('/menu')) return 'Müşteri (QR Menü)'
+      if (path.includes('/kitchen')) return 'Mutfak Ekranı'
+      if (path.includes('/tables')) return 'Garson / Masalar'
+      if (path.includes('/pos') || path.includes('/cashier')) return 'Kasa / Kasiyer'
+      if (path.includes('/reports') || path.includes('/admin')) return 'Yönetici / Patron'
+      if (path.includes('/developer')) return 'Geliştirici (Dev)'
     }
   } catch {}
-  return 'Guest / Anon'
+  return 'Sistem / Anonim'
 }
 
 // Emit update to all subscribed listeners
@@ -46,12 +85,58 @@ function notifyListeners() {
   })
 }
 
-// Persist a log entry to memory and asynchronously to IndexedDB
+// Send error log entry directly to Host PC local disk storage (data/logs/errors_YYYY-MM-DD.log)
+function sendErrorToLocalServer(entry: DevLogEntry) {
+  try {
+    const baseUrl = getLocalServerUrl()
+    if (!baseUrl) return
+
+    if (typeof window !== 'undefined' && window.fetch) {
+      const fetchFn = originalFetch || window.fetch.bind(window)
+      fetchFn(`${baseUrl}/api/logs/error`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category: entry.category,
+          message: entry.message,
+          userRole: entry.userRole,
+          route: entry.route,
+          stack: entry.stack,
+          data: entry.data,
+          userAgent: entry.userAgent,
+          timestamp: entry.timestamp,
+        }),
+      }).catch(() => {
+        // Silently ignore when server is offline
+      })
+    }
+  } catch {}
+}
+
+// Ingest remote log coming from another connected device or server broadcast
+export function ingestRemoteLog(entry: DevLogEntry) {
+  if (!entry || !entry.id) return
+  if (memoryLogs.some(l => l.id === entry.id)) return // Deduplicate
+
+  memoryLogs.unshift(entry)
+  if (memoryLogs.length > MAX_MEMORY_LOGS) {
+    memoryLogs.pop()
+  }
+  notifyListeners()
+
+  try {
+    if (db && db.devLogs) {
+      db.devLogs.add(entry).catch(() => {})
+    }
+  } catch {}
+}
+
+// Persist a log entry to memory, Dexie IndexedDB, and Host PC local disk error log
 export async function addDevLog(
   level: DevLogLevel,
   category: string,
   message: string,
-  extra?: { stack?: string; data?: unknown; route?: string }
+  extra?: { stack?: string; data?: unknown; route?: string; userRole?: string }
 ): Promise<DevLogEntry> {
   const entry: DevLogEntry = {
     id: generateId(),
@@ -62,7 +147,7 @@ export async function addDevLog(
     stack: extra?.stack,
     data: extra?.data,
     route: extra?.route || getCurrentRoute(),
-    userRole: getCurrentRole(),
+    userRole: extra?.userRole || getCurrentRole(),
     userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
   }
 
@@ -82,6 +167,11 @@ export async function addDevLog(
     }
   } catch (err) {
     // If IndexedDB quota exceeded, fallback to keep in memory without throwing
+  }
+
+  // 4. If this is an error or network issue, persist directly to Host PC local disk error logs
+  if (level === 'error' || level === 'network') {
+    sendErrorToLocalServer(entry)
   }
 
   return entry
@@ -401,7 +491,24 @@ export const devLogger = {
     downloadAnchor.remove()
   },
   getDiagnostics: getSystemDiagnostics,
-  // Error Simulator for Testing & QA
+  ingestRemoteLog,
+  fetchTodayDiskErrors: async (): Promise<{ success: boolean; lines: string[]; error?: string }> => {
+    try {
+      const baseUrl = getLocalServerUrl()
+      if (!baseUrl) return { success: false, lines: [], error: 'Yerel sunucu adresi belirlenemedi.' }
+      const res = await (originalFetch || window.fetch)(`${baseUrl}/api/storage/errors/today`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      return { success: true, lines: json.lines || [] }
+    } catch (err: any) {
+      return { success: false, lines: [], error: err?.message || 'Disk hata kütüğü okunamadı.' }
+    }
+  },
+  logAccountError: (accountRole: string, category: string, message: string, error?: unknown, data?: unknown) => {
+    const stack = error instanceof Error ? error.stack : undefined
+    return addDevLog('error', category, message, { stack, data, userRole: accountRole })
+  },
+  // Error Simulator for Testing & QA across various system and role layers
   simulateError: (type: 'uncaught' | 'rejection' | 'network' | 'db') => {
     switch (type) {
       case 'uncaught':
@@ -423,5 +530,56 @@ export const devLogger = {
         })
         break
     }
+  },
+  simulateRoleError: (role: string, errorType: 'order' | 'payment' | 'network' | 'printer' | 'sync') => {
+    const roleLabels: Record<string, string> = {
+      waiter: 'Ahmet Yılmaz (waiter)',
+      cashier: 'Ayşe Demir (cashier)',
+      kitchen: 'Mehmet Usta (kitchen)',
+      bar: 'Barış Kaya (bar)',
+      manager: 'Kemal Can (manager)',
+      owner: 'Madi Reis (owner)',
+      customer: 'Masa 4 (QR Müşteri)',
+      developer: 'Geliştirici (developer)',
+    }
+    const userRole = roleLabels[role] || `${role} (Test Hesabı)`
+
+    switch (errorType) {
+      case 'order':
+        addDevLog('error', 'OrderPipeline', `[${role.toUpperCase()}] Sipariş masaya işlenirken stok/fiyat uyuşmazlığı oluştu`, {
+          userRole,
+          stack: `Error: ItemStockConflictException: Product ID #item_42 is out of stock\n    at createOrder (OrderService.ts:142)\n    at handleTableSubmit (TableDetailPage.tsx:88)`,
+          data: { tableId: 'table_4', attemptedItems: ['item_42', 'item_19'], role }
+        })
+        break
+      case 'payment':
+        addDevLog('error', 'PaymentGateway', `[${role.toUpperCase()}] Kredi kartı POS terminali yanıt vermedi (Zaman aşımı)`, {
+          userRole,
+          stack: `Error: PosTerminalTimeoutError: POS Terminal #POS_01 did not respond within 30000ms\n    at processCardPayment (PaymentModal.tsx:210)`,
+          data: { amount: 350.00, method: 'credit_card', terminalId: 'POS_01', role }
+        })
+        break
+      case 'printer':
+        addDevLog('error', 'ThermalPrinter', `[${role.toUpperCase()}] Mutfak Termal Yazıcısı kağıt bitti / bağlantı koptu`, {
+          userRole,
+          stack: `Error: PrinterCommunicationError: ESC/POS Network Printer 192.168.1.200:9100 unreachable\n    at printKitchenTicket (printEngine.ts:65)`,
+          data: { printerIp: '192.168.1.200', ticketId: 'ticket_882', role }
+        })
+        break
+      case 'sync':
+        addDevLog('error', 'SyncConflict', `[${role.toUpperCase()}] Eşzamanlı masa güncellemesi çakışması (Revision conflict)`, {
+          userRole,
+          stack: `Error: RevisionMismatch: Local revision 42 behind remote revision 44\n    at resolveConflict (syncEngine.ts:240)`,
+          data: { tableId: 'table_2', localRev: 42, remoteRev: 44, role }
+        })
+        break
+      case 'network':
+        addDevLog('network', 'DeviceOffline', `[${role.toUpperCase()}] Cihaz WiFi bağlantısı koptu (Bağlantı bekleniyor)`, {
+          userRole,
+          data: { ssid: 'Wots_Staff_WiFi', signalLevel: -88, role }
+        })
+        break
+    }
   }
 }
+

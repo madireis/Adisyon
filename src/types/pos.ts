@@ -15,6 +15,27 @@ export type OnlineOrderStatus = 'new' | 'confirmed' | 'preparing' | 'ready' | 'o
 
 export type OnlinePlatform = 'yemeksepeti' | 'getir' | 'trendyol' | 'migros' | 'direct'
 
+// ─── Permissions ──────────────────────────────────────────────
+export interface PosPermissions {
+  canTransferTable: boolean;      // Masa ve ürün taşıma / birleştirme
+  canDeleteTable: boolean;        // Masayı boşaltma ve kapatma
+  canDeleteOrderItem: boolean;    // Adisyondan iletilmiş ürün silme/iptal
+  canCancelOrder: boolean;        // Komple sipariş iptal etme
+  canTakePayment: boolean;        // Ödeme alma ve hesap kapatma
+  canApplyDiscount: boolean;      // İndirim ve ikram uygulama
+  canPrintReceipt: boolean;       // Fiş ve ara hesap yazdırma
+  canViewReports: boolean;        // Kasa, ciro ve gün sonu raporları
+  canEditTables: boolean;         // Masa ve salon kroki düzenleme
+  canManageMenu: boolean;         // Menü, fiyat ve stok yönetimi
+  canManageStaff: boolean;        // Personel hesapları ve yetki yönetimi
+}
+
+export interface RolePermissionsRecord {
+  role: UserRole;
+  permissions: PosPermissions;
+  updatedAt: string;
+}
+
 // ─── Staff ────────────────────────────────────────────────────
 export interface Staff {
   id: string
@@ -24,6 +45,7 @@ export interface Staff {
   pin: string
   avatar?: string
   active: boolean
+  customPermissions?: Partial<PosPermissions>
 }
 
 // ─── Floor & Tables ───────────────────────────────────────────

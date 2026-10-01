@@ -10,10 +10,16 @@ import SectionModal from '@/components/tables/SectionModal';
 import TableModal from '@/components/tables/TableModal';
 import TableTransferModal from '@/components/pos/TableTransferModal';
 import PosIcon from '@/components/common/PosIcon';
+import { usePermissions } from '@/lib/permissions';
 
 export default function TablesPage() {
   const navigate = useNavigate();
   const { state, dispatch } = useApp();
+  const { hasPermission } = usePermissions();
+
+  const canTransfer = hasPermission('canTransferTable');
+  const canEditTables = hasPermission('canEditTables');
+  const canViewReports = hasPermission('canViewReports');
   
   // Floor and table states
   const [isEditMode, setIsEditMode] = useState(false);
@@ -28,6 +34,11 @@ export default function TablesPage() {
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
 
   const handleOpenTransferModal = async (table: Table, order?: Order | null) => {
+    if (!canTransfer) {
+      alert('Masa veya ürün taşıma yetkiniz bulunmamaktadır. Lütfen yönetici veya patron ile görüşün.');
+      return;
+    }
+
     let effectiveOrder = order;
     if (!effectiveOrder && table.currentOrderId) {
       effectiveOrder = await db.orders.get(table.currentOrderId) || null;
@@ -44,7 +55,7 @@ export default function TablesPage() {
 
   const user = state.currentUser;
   const isManager = user?.role === 'owner' || user?.role === 'manager';
-  const activeEditMode = isManager && isEditMode;
+  const activeEditMode = canEditTables && isEditMode;
 
   const floors = useLiveQuery(() => db.floors.orderBy('order').toArray(), []) || [];
   const currentFloorId = state.currentFloor || floors[0]?.id || 'floor-1';
@@ -140,8 +151,8 @@ export default function TablesPage() {
             )}
           </div>
 
-          {isManager && (
-            <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5">
+            {canTransfer && (
               <button
                 type="button"
                 onClick={() => {
@@ -158,32 +169,36 @@ export default function TablesPage() {
                 <ArrowRightLeft size={13} className="text-orange-600 dark:text-orange-400" />
                 <span className="hidden sm:inline">Masa Taşı</span>
               </button>
+            )}
 
-              <button
-                onClick={() => setIsEditMode(!isEditMode)}
-                className={cn(
-                  "px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer",
-                  activeEditMode
-                    ? "bg-orange-600 text-white"
-                    : "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
-                )}
-              >
-                <Settings2 size={13} />
-                <span>{activeEditMode ? 'Tamam' : 'Düzenle'}</span>
-              </button>
+            {canEditTables && (
+              <>
+                <button
+                  onClick={() => setIsEditMode(!isEditMode)}
+                  className={cn(
+                    "px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer",
+                    activeEditMode
+                      ? "bg-orange-600 text-white"
+                      : "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
+                  )}
+                >
+                  <Settings2 size={13} />
+                  <span>{activeEditMode ? 'Tamam' : 'Düzenle'}</span>
+                </button>
 
-              <button
-                onClick={() => {
-                  setEditingTable(null);
-                  setIsTableModalOpen(true);
-                }}
-                className="px-2.5 py-1.5 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
-              >
-                <Plus size={14} />
-                <span className="hidden sm:inline">Masa Ekle</span>
-              </button>
-            </div>
-          )}
+                <button
+                  onClick={() => {
+                    setEditingTable(null);
+                    setIsTableModalOpen(true);
+                  }}
+                  className="px-2.5 py-1.5 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus size={14} />
+                  <span className="hidden sm:inline">Masa Ekle</span>
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -234,18 +249,20 @@ export default function TablesPage() {
                       </button>
                     ) : (isOccupied || Boolean(order)) ? (
                       <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenTransferModal(table, order);
-                          }}
-                          className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-stone-100 hover:bg-orange-100 text-stone-700 hover:text-orange-700 dark:bg-stone-800 dark:hover:bg-orange-950 dark:text-stone-300 dark:hover:text-orange-400 border border-stone-200 dark:border-stone-700 hover:border-orange-400 transition-colors flex items-center gap-1 cursor-pointer shadow-xs active:scale-95"
-                          title="Masayı veya siparişleri başka masaya taşı"
-                        >
-                          <ArrowRightLeft size={11} className="text-orange-600 dark:text-orange-400" />
-                          <span>Taşı</span>
-                        </button>
+                        {canTransfer && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenTransferModal(table, order);
+                            }}
+                            className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-stone-100 hover:bg-orange-100 text-stone-700 hover:text-orange-700 dark:bg-stone-800 dark:hover:bg-orange-950 dark:text-stone-300 dark:hover:text-orange-400 border border-stone-200 dark:border-stone-700 hover:border-orange-400 transition-colors flex items-center gap-1 cursor-pointer shadow-xs active:scale-95"
+                            title="Masayı veya siparişleri başka masaya taşı"
+                          >
+                            <ArrowRightLeft size={11} className="text-orange-600 dark:text-orange-400" />
+                            <span>Taşı</span>
+                          </button>
+                        )}
                         {table.status === 'payment_waiting' ? (
                           <span className="text-[10px] px-2 py-0.5 rounded-md font-bold bg-stone-900 text-white dark:bg-white dark:text-stone-900">
                             Hesap
