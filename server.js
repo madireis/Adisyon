@@ -3,6 +3,7 @@ import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
 import dgram from 'node:dgram';
+import { exec } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -27,6 +28,93 @@ function getLocalIpAddress() {
   }
   return '127.0.0.1';
 }
+
+/**
+ * Automatically locate the Vite frontend dist directory
+ */
+function resolveDistDir() {
+  const candidates = [
+    path.join(__dirname, 'dist'),
+    path.join(process.cwd(), 'dist'),
+  ];
+
+  for (const cand of candidates) {
+    try {
+      if (fs.existsSync(path.join(cand, 'index.html'))) {
+        return cand;
+      }
+    } catch {}
+  }
+  return null;
+}
+
+/**
+ * Automatically configure Windows hosts file with adisyon.local
+ */
+function autoSetupWindowsHosts(localIp) {
+  if (process.platform !== 'win32') return;
+  try {
+    const sysRoot = process.env.SystemRoot || 'C:\\Windows';
+    const hostsPath = path.join(sysRoot, 'System32', 'drivers', 'etc', 'hosts');
+    if (!fs.existsSync(hostsPath)) return;
+
+    let content = '';
+    try {
+      content = fs.readFileSync(hostsPath, 'utf8');
+    } catch {
+      return;
+    }
+
+    const hasLocal = content.includes('adisyon.local');
+    const hasIp = localIp && localIp !== '127.0.0.1' && content.includes(localIp);
+    if (hasLocal && hasIp) {
+      console.log('✅ [Windows Hosts] adisyon.local alan adı kaydı aktif.');
+      return;
+    }
+
+    const entries = [
+      '',
+      '# --- Wots Cafe Adisyon POS Local Domains (Otomatik) ---',
+      '127.0.0.1 adisyon.local',
+      '127.0.0.1 adisyon.pos',
+      '127.0.0.1 adisyon.cafe',
+    ];
+    if (localIp && localIp !== '127.0.0.1') {
+      entries.push(`${localIp} adisyon.local`);
+      entries.push(`${localIp} adisyon.pos`);
+      entries.push(`${localIp} adisyon.cafe`);
+    }
+    const textToAdd = entries.join('\r\n') + '\r\n';
+
+    try {
+      fs.appendFileSync(hostsPath, textToAdd, 'utf8');
+      console.log('✅ [Windows Hosts] adisyon.local hosts dosyasına başarıyla eklendi!');
+    } catch {
+      const escaped = textToAdd.replace(/\r\n/g, '`r`n').replace(/"/g, '`"');
+      const ps = `Start-Process powershell -Verb RunAs -ArgumentList '-NoProfile -Command Add-Content -Path \\"$env:SystemRoot\\System32\\drivers\\etc\\hosts\\" -Value \\"${escaped}\\"' -WindowStyle Hidden`;
+      exec(`powershell -NoProfile -Command "${ps}"`, () => {});
+    }
+  } catch {}
+}
+
+/**
+ * Automatically open application in default browser upon server startup
+ */
+function autoOpenBrowser(url) {
+  if (process.env.NO_AUTO_OPEN) return;
+  setTimeout(() => {
+    try {
+      if (process.platform === 'win32') {
+        exec(`start "" "${url}"`);
+      } else if (process.platform === 'darwin') {
+        exec(`open "${url}"`);
+      } else {
+        exec(`xdg-open "${url}"`);
+      }
+    } catch {}
+  }, 1200);
+}
+
 
 /**
  * RFC 6762 Multicast DNS (mDNS) Responder for "adisyon.local"
@@ -1050,9 +1138,45 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 18. Default: Serve built Vite static files if dist directory exists
-  const distDir = path.join(__dirname, 'dist');
-  if (fs.existsSync(distDir)) {
+  // 18. System: Lock Windows Static IP (Sabit IP Ayarla API)
+  if (url.pathname === '/api/system/lock-static-ip' && req.method === 'POST') {
+    if (process.platform !== 'win32') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, message: 'Bu ozellik sadece Windows sistemlerde calisir.' }));
+      return;
+    }
+    try {
+      const script = `
+        $cfg = Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -ne $null } | Select-Object -First 1
+        if ($cfg) {
+          $idx = $cfg.InterfaceIndex
+          $ip = $cfg.IPv4Address.IPAddress
+          $prefix = $cfg.IPv4Address.PrefixLength
+          $gw = $cfg.IPv4DefaultGateway.NextHop
+          $dns = ($cfg.DNSServer | ForEach-Object { $_.ServerAddresses }) -join ','
+          if (-not $dns) { $dns = '8.8.8.8,1.1.1.1' }
+          Start-Process powershell -Verb RunAs -ArgumentList "-NoProfile -Command Remove-NetIPAddress -InterfaceIndex $idx -AddressFamily IPv4 -Confirm:\`$false; New-NetIPAddress -InterfaceIndex $idx -IPAddress $ip -PrefixLength $prefix -DefaultGateway $gw; Set-NetIPInterface -InterfaceIndex $idx -Dhcp Disabled; Set-DnsClientServerAddress -InterfaceIndex $idx -ServerAddresses $dns" -WindowStyle Hidden
+        }
+      `;
+      exec(`powershell -NoProfile -Command "${script.replace(/\r?\n\s*/g, ' ')}"`, (err) => {
+        if (err) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: err.message }));
+        } else {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, message: 'Mevcut IP adresi Windows ag ayarlarinda kalici olarak sabitlendi.' }));
+        }
+      });
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+    return;
+  }
+
+  // 19. Default: Serve built Vite static files (SPA frontend)
+  const distDir = resolveDistDir();
+  if (distDir) {
     let cleanPath = url.pathname.replace(/^\/Adisyon\/?/, '/');
     let filePath = path.join(distDir, cleanPath === '/' ? 'index.html' : cleanPath);
     if (!fs.existsSync(filePath)) {
@@ -1061,16 +1185,19 @@ const server = http.createServer((req, res) => {
 
     const ext = path.extname(filePath);
     const mimeTypes = {
-      '.html': 'text/html',
-      '.js': 'text/javascript',
-      '.css': 'text/css',
-      '.json': 'application/json',
+      '.html': 'text/html; charset=utf-8',
+      '.js': 'text/javascript; charset=utf-8',
+      '.css': 'text/css; charset=utf-8',
+      '.json': 'application/json; charset=utf-8',
       '.png': 'image/png',
       '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
       '.svg': 'image/svg+xml',
+      '.ico': 'image/x-icon',
       '.webmanifest': 'application/manifest+json',
       '.woff2': 'font/woff2',
       '.woff': 'font/woff',
+      '.ttf': 'font/ttf',
     };
 
     const contentType = mimeTypes[ext] || 'application/octet-stream';
@@ -1081,8 +1208,15 @@ const server = http.createServer((req, res) => {
 
     fs.readFile(filePath, (err, data) => {
       if (err) {
-        res.writeHead(500);
-        res.end('Server Error');
+        fs.readFile(path.join(distDir, 'index.html'), (err2, indexData) => {
+          if (err2) {
+            res.writeHead(500);
+            res.end('Server Error');
+          } else {
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end(indexData);
+          }
+        });
       } else {
         res.writeHead(200, { 'Content-Type': contentType });
         res.end(data);
@@ -1091,11 +1225,31 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Fallback: Auto redirect to Vite dev port 5173
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(`
-    <h2>Wot's Cafe Adisyon Yerel Ağ Sunucusu Aktif!</h2>
-    <p>Sunucu IP Adresi: <strong>http://${localIp}:${PORT}</strong></p>
-    <p>Garsonlar için Uygulama Adresi: <strong>http://${localIp}:${PORT}</strong></p>
+    <!DOCTYPE html>
+    <html lang="tr">
+    <head>
+      <meta charset="utf-8">
+      <title>Wot's Cafe Adisyon</title>
+      <meta http-equiv="refresh" content="1;url=http://localhost:${VITE_PORT}">
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #1c1917; color: #f5f5f4; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: #292524; padding: 2.5rem; border-radius: 1.5rem; text-align: center; border: 1px solid #44403c; max-width: 440px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+        h2 { color: #f97316; margin-top: 0; font-size: 1.5rem; }
+        p { color: #a8a29e; font-size: 0.95rem; line-height: 1.5; }
+        a { display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; background: #f97316; color: white; text-decoration: none; border-radius: 0.75rem; font-weight: bold; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <h2>Wot's Cafe Adisyon</h2>
+        <p>Uygulamaya yonlendiriliyorsunuz...</p>
+        <a href="http://localhost:${VITE_PORT}">Giris Yap (Port ${VITE_PORT})</a>
+      </div>
+    </body>
+    </html>
   `);
 });
 
@@ -1103,12 +1257,17 @@ server.listen(PORT, '0.0.0.0', () => {
   const localIp = getLocalIpAddress();
   startMdnsResponder(['adisyon.local', 'pos.local', 'kasa.local']);
 
+  // Automatic Windows configurations upon startup
+  autoSetupWindowsHosts(localIp);
+  autoOpenBrowser(`http://localhost:${PORT}`);
+
   console.log(`\n==================================================`);
   console.log(`🚀 ADİSYON REAL-TIME SYNC & YEREL AĞ SUNUCUSU ÇALIŞIYOR`);
   console.log(`🌐 Sabit Alan Adı (Tüm Cihazlar): http://adisyon.local:${PORT}`);
   console.log(`📍 Ana PC Yerel IP Adresi:        http://${localIp}:${PORT}`);
   console.log(`📲 Garson Telefon Giriş URL:      http://adisyon.local:${PORT} (veya http://${localIp}:${PORT})`);
   console.log(`💡 İpucu: Modem IP'nizi değiştirse bile "http://adisyon.local:${PORT}" her zaman çalışır!`);
+  console.log(`🖥️ Tarayıcı otomatik açılıyor:     http://localhost:${PORT}`);
   console.log(`📁 Veri & Log Depolama Dizini:    ${DATA_DIR}`);
   console.log(`🛑 Hata Kayıt Dosyası:            ${path.join(LOGS_DIR, `errors_${getTodayString()}.log`)}`);
   console.log(`🛡️ Ani Kapanma Koruması & Atomik Yazma: Aktif`);

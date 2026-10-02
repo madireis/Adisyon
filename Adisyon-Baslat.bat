@@ -5,10 +5,7 @@ echo ================================================================
 echo           WOT'S CAFE & RESTORAN ADISYON SISTEMI
 echo ================================================================
 echo.
-echo [1/2] Tarayici aciliyor: http://adisyon.local:3001
-start "" http://localhost:3001
-echo.
-echo [2/2] Sunucu motoru calistiriliyor...
+echo Sunucu motoru calistiriliyor ve tarayici otomatik aciliyor...
 echo.
 if exist "Adisyon-Server.exe" (
     "Adisyon-Server.exe"

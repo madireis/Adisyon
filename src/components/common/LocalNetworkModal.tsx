@@ -41,9 +41,27 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
   const [addressMode, setAddressMode] = useState<'domain' | 'ip'>('domain');
   const [showToolsGuide, setShowToolsGuide] = useState(false);
   const [isEditingIp, setIsEditingIp] = useState(false);
+  const [isLockingIp, setIsLockingIp] = useState(false);
+  const [lockedIpSuccess, setLockedIpSuccess] = useState(false);
   const [customIp, setCustomIp] = useState(() => {
     return localStorage.getItem('wots_custom_local_ip') || '';
   });
+
+  const handleLockStaticIp = async () => {
+    setIsLockingIp(true);
+    try {
+      const res = await fetch('/api/system/lock-static-ip', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setLockedIpSuccess(true);
+        setTimeout(() => setLockedIpSuccess(false), 3500);
+      }
+    } catch {
+      // silent
+    } finally {
+      setIsLockingIp(false);
+    }
+  };
 
   // Calculate clean non-localhost IP
   const detectedIp = networkInfo?.localIp && networkInfo.localIp !== '127.0.0.1' && networkInfo.localIp !== 'localhost'
@@ -443,15 +461,26 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
                     </p>
                   </div>
 
-                  {/* Tool 2: Sabit-IP-Ayarla.bat */}
-                  <div className="p-3 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold text-stone-900 dark:text-stone-100">
-                      <Terminal size={13} className="text-blue-500" />
-                      <span>2. Sabit-IP-Ayarla.bat</span>
+                  {/* Tool 2: Sabit IP */}
+                  <div className="p-3 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 space-y-2 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-1.5 font-bold text-stone-900 dark:text-stone-100">
+                        <Terminal size={13} className="text-blue-500" />
+                        <span>2. Statik IP Sabitleme (Otomatik)</span>
+                      </div>
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-snug mt-1">
+                        Sunucu açıldığında bu ayarı otomatik dener. İsterseniz aşağıdaki butonla Windows ağ kartınızın IP adresini hemen dondurabilirsiniz:
+                      </p>
                     </div>
-                    <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-snug">
-                      Proje klasöründeki bu dosyaya sağ tıklayıp <strong>"Yönetici Olarak Çalıştır"</strong> dediğinizde, bilgisayarın mevcut IP adresini Windows ağ kartında kalıcı (Statik IP) yapar. Modem kapansa da IP değişmez.
-                    </p>
+                    <button
+                      type="button"
+                      onClick={handleLockStaticIp}
+                      disabled={isLockingIp}
+                      className="mt-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-bold border border-blue-200 dark:border-blue-800/60 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                    >
+                      {isLockingIp ? <RefreshCw size={12} className="animate-spin" /> : <Shield size={12} />}
+                      <span>{lockedIpSuccess ? 'IP Başarıyla Sabitlendi!' : 'IP Adresini Şimdi Dondur'}</span>
+                    </button>
                   </div>
 
                   {/* Tool 3: Adisyon-Domain-Kurucu.bat */}
