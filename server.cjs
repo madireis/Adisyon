@@ -2,6 +2,7 @@ const http = require('node:http');
 const os = require('node:os');
 const fs = require('node:fs');
 const path = require('node:path');
+const dgram = require('node:dgram');
 
 const PORT = process.env.PORT || 3001;
 const VITE_PORT = 5173;
@@ -21,6 +22,82 @@ function getLocalIpAddress() {
     }
   }
   return '127.0.0.1';
+}
+
+/**
+ * RFC 6762 Multicast DNS (mDNS) Responder for "adisyon.local"
+ * Allows all phones, tablets, and computers on the Wi-Fi to access http://adisyon.local:3001
+ * without worrying about dynamic IP changes from the router!
+ */
+function buildMdnsResponse(domain, ip) {
+  const labels = domain.split('.');
+  const nameBufferParts = [];
+  for (const label of labels) {
+    nameBufferParts.push(Buffer.from([label.length]));
+    nameBufferParts.push(Buffer.from(label, 'utf-8'));
+  }
+  nameBufferParts.push(Buffer.from([0]));
+  const nameBuf = Buffer.concat(nameBufferParts);
+
+  const header = Buffer.alloc(12);
+  header.writeUInt16BE(0x0000, 0); // ID = 0
+  header.writeUInt16BE(0x8400, 2); // Flags: Response, Authoritative
+  header.writeUInt16BE(0x0000, 4); // Questions = 0
+  header.writeUInt16BE(0x0001, 6); // Answers = 1
+  header.writeUInt16BE(0x0000, 8); // Authority = 0
+  header.writeUInt16BE(0x0000, 10); // Additional = 0
+
+  const recordHeader = Buffer.alloc(10);
+  recordHeader.writeUInt16BE(0x0001, 0); // Type A
+  recordHeader.writeUInt16BE(0x8001, 2); // Class IN (cache-flush)
+  recordHeader.writeUInt32BE(120, 4);    // TTL 120s
+  recordHeader.writeUInt16BE(4, 8);      // RDLENGTH = 4
+
+  const ipParts = ip.split('.').map(Number);
+  const ipBuf = Buffer.from(ipParts);
+
+  return Buffer.concat([header, nameBuf, recordHeader, ipBuf]);
+}
+
+function startMdnsResponder(domains = ['adisyon.local', 'pos.local', 'kasa.local']) {
+  try {
+    const socket = dgram.createSocket({ type: 'udp4', reuseAddr: true });
+
+    socket.on('error', () => {
+      // Ignore background mDNS errors so the HTTP server is never disrupted
+    });
+
+    socket.on('message', (msg, rinfo) => {
+      try {
+        const msgStr = msg.toString('binary').toLowerCase();
+        const currentIp = getLocalIpAddress();
+        if (!currentIp || currentIp === '127.0.0.1') return;
+
+        for (const domain of domains) {
+          const prefix = domain.toLowerCase().replace('.local', '');
+          if (msgStr.includes(prefix)) {
+            const responsePacket = buildMdnsResponse(domain, currentIp);
+
+            socket.send(responsePacket, 0, responsePacket.length, 5353, '224.0.0.251', () => {});
+
+            if (rinfo.port && rinfo.address) {
+              socket.send(responsePacket, 0, responsePacket.length, rinfo.port, rinfo.address, () => {});
+            }
+          }
+        }
+      } catch {}
+    });
+
+    socket.bind(5353, () => {
+      try {
+        socket.addMembership('224.0.0.251');
+      } catch {}
+    });
+
+    return socket;
+  } catch {
+    return null;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -682,6 +759,8 @@ const server = http.createServer((req, res) => {
         status: 'online',
         serverName: os.hostname(),
         localIp,
+        domain: 'adisyon.local',
+        domainUrl: `http://adisyon.local:${PORT}`,
         port: PORT,
         appPort: VITE_PORT,
         joinUrl: `http://${localIp}:${PORT}`,
@@ -1026,12 +1105,16 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, '0.0.0.0', () => {
   const localIp = getLocalIpAddress();
+  startMdnsResponder(['adisyon.local', 'pos.local', 'kasa.local']);
+
   console.log(`\n==================================================`);
   console.log(`🚀 ADİSYON REAL-TIME SYNC & YEREL AĞ SUNUCUSU ÇALIŞIYOR`);
-  console.log(`📍 Ana PC Yerel IP: http://${localIp}:${PORT}`);
-  console.log(`📲 Garson Telefon Bağlantı URL: http://${localIp}:${PORT}`);
-  console.log(`📁 Veri & Log Depolama Dizini: ${DATA_DIR}`);
-  console.log(`🛑 Hata Kayıt Dosyası: ${path.join(LOGS_DIR, `errors_${getTodayString()}.log`)}`);
+  console.log(`🌐 Sabit Alan Adı (Tüm Cihazlar): http://adisyon.local:${PORT}`);
+  console.log(`📍 Ana PC Yerel IP Adresi:        http://${localIp}:${PORT}`);
+  console.log(`📲 Garson Telefon Giriş URL:      http://adisyon.local:${PORT} (veya http://${localIp}:${PORT})`);
+  console.log(`💡 İpucu: Modem IP'nizi değiştirse bile "http://adisyon.local:${PORT}" her zaman çalışır!`);
+  console.log(`📁 Veri & Log Depolama Dizini:    ${DATA_DIR}`);
+  console.log(`🛑 Hata Kayıt Dosyası:            ${path.join(LOGS_DIR, `errors_${getTodayString()}.log`)}`);
   console.log(`🛡️ Ani Kapanma Koruması & Atomik Yazma: Aktif`);
   console.log(`📡 Gerçek Zamanlı Senkronizasyon (SSE & WiFi): Aktif`);
   console.log(`==================================================\n`);

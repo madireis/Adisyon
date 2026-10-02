@@ -16,6 +16,8 @@ export interface LocalNetworkInfo {
   status: 'online' | 'offline';
   serverName: string;
   localIp: string;
+  domain?: string;
+  domainUrl?: string;
   port: number;
   appPort: number;
   joinUrl: string;
@@ -255,6 +257,8 @@ export async function fetchLocalNetworkInfo(): Promise<LocalNetworkInfo> {
     status: 'online',
     serverName: isWebHosted ? 'Adisyon Bulut & Web Ağı' : 'Adisyon Yerel Ağ',
     localIp: fallbackIp,
+    domain: 'adisyon.local',
+    domainUrl: `http://adisyon.local:${fallbackPort}/#/login`,
     port: 3001,
     appPort: fallbackPort,
     joinUrl: isWebHosted 

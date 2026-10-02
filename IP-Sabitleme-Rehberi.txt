@@ -1,0 +1,98 @@
+================================================================================
+   WOT'S CAFE & RESTORAN ADİSYON SİSTEMİ
+   YEREL AĞDA SABİT IP & ALAN ADI (DOMAIN) KULLANIM REHBERİ
+================================================================================
+
+Sorun Nedir?
+Restoranlarda kullanılan modemler kapatılıp açıldığında veya elektrik kesintisi 
+sonrası ana bilgisayara (Kasa PC) yeni bir IP adresi atayabilir (örneğin 192.168.1.33 
+yerine 192.168.1.45 olabilir). Bu durumda garsonların eski IP adresine girmesi 
+bağlantı kopmasına neden olabilir.
+
+Bu sorunu çözmek için projeye 4 farklı ve tam garantili yöntem dahil edilmiştir:
+
+--------------------------------------------------------------------------------
+YÖNTEM 1: SIFIR KURULUM - YERLEŞİK mDNS ALAN ADI (ÖNERİLEN & EN KOLAYI)
+--------------------------------------------------------------------------------
+Sunucumuz (Adisyon-Server.exe veya node server.js), arka planda otomatik olarak 
+RFC 6762 Multicast DNS (mDNS) servisi çalıştırmaktadır.
+
+Nasıl Kullanılır?
+- Garsonların telefonundan (iPhone Safari, Android 12+, Chrome) veya tabletlerden 
+  IP adresi yerine doğrudan şu adresi açın:
+  
+  👉  http://adisyon.local:3001
+  
+- Veya ekrandaki QR kodu okuttuğunuzda zaten bu adres otomatik açılacaktır.
+- Modem ana bilgisayarın IP adresini değiştirse bile, mDNS servisi yeni IP'yi 
+  arka planda anında yayınlar; telefonlar hiçbir ayar değiştirmeden kasaya bağlanmaya 
+  devam eder!
+
+
+--------------------------------------------------------------------------------
+YÖNTEM 2: 1-TIKLA WINDOWS IP SABİTLEME (Sabit-IP-Ayarla.bat)
+--------------------------------------------------------------------------------
+Bilgisayarınızın mevcut IP adresini (örneğin 192.168.1.33) Windows ağ kartında 
+kalıcı "Statik IP" haline getirir.
+
+Nasıl Yapılır?
+1. Proje klasöründeki "Sabit-IP-Ayarla.bat" dosyasına SAĞ TIKLAYIN.
+2. "Yönetici olarak çalıştır" seçeneğini seçin.
+3. Çıkan siyah ekranda "E" (Evet) tuşuna basın.
+4. Program o anki IP, Alt Ağ Maskesi, Ağ Geçidi ve DNS sunucularını otomatik 
+   tespit eder ve Windows ayarlarında IP'yi kilitler.
+5. Artık modem yeniden başlasa bile Windows aynı IP'yi talep eder ve IP değişmez!
+
+
+--------------------------------------------------------------------------------
+YÖNTEM 3: WINDOWS HOSTS DOMAIN KURUCU (Adisyon-Domain-Kurucu.bat)
+--------------------------------------------------------------------------------
+Mutfak ekranı, bar bilgisayarı veya diğer Windows kasalar için yerel domain kaydı açar.
+
+Nasıl Yapılır?
+1. "Adisyon-Domain-Kurucu.bat" dosyasına SAĞ TIKLAYIP "Yönetici olarak çalıştır" deyin.
+2. Bu işlem Windows hosts dosyasına şu kayıtları ekler:
+   - adisyon.local
+   - adisyon.pos
+   - adisyon.cafe
+3. Artık o bilgisayardan http://adisyon.local:3001 veya http://adisyon.pos:3001 
+   yazarak tek tıkla sisteme girebilirsiniz.
+
+
+--------------------------------------------------------------------------------
+YÖNTEM 4: BİLGİSAYAR ADINI "ADISYON" YAPMA (Bilgisayar-Adini-Adisyon-Yap.bat)
+--------------------------------------------------------------------------------
+Windows'un yerleşik NetBIOS / LLMNR protokolü sayesinde bilgisayar adıyla erişim sağlar.
+
+Nasıl Yapılır?
+1. "Bilgisayar-Adini-Adisyon-Yap.bat" dosyasına sağ tıklayıp Yönetici olarak çalıştırın.
+2. Bilgisayar adı "ADISYON" olarak değiştirilir.
+3. Bilgisayarı bir kez yeniden başlatın.
+4. Artık aynı ağdaki tüm bilgisayarlar ve tabletler tarayıcıya sadece şunu yazabilir:
+   👉  http://adisyon:3001
+
+
+--------------------------------------------------------------------------------
+YÖNTEM 5: MODEMDEN IP REZERVASYONU (EN PROFESYONEL VE KALICI ÇÖZÜM)
+--------------------------------------------------------------------------------
+Restorandaki ana modemin arayüzünden Ana Bilgisayarın MAC adresine sabit IP atamak, 
+tüm kurumsal restoranların ve zincir işletmelerin uyguladığı standart yöntemdir:
+
+Adımlar:
+1. Tarayıcınızda modem arayüzünü açın (Genelde 192.168.1.1 veya 192.168.0.1).
+2. Modem arkasındaki kullanıcı adı ve şifreyle giriş yapın (Genelde admin / admin 
+   veya admin / turktelekom vb.).
+3. Menüden "Yerel Ağ", "LAN", "DHCP Sunucusu" veya "IP Rezervasyonu (Static DHCP)" 
+   sekmesini bulun.
+4. "Yeni Ekle / Rezerve Et" butonuna tıklayın.
+5. Listeden Ana Kasa bilgisayarınızı seçin (veya MAC adresini girin).
+6. İstenen IP adresini (Örn: 192.168.1.100 veya mevcut IP'yi) girin ve "Kaydet" deyin.
+7. Artık modem bu bilgisayarı her gördüğünde ÖMÜR BOYU aynı IP adresini tahsis eder!
+
+================================================================================
+ÖZET:
+- Garson telefonları için: Hiçbir şey yapmanıza gerek yok, "http://adisyon.local:3001" 
+  veya QR kodu okutmaları yeterlidir.
+- Bilgisayar için: Klasördeki "Sabit-IP-Ayarla.bat" dosyasına sağ tıklayıp 
+  "Yönetici olarak çalıştır" demeniz IP'nizi anında donduracaktır!
+================================================================================

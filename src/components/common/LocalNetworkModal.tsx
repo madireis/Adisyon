@@ -15,7 +15,15 @@ import {
   ExternalLink,
   Edit3,
   Utensils,
-  Download
+  Download,
+  Globe,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  Terminal,
+  FileText,
+  CheckCircle2,
+  Info
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -30,6 +38,8 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [targetType, setTargetType] = useState<'garson' | 'customer'>('garson');
   const [selectedPort, setSelectedPort] = useState<'3001' | '5173'>('3001');
+  const [addressMode, setAddressMode] = useState<'domain' | 'ip'>('domain');
+  const [showToolsGuide, setShowToolsGuide] = useState(false);
   const [isEditingIp, setIsEditingIp] = useState(false);
   const [customIp, setCustomIp] = useState(() => {
     return localStorage.getItem('wots_custom_local_ip') || '';
@@ -46,12 +56,13 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
   const isWebHosted = window.location.hostname.includes('github.io') || 
                       (!/^(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(window.location.hostname) && window.location.hostname.includes('.'));
 
+  const hashTarget = targetType === 'customer' ? '#/qr' : '#/login';
   let joinUrl = '';
   if (isWebHosted && !customIp.trim()) {
-    const hashTarget = targetType === 'customer' ? '#/qr' : '#/login';
     joinUrl = `${window.location.origin}${window.location.pathname}${hashTarget}`;
+  } else if (addressMode === 'domain') {
+    joinUrl = `http://adisyon.local:${selectedPort}/${hashTarget}`;
   } else {
-    const hashTarget = targetType === 'customer' ? '#/qr' : '#/login';
     joinUrl = `http://${effectiveIp}:${selectedPort}/${hashTarget}`;
   }
 
@@ -97,7 +108,7 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
                 WiFi & Ağ Bağlantısı
               </h2>
               <p className="text-[11px] sm:text-xs font-semibold text-stone-500 dark:text-stone-400 truncate">
-                Yerel ağ ve bağlı garson cihazları
+                Yerel ağ, sabit domain ve bağlı garson cihazları
               </p>
             </div>
           </div>
@@ -124,10 +135,10 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
               </span>
               <div className="min-w-0">
                 <span className="font-bold text-xs sm:text-sm block">
-                  {isWifiConnected ? "Yerel Ağ Bağlı" : "Yerel Ağ Aranıyor..."}
+                  {isWifiConnected ? "Yerel Ağ & Sabit Domain Aktif" : "Yerel Ağ Aranıyor..."}
                 </span>
                 <div className="text-[11px] sm:text-xs text-stone-500 dark:text-stone-400 font-medium truncate">
-                  IP: <code className="font-mono font-bold bg-white dark:bg-stone-900 px-1 py-0.2 rounded border border-stone-200 dark:border-stone-800">{effectiveIp}</code> • Port: {selectedPort} ({pingMs} ms)
+                  Domain: <code className="font-mono font-bold text-orange-600 dark:text-orange-400 bg-white dark:bg-stone-900 px-1 py-0.2 rounded border border-stone-200 dark:border-stone-800">adisyon.local</code> • IP: <code className="font-mono font-semibold">{effectiveIp}</code> • Port: {selectedPort} ({pingMs} ms)
                 </div>
               </div>
             </div>
@@ -207,6 +218,69 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
             </div>
           </div>
 
+          {/* Address Mode Selector: Domain (Recommended) vs IP Address */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-stone-700 dark:text-stone-300 uppercase tracking-wider flex items-center gap-1.5">
+                <Globe size={14} className="text-orange-600" />
+                Bağlantı Adresi Tipi
+              </span>
+              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                <CheckCircle2 size={12} /> Otomatik mDNS Yayını Açık
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 p-1 bg-stone-100 dark:bg-stone-950 rounded-2xl border border-stone-200 dark:border-stone-800">
+              <button
+                type="button"
+                onClick={() => setAddressMode('domain')}
+                className={cn(
+                  "p-2.5 rounded-xl text-left transition-all cursor-pointer flex flex-col gap-0.5",
+                  addressMode === 'domain'
+                    ? "bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 shadow-sm border border-stone-200 dark:border-stone-700"
+                    : "text-stone-600 dark:text-stone-400 hover:bg-white/50 dark:hover:bg-stone-900/50"
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-black text-xs text-orange-600 dark:text-orange-400">
+                    <Globe size={13} />
+                    <span>adisyon.local</span>
+                  </div>
+                  <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                    Önerilen
+                  </span>
+                </div>
+                <span className="text-[10px] text-stone-500 dark:text-stone-400 leading-tight">
+                  Modem IP değişse de adres sabit kalır
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAddressMode('ip')}
+                className={cn(
+                  "p-2.5 rounded-xl text-left transition-all cursor-pointer flex flex-col gap-0.5",
+                  addressMode === 'ip'
+                    ? "bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 shadow-sm border border-stone-200 dark:border-stone-700"
+                    : "text-stone-600 dark:text-stone-400 hover:bg-white/50 dark:hover:bg-stone-900/50"
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-bold text-xs text-stone-800 dark:text-stone-200">
+                    <Server size={13} />
+                    <span>IP Adresi</span>
+                  </div>
+                  <span className="text-[9px] font-bold text-stone-400">
+                    Klasik
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-stone-500 dark:text-stone-400 truncate">
+                  {effectiveIp}
+                </span>
+              </button>
+            </div>
+          </div>
+
           {/* QR Code & Direct Join URL Card */}
           <div className="bg-stone-50 dark:bg-stone-950 p-4 sm:p-5 rounded-2xl border border-stone-200 dark:border-stone-800 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 min-w-0">
             {/* SVG QR Code */}
@@ -228,14 +302,18 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
                   <span>{targetType === 'garson' ? 'Garson Telefonunu Bağlayın' : 'Müşteri Menüsünü Açın'}</span>
                 </h3>
                 <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed mt-1">
-                  Telefonunuz restoranın aynı Wi-Fi ağına bağlıyken kameranızı QR koda doğrultun veya aşağıdaki linke dokunun.
+                  Telefonunuz restoranın aynı Wi-Fi ağına bağlıyken kameranızı QR koda doğrultun veya aşağıdaki adrese dokunun.
                 </p>
               </div>
 
               {/* URL Display Box */}
               <div className="bg-white dark:bg-stone-900 p-2.5 sm:p-3 rounded-xl border border-stone-200 dark:border-stone-800 space-y-2 shadow-2xs min-w-0">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <Server size={14} className="text-stone-400 shrink-0" />
+                  {addressMode === 'domain' ? (
+                    <Globe size={14} className="text-orange-600 shrink-0" />
+                  ) : (
+                    <Server size={14} className="text-stone-400 shrink-0" />
+                  )}
                   <code className="text-xs font-mono font-bold text-orange-600 dark:text-orange-400 break-all select-all">
                     {joinUrl}
                   </code>
@@ -264,50 +342,149 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
                 </div>
               </div>
 
-              {/* IP Override Section */}
-              <div className="pt-0.5">
-                {isEditingIp ? (
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <input
-                      type="text"
-                      value={customIp}
-                      placeholder={detectedIp}
-                      onChange={(e) => handleSaveIp(e.target.value)}
-                      className="flex-1 min-w-[140px] px-2.5 py-1.5 text-xs font-mono font-bold bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 rounded-lg outline-none focus:ring-1 focus:ring-orange-500 text-stone-900 dark:text-stone-100"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setIsEditingIp(false)}
-                      className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg cursor-pointer"
-                    >
-                      Kaydet
-                    </button>
-                    {customIp && (
+              {/* Dynamic IP note or IP Override Section */}
+              {addressMode === 'domain' ? (
+                <div className="p-2 bg-orange-50/70 dark:bg-orange-950/20 rounded-xl border border-orange-200/60 dark:border-orange-900/40 text-[11px] text-stone-600 dark:text-stone-300 flex items-start gap-2">
+                  <Sparkles size={14} className="text-orange-600 shrink-0 mt-0.5" />
+                  <p className="leading-snug">
+                    <strong>Dinamik IP Koruması:</strong> Modeminiz yeniden başlasa veya yeni IP atasa bile, mDNS desteği sayesinde tüm iPhone, Android, Mac ve PC'lerde bu sabit alan adı çalışmaya devam eder.
+                  </p>
+                </div>
+              ) : (
+                <div className="pt-0.5">
+                  {isEditingIp ? (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <input
+                        type="text"
+                        value={customIp}
+                        placeholder={detectedIp}
+                        onChange={(e) => handleSaveIp(e.target.value)}
+                        className="flex-1 min-w-[140px] px-2.5 py-1.5 text-xs font-mono font-bold bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 rounded-lg outline-none focus:ring-1 focus:ring-orange-500 text-stone-900 dark:text-stone-100"
+                      />
                       <button
                         type="button"
-                        onClick={() => handleSaveIp('')}
-                        className="px-2 py-1.5 bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-400 text-xs font-bold rounded-lg cursor-pointer"
+                        onClick={() => setIsEditingIp(false)}
+                        className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg cursor-pointer"
                       >
-                        Sıfırla
+                        Kaydet
                       </button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between text-[11px] text-stone-500 gap-2">
-                    <span className="truncate">
-                      IP: <strong className="text-stone-800 dark:text-stone-200 font-mono">{effectiveIp}</strong> {customIp ? '(Manuel)' : '(Otomatik)'}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditingIp(true)}
-                      className="text-orange-600 hover:underline flex items-center gap-1 font-bold cursor-pointer shrink-0"
-                    >
-                      <Edit3 size={11} /> IP Değiştir
-                    </button>
-                  </div>
-                )}
-              </div>
+                      {customIp && (
+                        <button
+                          type="button"
+                          onClick={() => handleSaveIp('')}
+                          className="px-2 py-1.5 bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-400 text-xs font-bold rounded-lg cursor-pointer"
+                        >
+                          Sıfırla
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between text-[11px] text-stone-500 gap-2">
+                      <span className="truncate">
+                        IP: <strong className="text-stone-800 dark:text-stone-200 font-mono">{effectiveIp}</strong> {customIp ? '(Manuel)' : '(Otomatik)'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingIp(true)}
+                        className="text-orange-600 hover:underline flex items-center gap-1 font-bold cursor-pointer shrink-0"
+                      >
+                        <Edit3 size={11} /> IP Değiştir
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
+          </div>
+
+          {/* Expandable IP Freezing & Domain Tools Guide */}
+          <div className="bg-stone-50 dark:bg-stone-950 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden transition-all">
+            <button
+              type="button"
+              onClick={() => setShowToolsGuide(!showToolsGuide)}
+              className="w-full p-3.5 flex items-center justify-between text-left hover:bg-stone-100/60 dark:hover:bg-stone-900/60 transition-colors cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-7 h-7 rounded-lg bg-orange-100 dark:bg-orange-950 text-orange-600 flex items-center justify-center shrink-0">
+                  <Terminal size={14} />
+                </div>
+                <div className="min-w-0">
+                  <span className="font-extrabold text-xs text-stone-900 dark:text-stone-100 block truncate">
+                    IP Değişmesini Önleme & Sabitleme Araçları (Dahil Edilen Dosyalar)
+                  </span>
+                  <span className="text-[11px] text-stone-500 dark:text-stone-400 block truncate">
+                    Proje klasöründeki tek tıkla çalışan hazır Windows scriptleri ve çözümler
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-stone-400 shrink-0 ml-2">
+                <span className="text-[10px] font-bold uppercase hidden sm:inline">
+                  {showToolsGuide ? 'Gizle' : 'Gör'}
+                </span>
+                {showToolsGuide ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </div>
+            </button>
+
+            {showToolsGuide && (
+              <div className="p-3.5 sm:p-4 pt-1 border-t border-stone-200 dark:border-stone-800 space-y-3 bg-white/50 dark:bg-stone-900/40 text-xs animate-in fade-in duration-150">
+                <p className="text-[11px] text-stone-600 dark:text-stone-400">
+                  Restoran Wi-Fi modemleri yeniden başladığında bilgisayarınızın IP adresini değiştirebilir. Bu durumun önüne geçmek için projeye eklediğimiz hazır araçları kullanabilirsiniz:
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {/* Tool 1: adisyon.local */}
+                  <div className="p-3 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 space-y-1">
+                    <div className="flex items-center gap-1.5 font-bold text-stone-900 dark:text-stone-100">
+                      <Globe size={13} className="text-orange-500" />
+                      <span>1. adisyon.local (Otomatik mDNS)</span>
+                    </div>
+                    <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-snug">
+                      Sunucuda yerleşik çalışır. Hiçbir şey yüklemeden iPhone (Safari), Android 12+, Mac ve Windows 10/11 tarayıcılarında <code>http://adisyon.local:3001</code> yazarak bağlanabilirsiniz.
+                    </p>
+                  </div>
+
+                  {/* Tool 2: Sabit-IP-Ayarla.bat */}
+                  <div className="p-3 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 space-y-1">
+                    <div className="flex items-center gap-1.5 font-bold text-stone-900 dark:text-stone-100">
+                      <Terminal size={13} className="text-blue-500" />
+                      <span>2. Sabit-IP-Ayarla.bat</span>
+                    </div>
+                    <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-snug">
+                      Proje klasöründeki bu dosyaya sağ tıklayıp <strong>"Yönetici Olarak Çalıştır"</strong> dediğinizde, bilgisayarın mevcut IP adresini Windows ağ kartında kalıcı (Statik IP) yapar. Modem kapansa da IP değişmez.
+                    </p>
+                  </div>
+
+                  {/* Tool 3: Adisyon-Domain-Kurucu.bat */}
+                  <div className="p-3 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 space-y-1">
+                    <div className="flex items-center gap-1.5 font-bold text-stone-900 dark:text-stone-100">
+                      <FileText size={13} className="text-purple-500" />
+                      <span>3. Adisyon-Domain-Kurucu.bat</span>
+                    </div>
+                    <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-snug">
+                      Kasa ve diğer Windows bilgisayarların hosts dosyasına <code>adisyon.local</code>, <code>adisyon.pos</code> ve <code>adisyon.cafe</code> domainlerini tek tıkla kaydeder.
+                    </p>
+                  </div>
+
+                  {/* Tool 4: Bilgisayar-Adini-Adisyon-Yap.bat */}
+                  <div className="p-3 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 space-y-1">
+                    <div className="flex items-center gap-1.5 font-bold text-stone-900 dark:text-stone-100">
+                      <Server size={13} className="text-emerald-500" />
+                      <span>4. Bilgisayar-Adini-Adisyon-Yap.bat</span>
+                    </div>
+                    <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-snug">
+                      Bilgisayarın adını "ADISYON" yapar. Böylece ağdaki tüm Windows cihazlar <code>http://adisyon:3001</code> yazarak da kasaya bağlanabilir.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-stone-100 dark:bg-stone-950 text-stone-600 dark:text-stone-400 text-[11px]">
+                  <Info size={14} className="text-orange-600 shrink-0" />
+                  <span>
+                    Detaylı modem DHCP IP rezervasyonu adımları için proje klasöründeki <strong>IP-Sabitleme-Rehberi.txt</strong> dosyasını açabilirsiniz.
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* PWA Phone Installation Guide Banner */}
@@ -404,7 +581,7 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
         <div className="p-3.5 sm:p-4 bg-stone-50 dark:bg-stone-950 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between gap-3 shrink-0">
           <span className="text-[11px] sm:text-xs font-semibold text-stone-500 dark:text-stone-400 flex items-center gap-1.5 min-w-0 truncate">
             <Shield size={14} className="text-emerald-600 shrink-0" />
-            <span className="truncate">Yerel WiFi Güvenliği Aktif</span>
+            <span className="truncate">Yerel WiFi & mDNS Güvenliği Aktif</span>
           </span>
           <button
             type="button"
