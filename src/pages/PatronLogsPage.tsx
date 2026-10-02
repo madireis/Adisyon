@@ -5,7 +5,6 @@ import {
   ShieldAlert,
   ShieldCheck,
   Search,
-  Download,
   Printer,
   Calendar,
   Clock,
@@ -13,7 +12,6 @@ import {
   Users,
   UtensilsCrossed,
   CreditCard,
-  ChefHat,
   Trash2,
   Gift,
   ArrowRightLeft,
@@ -22,13 +20,10 @@ import {
   AlertOctagon,
   ChevronDown,
   ChevronUp,
-  Filter,
   CheckCircle2,
-  RefreshCw,
-  SlidersHorizontal,
   Crown,
-  Eye,
-  FileSpreadsheet
+  FileSpreadsheet,
+  X
 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import { useApp } from '@/lib/store';
@@ -111,7 +106,6 @@ export default function PatronLogsPage() {
   const unifiedActivities = useMemo(() => {
     const items: UnifiedActivityItem[] = [];
 
-    // Helper to check if in date range
     const isWithinDate = (isoString?: string) => {
       if (!isoString) return true;
       const t = new Date(isoString).getTime();
@@ -143,7 +137,6 @@ export default function PatronLogsPage() {
         type = 'ORDER_TAKEN';
       }
 
-      // Extract table label if present in details
       let tableMatch = log.details?.match(/Masa\s+([a-zA-Z0-9_-]+)/i);
       const tableLabel = tableMatch ? `Masa ${tableMatch[1]}` : undefined;
 
@@ -161,13 +154,12 @@ export default function PatronLogsPage() {
       });
     });
 
-    // 2. Process Orders (New items taken, Waiter submissions, Cancellations)
+    // 2. Process Orders
     orders.forEach((order: Order) => {
       if (!isWithinDate(order.createdAt)) return;
 
       const waiterName = order.waiterName || 'Garson';
 
-      // Order created / sent to kitchen
       if (order.items && order.items.length > 0) {
         items.push({
           id: `order_create_${order.id}`,
@@ -189,7 +181,6 @@ export default function PatronLogsPage() {
         });
       }
 
-      // If order was cancelled
       if (order.status === 'cancelled') {
         items.push({
           id: `order_cancel_${order.id}`,
@@ -211,7 +202,6 @@ export default function PatronLogsPage() {
         });
       }
 
-      // If discount applied
       if (order.discount && order.discount > 0) {
         items.push({
           id: `order_discount_${order.id}`,
@@ -229,7 +219,7 @@ export default function PatronLogsPage() {
       }
     });
 
-    // 3. Process Payments (Cashier payments taken)
+    // 3. Process Payments
     payments.forEach((p: Payment) => {
       const payTime = p.paidAt || (p as any).timestamp;
       if (!isWithinDate(payTime)) return;
@@ -250,52 +240,65 @@ export default function PatronLogsPage() {
         : 'Tahsilat';
 
       items.push({
-        id: `payment_${p.id}`,
+        id: `pay_${p.id}`,
         timestamp: payTime,
         type: 'PAYMENT',
-        actionTitle: `Hesap Kapatıldı & Tahsilat`,
-        staffName: p.processedBy || (p as any).processedByName || 'Kasiyer',
+        actionTitle: `Ödeme Alındı (${partsDesc})`,
+        staffName: p.processedBy || 'Kasiyer',
         staffRole: 'Kasiyer',
-        tableLabel: p.tableLabel || 'Kasa',
-        details: `${partsDesc} (Toplam: ₺${p.total || 0})${p.change ? ` • Para Üstü: ₺${p.change}` : ''}`,
+        details: `${partsDesc} tahsilatı yapıldı ve adisyon kapatıldı.`,
         amount: p.total,
         rawObject: p
       });
     });
 
-    // 4. Process Cash Transactions (Drawer In/Out)
-    cashTransactions.forEach((c: CashTransaction) => {
-      const cashTime = c.createdAt || (c as any).timestamp;
-      if (!isWithinDate(cashTime)) return;
+    // 4. Process Cash Transactions
+    cashTransactions.forEach((t: CashTransaction) => {
+      if (!isWithinDate(t.createdAt)) return;
 
-      const isOut = c.type === 'out';
       items.push({
-        id: `cash_${c.id}`,
-        timestamp: cashTime,
+        id: `cash_${t.id}`,
+        timestamp: t.createdAt,
         type: 'CASH_DRAWER',
-        actionTitle: isOut ? `Kasa Para Çıkışı / Masraf` : `Kasa Para Girişi / Avans`,
-        staffName: c.processedBy || (c as any).userName || 'Kasiyer',
-        staffRole: 'Kasiyer',
-        details: `${c.category ? `[${c.category}] ` : ''}${c.description || ''} (₺${c.amount})`,
-        amount: c.amount,
-        isNegative: isOut,
-        rawObject: c
+        actionTitle: t.type === 'in' ? `Kasa Para Girişi (+)` : `Kasa Masraf Çıkışı (-)`,
+        staffName: t.processedBy || 'Kasiyer',
+        staffRole: 'Kasa Yetkilisi',
+        details: `${t.category} ${t.description ? `(${t.description})` : ''}`,
+        amount: t.amount,
+        isNegative: t.type === 'out',
+        rawObject: t
       });
     });
 
-    // Deduplicate and Sort chronologically (newest first)
-    const seen = new Set<string>();
-    const deduplicated = items.filter(item => {
-      const key = `${item.timestamp}_${item.actionTitle}_${item.tableLabel || ''}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
+    // 5. Process Kitchen Tickets
+    kitchenTickets.forEach((k: KitchenTicket) => {
+      if (!isWithinDate(k.createdAt)) return;
+
+      const itemsSummary = k.items.map(i => `${i.quantity}x ${i.name}`).join(', ');
+      const waiter = k.items.find(i => i.waiterName)?.waiterName || 'Garson';
+
+      items.push({
+        id: `kitchen_${k.id}`,
+        timestamp: k.createdAt,
+        type: 'KITCHEN',
+        actionTitle: `Mutfağa Sipariş İletildi (${k.station})`,
+        staffName: waiter,
+        staffRole: 'Garson',
+        tableLabel: k.tableLabel,
+        details: `${k.tableLabel} masası için [${itemsSummary}] mutfak ekranına iletildi.`,
+        itemsList: k.items.map(i => ({
+          name: i.name,
+          quantity: i.quantity,
+          notes: i.notes
+        })),
+        rawObject: k
+      });
     });
 
-    return deduplicated.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-  }, [auditLogs, orders, payments, cashTransactions, startDate, endDate]);
+    return items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }, [auditLogs, orders, payments, cashTransactions, kitchenTickets, startDate, endDate]);
 
-  // Calculate High-level Patron KPI Summary
+  // Aggregate KPIs
   const kpis = useMemo(() => {
     let totalOrdersCount = 0;
     let totalOrdersRevenue = 0;
@@ -332,7 +335,7 @@ export default function PatronLogsPage() {
     };
   }, [unifiedActivities]);
 
-  // Staff Breakdown (Which waiter did what, who cancelled what)
+  // Staff Breakdown
   const staffActivitySummary = useMemo(() => {
     const map: Record<string, {
       name: string;
@@ -381,22 +384,15 @@ export default function PatronLogsPage() {
   // Filtered Activity Feed based on UI selections
   const filteredActivities = useMemo(() => {
     return unifiedActivities.filter(act => {
-      // Type filter
       if (selectedType !== 'ALL' && act.type !== selectedType) {
         return false;
       }
-
-      // Staff filter
       if (selectedStaff !== 'ALL' && act.staffName !== selectedStaff) {
         return false;
       }
-
-      // Table filter
       if (selectedTable !== 'ALL' && act.tableLabel !== selectedTable) {
         return false;
       }
-
-      // Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchTitle = act.actionTitle.toLowerCase().includes(q);
@@ -409,12 +405,11 @@ export default function PatronLogsPage() {
           return false;
         }
       }
-
       return true;
     });
   }, [unifiedActivities, selectedType, selectedStaff, selectedTable, searchQuery]);
 
-  // List of unique tables for filter
+  // Unique lists for filter dropdowns
   const uniqueTables = useMemo(() => {
     const set = new Set<string>();
     unifiedActivities.forEach(a => {
@@ -423,7 +418,6 @@ export default function PatronLogsPage() {
     return Array.from(set).sort();
   }, [unifiedActivities]);
 
-  // List of unique staff members for filter
   const uniqueStaff = useMemo(() => {
     const set = new Set<string>();
     unifiedActivities.forEach(a => {
@@ -432,7 +426,7 @@ export default function PatronLogsPage() {
     return Array.from(set).sort();
   }, [unifiedActivities]);
 
-  // Export to Excel / CSV
+  // Export CSV
   const handleExportCSV = () => {
     const headers = ['Zaman', 'İşlem Türü', 'Başlık', 'Personel', 'Masa', 'Tutar (TL)', 'Detaylar'];
     const rows = filteredActivities.map(a => [
@@ -450,52 +444,52 @@ export default function PatronLogsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `wots_patron_loglari_${dateRange}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `patron_loglari_${dateRange}_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
-  // Browser Print Trigger
   const handlePrint = () => {
     window.print();
   };
 
   return (
-    <div className="min-h-full flex flex-col bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans select-none pb-12">
-      {/* Top Patron Header */}
-      <header className="p-4 sm:p-6 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 shrink-0">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-500 flex items-center justify-center font-black shadow-xs">
-              <Crown size={26} />
+    <div className="min-h-full flex flex-col bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans select-none pb-24 md:pb-8">
+      
+      {/* ── HEADER ── */}
+      <header className="p-3 sm:p-5 lg:p-6 bg-white dark:bg-stone-900 border-b border-stone-200/80 dark:border-stone-800/80 shrink-0">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center justify-center font-black shrink-0 shadow-xs">
+              <Crown size={22} />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg sm:text-2xl font-black tracking-tight text-stone-900 dark:text-white">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-base sm:text-xl font-black tracking-tight text-stone-900 dark:text-white truncate">
                   Patron Denetim & Operasyon Logları
                 </h1>
-                <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-md bg-amber-950 text-amber-400 border border-amber-800">
-                  PATRON PANELİ
+                <span className="text-[9px] sm:text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shrink-0">
+                  Patron
                 </span>
               </div>
-              <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-                Garsonların aldığı siparişler, yapılan ürün iptalleri, masa transferleri ve tüm hareketler
+              <p className="text-[11px] sm:text-xs text-stone-500 dark:text-stone-400 truncate">
+                Garson siparişleri, iptaller, ödemeler ve masa hareketleri
               </p>
             </div>
           </div>
 
           {/* Quick Actions & Date Filter */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Date Range Selector */}
-            <div className="flex items-center bg-stone-100 dark:bg-stone-800 p-1 rounded-xl border border-stone-200 dark:border-stone-700 text-xs font-bold">
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+            <div className="grid grid-cols-4 sm:flex items-center bg-stone-100 dark:bg-stone-800 p-1 rounded-xl border border-stone-200/80 dark:border-stone-700 text-xs font-bold w-full sm:w-auto">
               {(['TODAY', 'YESTERDAY', 'WEEK', 'ALL'] as const).map(range => (
                 <button
                   key={range}
+                  type="button"
                   onClick={() => setDateRange(range)}
                   className={cn(
-                    "px-3 py-1.5 rounded-lg transition-all cursor-pointer",
+                    "px-2.5 py-1.5 rounded-lg transition-all cursor-pointer text-center text-xs font-bold",
                     dateRange === range
                       ? "bg-amber-500 text-white shadow-xs"
                       : "text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white"
@@ -503,208 +497,211 @@ export default function PatronLogsPage() {
                 >
                   {range === 'TODAY' && 'Bugün'}
                   {range === 'YESTERDAY' && 'Dün'}
-                  {range === 'WEEK' && 'Son 7 Gün'}
+                  {range === 'WEEK' && 'Hafta'}
                   {range === 'ALL' && 'Tümü'}
                 </button>
               ))}
             </div>
 
-            {/* CSV Export */}
-            <button
-              onClick={handleExportCSV}
-              className="px-3 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-stone-200 dark:border-stone-700 cursor-pointer"
-              title="Excel / CSV Formatında İndir"
-            >
-              <FileSpreadsheet size={15} className="text-emerald-500" />
-              <span className="hidden sm:inline">Excel İndir</span>
-            </button>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                className="flex-1 sm:flex-none px-3 py-2 bg-white dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border border-stone-200 dark:border-stone-700 cursor-pointer shadow-xs min-h-[36px]"
+              >
+                <FileSpreadsheet size={14} className="text-emerald-500" />
+                <span>Excel İndir</span>
+              </button>
 
-            {/* Print */}
-            <button
-              onClick={handlePrint}
-              className="px-3 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-stone-200 dark:border-stone-700 cursor-pointer"
-              title="Yazdır / PDF Raporu"
-            >
-              <Printer size={15} />
-              <span className="hidden sm:inline">Yazdır</span>
-            </button>
+              <button
+                type="button"
+                onClick={handlePrint}
+                className="flex-1 sm:flex-none px-3 py-2 bg-white dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border border-stone-200 dark:border-stone-700 cursor-pointer shadow-xs min-h-[36px]"
+              >
+                <Printer size={14} />
+                <span>Yazdır</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Main Container */}
-      <div className="max-w-7xl mx-auto w-full p-4 sm:p-6 space-y-6 flex-1 flex flex-col">
-        {/* ── 1. HIGH-LEVEL PATRON KPI CARDS ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {/* Card 1: Alınan Siparişler */}
-          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 flex flex-col justify-between shadow-2xs">
-            <div className="flex items-center justify-between text-stone-500 dark:text-stone-400 text-xs font-bold">
+      {/* ── MAIN BODY CONTAINER ── */}
+      <div className="max-w-7xl mx-auto w-full p-3 sm:p-5 lg:p-6 space-y-4 sm:space-y-6 flex-1 flex flex-col">
+        
+        {/* ── 1. PATRON KPI CARDS (RESPONSIVE GRID) ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3.5">
+          {/* Card 1: Alınan Sipariş */}
+          <div className="bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 rounded-2xl p-3 sm:p-4 flex flex-col justify-between shadow-xs">
+            <div className="flex items-center justify-between text-stone-500 text-[11px] font-bold">
               <span>Alınan Sipariş</span>
-              <UtensilsCrossed size={16} className="text-emerald-500" />
+              <UtensilsCrossed size={14} className="text-emerald-500" />
             </div>
-            <div className="mt-2">
-              <div className="text-xl sm:text-2xl font-black font-mono text-stone-900 dark:text-white">
-                {kpis.totalOrdersCount} <span className="text-xs font-sans text-stone-400">Adet</span>
+            <div className="mt-1.5">
+              <div className="text-base sm:text-xl font-black font-mono text-stone-900 dark:text-white truncate">
+                {kpis.totalOrdersCount} <span className="text-[10px] font-sans text-stone-400 font-normal">Adet</span>
               </div>
-              <div className="text-xs text-emerald-600 dark:text-emerald-400 font-bold font-mono mt-0.5">
+              <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold font-mono mt-0.5 truncate">
                 +{formatCurrency(kpis.totalOrdersRevenue)}
               </div>
             </div>
           </div>
 
-          {/* Card 2: İptal Edilenler (CRITICAL) */}
+          {/* Card 2: İptaller (CRITICAL) */}
           <div className={cn(
-            "border rounded-2xl p-4 flex flex-col justify-between shadow-2xs transition-all",
+            "rounded-2xl p-3 sm:p-4 flex flex-col justify-between shadow-xs transition-all border",
             kpis.totalCancellationsCount > 0
-              ? "bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50"
-              : "bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800"
+              ? "bg-red-50/60 dark:bg-red-950/20 border-red-300 dark:border-red-900/60"
+              : "bg-white dark:bg-stone-900 border-stone-200/80 dark:border-stone-800/80"
           )}>
-            <div className="flex items-center justify-between text-red-600 dark:text-red-400 text-xs font-bold">
-              <span>İptaller & Silinenler</span>
-              <AlertOctagon size={16} className="text-red-500 animate-pulse" />
+            <div className="flex items-center justify-between text-red-600 dark:text-red-400 text-[11px] font-bold">
+              <span>İptaller</span>
+              <AlertOctagon size={14} className="text-red-500" />
             </div>
-            <div className="mt-2">
-              <div className="text-xl sm:text-2xl font-black font-mono text-red-600 dark:text-red-400">
-                {kpis.totalCancellationsCount} <span className="text-xs font-sans text-stone-400">İptal</span>
+            <div className="mt-1.5">
+              <div className="text-base sm:text-xl font-black font-mono text-red-600 dark:text-red-400 truncate">
+                {kpis.totalCancellationsCount} <span className="text-[10px] font-sans text-stone-400 font-normal">İptal</span>
               </div>
-              <div className="text-xs text-red-500 font-bold font-mono mt-0.5">
+              <div className="text-[11px] text-red-500 font-bold font-mono mt-0.5 truncate">
                 -{formatCurrency(kpis.totalCancellationsValue)}
               </div>
             </div>
           </div>
 
-          {/* Card 3: Tahsilatlar & Kasa */}
-          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 flex flex-col justify-between shadow-2xs">
-            <div className="flex items-center justify-between text-stone-500 dark:text-stone-400 text-xs font-bold">
-              <span>Toplam Tahsilat</span>
-              <CreditCard size={16} className="text-sky-500" />
+          {/* Card 3: Toplam Tahsilat */}
+          <div className="bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 rounded-2xl p-3 sm:p-4 flex flex-col justify-between shadow-xs">
+            <div className="flex items-center justify-between text-stone-500 text-[11px] font-bold">
+              <span>Tahsilat</span>
+              <CreditCard size={14} className="text-sky-500" />
             </div>
-            <div className="mt-2">
-              <div className="text-xl sm:text-2xl font-black font-mono text-sky-600 dark:text-sky-400">
+            <div className="mt-1.5">
+              <div className="text-base sm:text-xl font-black font-mono text-sky-600 dark:text-sky-400 truncate">
                 {formatCurrency(kpis.totalPaymentsValue)}
               </div>
-              <div className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
-                Kapanan Adisyonlar
+              <div className="text-[10px] text-stone-400 font-medium mt-0.5 truncate">
+                Kapanan Adisyon
               </div>
             </div>
           </div>
 
-          {/* Card 4: İkram & İskontolar */}
-          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 flex flex-col justify-between shadow-2xs">
-            <div className="flex items-center justify-between text-stone-500 dark:text-stone-400 text-xs font-bold">
-              <span>İkram & İskonto</span>
-              <Gift size={16} className="text-purple-500" />
+          {/* Card 4: İkram & İskonto */}
+          <div className="bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 rounded-2xl p-3 sm:p-4 flex flex-col justify-between shadow-xs">
+            <div className="flex items-center justify-between text-stone-500 text-[11px] font-bold">
+              <span>İskonto</span>
+              <Gift size={14} className="text-purple-500" />
             </div>
-            <div className="mt-2">
-              <div className="text-xl sm:text-2xl font-black font-mono text-purple-600 dark:text-purple-400">
+            <div className="mt-1.5">
+              <div className="text-base sm:text-xl font-black font-mono text-purple-600 dark:text-purple-400 truncate">
                 {formatCurrency(kpis.totalDiscountsValue)}
               </div>
-              <div className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
-                Uygulanan İndirim
+              <div className="text-[10px] text-stone-400 font-medium mt-0.5 truncate">
+                İndirimler
               </div>
             </div>
           </div>
 
-          {/* Card 5: Masa Taşıma & Birleştirme */}
-          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 flex flex-col justify-between shadow-2xs">
-            <div className="flex items-center justify-between text-stone-500 dark:text-stone-400 text-xs font-bold">
+          {/* Card 5: Masa Taşıma */}
+          <div className="bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 rounded-2xl p-3 sm:p-4 flex flex-col justify-between shadow-xs">
+            <div className="flex items-center justify-between text-stone-500 text-[11px] font-bold">
               <span>Masa Taşıma</span>
-              <ArrowRightLeft size={16} className="text-orange-500" />
+              <ArrowRightLeft size={14} className="text-orange-500" />
             </div>
-            <div className="mt-2">
-              <div className="text-xl sm:text-2xl font-black font-mono text-orange-600 dark:text-orange-400">
-                {kpis.totalTransfersCount} <span className="text-xs font-sans text-stone-400">Hareket</span>
+            <div className="mt-1.5">
+              <div className="text-base sm:text-xl font-black font-mono text-orange-600 dark:text-orange-400 truncate">
+                {kpis.totalTransfersCount} <span className="text-[10px] font-sans text-stone-400 font-normal">İşlem</span>
               </div>
-              <div className="text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">
+              <div className="text-[10px] text-stone-400 font-medium mt-0.5 truncate">
                 Transfer & Birleştirme
               </div>
             </div>
           </div>
 
-          {/* Card 6: Denetim Güvenliği */}
-          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 flex flex-col justify-between shadow-2xs">
-            <div className="flex items-center justify-between text-stone-500 dark:text-stone-400 text-xs font-bold">
-              <span>Kayıt Güvenliği</span>
-              <ShieldCheck size={16} className="text-emerald-500" />
+          {/* Card 6: Kayıt Güvenliği */}
+          <div className="bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 rounded-2xl p-3 sm:p-4 flex flex-col justify-between shadow-xs">
+            <div className="flex items-center justify-between text-stone-500 text-[11px] font-bold">
+              <span>Güvenlik</span>
+              <ShieldCheck size={14} className="text-emerald-500" />
             </div>
-            <div className="mt-2">
-              <div className="text-sm font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                <CheckCircle2 size={16} />
+            <div className="mt-1.5">
+              <div className="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                <CheckCircle2 size={14} />
                 <span>%100 Yedekli</span>
               </div>
-              <div className="text-[11px] text-stone-500 dark:text-stone-400 font-medium mt-1">
-                Yerel Disk + Dexie DB
+              <div className="text-[10px] text-stone-400 font-medium mt-0.5 truncate">
+                Yerel Disk + Dexie
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── 2. GARSON & PERSONEL HAREKET TABLOSU (KİM NE ALMIŞ NE İPTAL ETMİŞ) ── */}
-        <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 sm:p-5 space-y-3 shadow-2xs">
+        {/* ── 2. PERSONEL AKTİVİTE PERFORMANS KARTLARI ── */}
+        <div className="bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 rounded-2xl p-3.5 sm:p-5 space-y-3 shadow-xs">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Users className="text-amber-500" size={18} />
-              <h3 className="font-bold text-sm sm:text-base text-stone-900 dark:text-white">
-                Personel & Garson Aktivite Performans Özeti
+              <Users className="text-amber-500 shrink-0" size={16} />
+              <h3 className="font-bold text-xs sm:text-sm text-stone-900 dark:text-white">
+                Personel Aktivite Özeti
               </h3>
             </div>
-            <span className="text-xs text-stone-500 dark:text-stone-400 font-bold">
-              {staffActivitySummary.length} Personel Listeleniyor
+            <span className="text-[11px] text-stone-400 font-medium">
+              {staffActivitySummary.length} Personel
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
             {staffActivitySummary.map(person => {
               const hasCancels = person.cancelsCount > 0;
+              const isSelected = selectedStaff === person.name;
+
               return (
                 <div
                   key={person.name}
-                  onClick={() => setSelectedStaff(selectedStaff === person.name ? 'ALL' : person.name)}
+                  onClick={() => setSelectedStaff(isSelected ? 'ALL' : person.name)}
                   className={cn(
-                    "p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between gap-3",
-                    selectedStaff === person.name
-                      ? "bg-amber-50 dark:bg-amber-950/30 border-amber-500 ring-2 ring-amber-500/20"
-                      : "bg-stone-50 dark:bg-stone-950/60 border-stone-200 dark:border-stone-800 hover:border-stone-300 dark:hover:border-stone-700"
+                    "p-3 rounded-xl border transition-all cursor-pointer flex flex-col justify-between gap-2.5",
+                    isSelected
+                      ? "bg-amber-50/80 dark:bg-amber-950/30 border-amber-500 ring-2 ring-amber-500/20"
+                      : "bg-stone-50/70 dark:bg-stone-950/60 border-stone-200/80 dark:border-stone-800 hover:border-stone-300 dark:hover:border-stone-700"
                   )}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="font-black text-sm text-stone-900 dark:text-white flex items-center gap-1.5">
-                        <User size={14} className="text-stone-400" />
-                        <span>{person.name}</span>
+                    <div className="min-w-0">
+                      <div className="font-black text-xs sm:text-sm text-stone-900 dark:text-white flex items-center gap-1.5 truncate">
+                        <User size={13} className="text-stone-400 shrink-0" />
+                        <span className="truncate">{person.name}</span>
                       </div>
-                      <span className="text-[10px] uppercase font-bold text-stone-500 dark:text-stone-400">
+                      <span className="text-[9px] uppercase font-bold text-stone-500">
                         {person.role}
                       </span>
                     </div>
 
                     {hasCancels && (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-black bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 border border-red-300 dark:border-red-800">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-black bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 border border-red-200 dark:border-red-900 shrink-0">
                         {person.cancelsCount} İptal
                       </span>
                     )}
                   </div>
 
-                  <div className="space-y-1.5 text-xs">
-                    <div className="flex justify-between text-stone-600 dark:text-stone-300">
-                      <span className="text-stone-400">Alınan Sipariş:</span>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex justify-between items-center text-stone-600 dark:text-stone-300 text-[11px]">
+                      <span className="text-stone-400">Sipariş:</span>
                       <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
                         {person.ordersTaken} Adet (+{formatCurrency(person.ordersTotal)})
                       </span>
                     </div>
 
                     {hasCancels && (
-                      <div className="flex justify-between text-red-600 dark:text-red-400">
-                        <span className="text-stone-400">İptal Ettiği:</span>
+                      <div className="flex justify-between items-center text-red-600 dark:text-red-400 text-[11px]">
+                        <span className="text-stone-400">İptal:</span>
                         <span className="font-bold font-mono">
                           {person.cancelsCount} Adet (-{formatCurrency(person.cancelsTotal)})
                         </span>
                       </div>
                     )}
 
-                    <div className="flex justify-between text-stone-400 text-[11px] pt-1 border-t border-stone-200 dark:border-stone-800">
-                      <span>Son Hareket:</span>
-                      <span>{new Date(person.lastActive).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
+                    <div className="flex justify-between items-center text-stone-400 text-[10px] pt-1 border-t border-stone-200/60 dark:border-stone-800/80">
+                      <span>Son İşlem:</span>
+                      <span className="font-mono">{new Date(person.lastActive).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                   </div>
                 </div>
@@ -713,110 +710,124 @@ export default function PatronLogsPage() {
           </div>
         </div>
 
-        {/* ── 3. FILTER & SEARCH TOOLBAR ── */}
-        <div className="space-y-3">
-          {/* Quick Category Buttons */}
+        {/* ── 3. FILTER & SEARCH TOOLBAR (FULLY RESPONSIVE) ── */}
+        <div className="space-y-2.5">
+          {/* Quick Filter Horizontal Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs font-bold">
             <button
+              type="button"
               onClick={() => setSelectedType('ALL')}
               className={cn(
-                "px-3 py-2 rounded-xl border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5",
+                "px-3 py-1.5 rounded-xl border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shrink-0",
                 selectedType === 'ALL'
                   ? "bg-amber-500 text-white border-amber-500 shadow-xs"
-                  : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800"
+                  : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-stone-200/80 dark:border-stone-800 hover:bg-stone-100"
               )}
             >
-              <Activity size={14} />
-              <span>Tüm Hareketler ({unifiedActivities.length})</span>
+              <Activity size={13} />
+              <span>Tümü ({unifiedActivities.length})</span>
             </button>
 
             <button
+              type="button"
               onClick={() => setSelectedType('CANCEL')}
               className={cn(
-                "px-3 py-2 rounded-xl border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5",
+                "px-3 py-1.5 rounded-xl border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shrink-0",
                 selectedType === 'CANCEL'
                   ? "bg-red-600 text-white border-red-600 shadow-xs"
-                  : "bg-white dark:bg-stone-900 text-red-600 dark:text-red-400 border-stone-200 dark:border-stone-800 hover:bg-red-50 dark:hover:bg-red-950/40"
+                  : "bg-white dark:bg-stone-900 text-red-600 dark:text-red-400 border-stone-200/80 dark:border-stone-800 hover:bg-red-50"
               )}
             >
-              <Trash2 size={14} />
-              <span>Sadece İptaller & Silinenler ({kpis.totalCancellationsCount})</span>
+              <Trash2 size={13} />
+              <span>İptaller ({kpis.totalCancellationsCount})</span>
             </button>
 
             <button
+              type="button"
               onClick={() => setSelectedType('ORDER_TAKEN')}
               className={cn(
-                "px-3 py-2 rounded-xl border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5",
+                "px-3 py-1.5 rounded-xl border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shrink-0",
                 selectedType === 'ORDER_TAKEN'
                   ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
-                  : "bg-white dark:bg-stone-900 text-emerald-600 dark:text-emerald-400 border-stone-200 dark:border-stone-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                  : "bg-white dark:bg-stone-900 text-emerald-600 dark:text-emerald-400 border-stone-200/80 dark:border-stone-800 hover:bg-emerald-50"
               )}
             >
-              <UtensilsCrossed size={14} />
-              <span>Sipariş Girişleri ({kpis.totalOrdersCount})</span>
+              <UtensilsCrossed size={13} />
+              <span>Siparişler ({kpis.totalOrdersCount})</span>
             </button>
 
             <button
+              type="button"
               onClick={() => setSelectedType('PAYMENT')}
               className={cn(
-                "px-3 py-2 rounded-xl border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5",
+                "px-3 py-1.5 rounded-xl border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shrink-0",
                 selectedType === 'PAYMENT'
                   ? "bg-sky-600 text-white border-sky-600 shadow-xs"
-                  : "bg-white dark:bg-stone-900 text-sky-600 dark:text-sky-400 border-stone-200 dark:border-stone-800 hover:bg-sky-50 dark:hover:bg-sky-950/40"
+                  : "bg-white dark:bg-stone-900 text-sky-600 dark:text-sky-400 border-stone-200/80 dark:border-stone-800 hover:bg-sky-50"
               )}
             >
-              <CreditCard size={14} />
-              <span>Tahsilatlar & Kasa</span>
+              <CreditCard size={13} />
+              <span>Tahsilatlar</span>
             </button>
 
             <button
+              type="button"
               onClick={() => setSelectedType('TRANSFER')}
               className={cn(
-                "px-3 py-2 rounded-xl border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5",
+                "px-3 py-1.5 rounded-xl border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shrink-0",
                 selectedType === 'TRANSFER'
                   ? "bg-orange-600 text-white border-orange-600 shadow-xs"
-                  : "bg-white dark:bg-stone-900 text-orange-600 dark:text-orange-400 border-stone-200 dark:border-stone-800 hover:bg-orange-50 dark:hover:bg-orange-950/40"
+                  : "bg-white dark:bg-stone-900 text-orange-600 dark:text-orange-400 border-stone-200/80 dark:border-stone-800 hover:bg-orange-50"
               )}
             >
-              <ArrowRightLeft size={14} />
+              <ArrowRightLeft size={13} />
               <span>Masa Taşımaları ({kpis.totalTransfersCount})</span>
             </button>
 
             <button
+              type="button"
               onClick={() => setSelectedType('DISCOUNT')}
               className={cn(
-                "px-3 py-2 rounded-xl border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5",
+                "px-3 py-1.5 rounded-xl border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shrink-0",
                 selectedType === 'DISCOUNT'
                   ? "bg-purple-600 text-white border-purple-600 shadow-xs"
-                  : "bg-white dark:bg-stone-900 text-purple-600 dark:text-purple-400 border-stone-200 dark:border-stone-800 hover:bg-purple-50 dark:hover:bg-purple-950/40"
+                  : "bg-white dark:bg-stone-900 text-purple-600 dark:text-purple-400 border-stone-200/80 dark:border-stone-800 hover:bg-purple-50"
               )}
             >
-              <Gift size={14} />
-              <span>İkram & İskonto</span>
+              <Gift size={13} />
+              <span>İskonto</span>
             </button>
           </div>
 
-          {/* Search and Dropdowns Bar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-stone-900 p-3 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-2xs">
+          {/* Search Bar and Dropdowns */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 bg-white dark:bg-stone-900 p-2.5 sm:p-3 rounded-2xl border border-stone-200/80 dark:border-stone-800/80 shadow-xs">
             {/* Search Input */}
-            <div className="relative flex-1 max-w-md">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+            <div className="relative flex-1">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Loglarda ara (ürün adı, garson ismi, masa, iptal sebebi)..."
-                className="w-full pl-10 pr-4 py-2 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:border-amber-500 font-medium"
+                placeholder="Loglarda ara (ürün, garson, masa, sebep)..."
+                className="w-full pl-9 pr-8 py-2 bg-stone-50 dark:bg-stone-950 border border-stone-200/80 dark:border-stone-800 rounded-xl text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 p-0.5 cursor-pointer"
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
 
             {/* Dropdown Filters */}
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Staff Dropdown */}
+            <div className="grid grid-cols-2 sm:flex items-center gap-2">
               <select
                 value={selectedStaff}
                 onChange={e => setSelectedStaff(e.target.value)}
-                className="bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl px-3 py-2 text-xs font-bold text-stone-700 dark:text-stone-300 focus:outline-none"
+                className="bg-stone-50 dark:bg-stone-950 border border-stone-200/80 dark:border-stone-800 rounded-xl px-2.5 py-2 text-xs font-bold text-stone-700 dark:text-stone-300 focus:outline-none cursor-pointer"
               >
                 <option value="ALL">Tüm Personel</option>
                 {uniqueStaff.map(s => (
@@ -824,51 +835,35 @@ export default function PatronLogsPage() {
                 ))}
               </select>
 
-              {/* Table Dropdown */}
               <select
                 value={selectedTable}
                 onChange={e => setSelectedTable(e.target.value)}
-                className="bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl px-3 py-2 text-xs font-bold text-stone-700 dark:text-stone-300 focus:outline-none"
+                className="bg-stone-50 dark:bg-stone-950 border border-stone-200/80 dark:border-stone-800 rounded-xl px-2.5 py-2 text-xs font-bold text-stone-700 dark:text-stone-300 focus:outline-none cursor-pointer"
               >
                 <option value="ALL">Tüm Masalar</option>
                 {uniqueTables.map(t => (
                   <option key={t} value={t}>{t}</option>
                 ))}
               </select>
-
-              {/* Clear filters */}
-              {(selectedType !== 'ALL' || selectedStaff !== 'ALL' || selectedTable !== 'ALL' || searchQuery) && (
-                <button
-                  onClick={() => {
-                    setSelectedType('ALL');
-                    setSelectedStaff('ALL');
-                    setSelectedTable('ALL');
-                    setSearchQuery('');
-                  }}
-                  className="px-2.5 py-2 text-xs font-bold text-red-600 dark:text-red-400 hover:underline cursor-pointer"
-                >
-                  Filtreleri Sıfırla
-                </button>
-              )}
             </div>
           </div>
         </div>
 
-        {/* ── 4. CHRONOLOGICAL ACTIVITY FEED (DETAILED LOGS) ── */}
-        <div className="space-y-3 flex-1">
+        {/* ── 4. CHRONOLOGICAL ACTIVITY FEED (ADAPTIVE MOBILE-FIRST CARDS) ── */}
+        <div className="space-y-2.5 flex-1">
           <div className="flex items-center justify-between text-xs font-bold text-stone-500 dark:text-stone-400 px-1">
-            <span>Zaman Akışı ({filteredActivities.length} İşlem Kaydı)</span>
-            <span>Tarih: {dateRangeLabel}</span>
+            <span>Zaman Akışı ({filteredActivities.length} Kayıt)</span>
+            <span>{dateRangeLabel}</span>
           </div>
 
           {filteredActivities.length === 0 ? (
-            <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-12 text-center text-stone-400 flex flex-col items-center justify-center gap-2">
-              <CheckCircle2 size={36} className="text-emerald-500" />
-              <p className="font-bold text-base text-stone-700 dark:text-stone-300">Bu filtrelere uygun log kaydı bulunamadı.</p>
-              <p className="text-xs">Farklı bir tarih aralığı veya personel seçmeyi deneyebilirsiniz.</p>
+            <div className="bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 rounded-2xl p-8 sm:p-12 text-center text-stone-400 flex flex-col items-center justify-center gap-2">
+              <CheckCircle2 size={32} className="text-emerald-500" />
+              <p className="font-bold text-sm sm:text-base text-stone-700 dark:text-stone-300">Kayıt bulunamadı.</p>
+              <p className="text-xs">Filtreleri veya tarih aralığını değiştirebilirsiniz.</p>
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {filteredActivities.map(item => {
                 const isExpanded = expandedItemId === item.id;
                 const isCancel = item.type === 'CANCEL';
@@ -878,122 +873,121 @@ export default function PatronLogsPage() {
                 const isTransfer = item.type === 'TRANSFER';
 
                 let badgeColor = 'bg-stone-100 text-stone-700 border-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:border-stone-700';
-                let typeIcon = <Activity size={14} />;
-                let cardBorder = 'border-stone-200 dark:border-stone-800';
+                let typeIcon = <Activity size={13} />;
+                let cardBorder = 'border-stone-200/80 dark:border-stone-800/80 bg-white dark:bg-stone-900';
 
                 if (isCancel) {
                   badgeColor = 'bg-red-100 text-red-700 dark:bg-red-950/80 dark:text-red-300 border-red-200 dark:border-red-800';
-                  typeIcon = <Trash2 size={14} />;
-                  cardBorder = 'border-red-300/80 dark:border-red-900/60 bg-red-50/20 dark:bg-red-950/10';
+                  typeIcon = <Trash2 size={13} />;
+                  cardBorder = 'border-red-300 dark:border-red-900/60 bg-red-50/20 dark:bg-red-950/10';
                 } else if (isOrder) {
                   badgeColor = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
-                  typeIcon = <UtensilsCrossed size={14} />;
+                  typeIcon = <UtensilsCrossed size={13} />;
                 } else if (isPayment) {
                   badgeColor = 'bg-sky-100 text-sky-700 dark:bg-sky-950/80 dark:text-sky-300 border-sky-200 dark:border-sky-800';
-                  typeIcon = <CreditCard size={14} />;
+                  typeIcon = <CreditCard size={13} />;
                 } else if (isDiscount) {
                   badgeColor = 'bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border-purple-200 dark:border-purple-800';
-                  typeIcon = <Gift size={14} />;
+                  typeIcon = <Gift size={13} />;
                 } else if (isTransfer) {
                   badgeColor = 'bg-orange-100 text-orange-700 dark:bg-orange-950/80 dark:text-orange-300 border-orange-200 dark:border-orange-800';
-                  typeIcon = <ArrowRightLeft size={14} />;
+                  typeIcon = <ArrowRightLeft size={13} />;
                 }
 
                 return (
                   <div
                     key={item.id}
                     className={cn(
-                      "bg-white dark:bg-stone-900 border rounded-2xl p-4 transition-all hover:shadow-xs",
+                      "border rounded-2xl p-3 sm:p-4 transition-all shadow-xs",
                       cardBorder
                     )}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
-                        {/* Type Badge */}
-                        <span className={cn("px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shrink-0 border", badgeColor)}>
+                    {/* Top Row: Type Badge, Title, Table & Amount */}
+                    <div className="flex items-start justify-between gap-2.5">
+                      <div className="flex items-start gap-2 min-w-0 flex-1">
+                        <span className={cn("px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shrink-0 border mt-0.5", badgeColor)}>
                           {typeIcon}
-                          <span>{item.type}</span>
+                          <span className="hidden sm:inline">{item.type}</span>
                         </span>
 
-                        {/* Title and details */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h4 className={cn(
-                              "font-black text-sm",
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className={cn(
+                              "font-black text-xs sm:text-sm",
                               isCancel ? "text-red-600 dark:text-red-400" : "text-stone-900 dark:text-white"
                             )}>
                               {item.actionTitle}
-                            </h4>
-
+                            </span>
                             {item.tableLabel && (
-                              <span className="px-2 py-0.5 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-[11px] font-bold border border-stone-200 dark:border-stone-700">
+                              <span className="px-1.5 py-0.2 rounded bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-[10px] font-bold border border-stone-200 dark:border-stone-700">
                                 {item.tableLabel}
                               </span>
                             )}
                           </div>
-
                           <p className="text-xs text-stone-600 dark:text-stone-300 mt-1 font-medium leading-relaxed">
                             {item.details}
                           </p>
                         </div>
                       </div>
 
-                      {/* Right Meta: Staff, Time & Amount */}
-                      <div className="text-right shrink-0 flex flex-col items-end">
-                        {item.amount !== undefined && item.amount > 0 && (
-                          <div className={cn(
-                            "font-black font-mono text-sm sm:text-base",
-                            isCancel ? "text-red-600 dark:text-red-400" : isOrder ? "text-emerald-600 dark:text-emerald-400" : "text-stone-900 dark:text-white"
-                          )}>
-                            {item.isNegative ? '-' : '+'}{formatCurrency(item.amount)}
-                          </div>
-                        )}
-
-                        <div className="flex items-center gap-2 mt-1 text-[11px] text-stone-500 dark:text-stone-400 font-medium">
-                          <span className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
-                            <User size={12} />
-                            {item.staffName}
-                          </span>
-                          <span>•</span>
-                          <span className="font-mono">{new Date(item.timestamp).toLocaleTimeString('tr-TR')}</span>
+                      {/* Right Amount on Top */}
+                      {item.amount !== undefined && item.amount > 0 && (
+                        <div className={cn(
+                          "font-black font-mono text-xs sm:text-sm shrink-0 whitespace-nowrap",
+                          isCancel ? "text-red-600 dark:text-red-400" : isOrder ? "text-emerald-600 dark:text-emerald-400" : "text-stone-900 dark:text-white"
+                        )}>
+                          {item.isNegative ? '-' : '+'}{formatCurrency(item.amount)}
                         </div>
+                      )}
+                    </div>
 
-                        {Boolean(item.itemsList && item.itemsList.length > 0) && (
-                          <button
-                            onClick={() => setExpandedItemId(isExpanded ? null : item.id)}
-                            className="mt-1.5 text-[11px] font-bold text-stone-500 hover:text-stone-900 dark:hover:text-white flex items-center gap-1 cursor-pointer"
-                          >
-                            <span>{isExpanded ? 'Detayları Gizle' : `${item.itemsList?.length} Ürün Detayı`}</span>
-                            {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                          </button>
-                        )}
+                    {/* Footer Row: Staff name, timestamp and item toggle */}
+                    <div className="flex items-center justify-between pt-2 mt-2 border-t border-stone-100 dark:border-stone-800/80 text-[11px] text-stone-500 dark:text-stone-400">
+                      <div className="flex items-center gap-2">
+                        <span className="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
+                          <User size={12} />
+                          <span>{item.staffName}</span>
+                        </span>
+                        <span>•</span>
+                        <span className="font-mono">{new Date(item.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
+
+                      {Boolean(item.itemsList && item.itemsList.length > 0) && (
+                        <button
+                          type="button"
+                          onClick={() => setExpandedItemId(isExpanded ? null : item.id)}
+                          className="text-[11px] font-bold text-stone-500 hover:text-stone-900 dark:hover:text-white flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>{isExpanded ? 'Gizle' : `${item.itemsList?.length} Ürün`}</span>
+                          {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                        </button>
+                      )}
                     </div>
 
                     {/* Expanded Items Breakdown */}
                     {isExpanded && item.itemsList && (
-                      <div className="mt-3 pt-3 border-t border-stone-100 dark:border-stone-800 space-y-2">
-                        <div className="text-[11px] font-bold uppercase tracking-wider text-stone-400">
-                          İşlem Gören Ürün Kalemleri:
+                      <div className="mt-2.5 pt-2 border-t border-stone-100 dark:border-stone-800 space-y-1.5">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                          İşlem Kalemleri:
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1.5">
                           {item.itemsList.map((prod, pIdx) => (
                             <div
                               key={pIdx}
-                              className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 flex items-center justify-between text-xs"
+                              className="p-2 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200/80 dark:border-stone-800 flex items-center justify-between text-xs"
                             >
-                              <div>
-                                <span className="font-bold text-stone-900 dark:text-stone-100">
+                              <div className="min-w-0">
+                                <span className="font-bold text-stone-900 dark:text-stone-100 truncate block">
                                   {prod.quantity}x {prod.name}
                                 </span>
                                 {prod.notes && (
-                                  <div className="text-[10px] text-amber-500 italic mt-0.5">
+                                  <div className="text-[10px] text-amber-500 italic truncate">
                                     Not: {prod.notes}
                                   </div>
                                 )}
                               </div>
                               {prod.price !== undefined && (
-                                <span className="font-mono font-bold text-stone-600 dark:text-stone-400 ml-2">
+                                <span className="font-mono font-bold text-stone-600 dark:text-stone-400 ml-2 shrink-0">
                                   {formatCurrency(prod.price)}
                                 </span>
                               )}

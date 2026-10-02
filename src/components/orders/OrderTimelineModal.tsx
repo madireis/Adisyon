@@ -49,13 +49,23 @@ export default function OrderTimelineModal({ order, isOpen, onClose }: OrderTime
   };
 
   const isPaid = order.status === 'paid' || !!order.paidAt;
+  const isCancelled = order.status === 'cancelled';
 
-  // Calculate elapsed minutes (frozen at payment time if paid)
+  // Calculate elapsed minutes (frozen at payment or cancellation time if closed)
   const getElapsedMinutes = () => {
     if (order.durationMinutes) return order.durationMinutes;
     if (order.paidAt && order.createdAt) {
       try {
         const diff = new Date(order.paidAt).getTime() - new Date(order.createdAt).getTime();
+        return Math.max(1, Math.round(diff / 60000));
+      } catch {
+        return 1;
+      }
+    }
+    if (isCancelled && order.createdAt) {
+      try {
+        const endIso = order.updatedAt || order.createdAt;
+        const diff = new Date(endIso).getTime() - new Date(order.createdAt).getTime();
         return Math.max(1, Math.round(diff / 60000));
       } catch {
         return 1;
@@ -90,11 +100,23 @@ export default function OrderTimelineModal({ order, isOpen, onClose }: OrderTime
                   <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase border ${
                     isPaid
                       ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                      : isCancelled
+                      ? 'bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-300 dark:border-stone-700'
                       : order.status === 'ready'
                       ? 'bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-800'
-                      : 'bg-orange-100 dark:bg-orange-950/80 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-800'
+                      : order.status === 'sent'
+                      ? 'bg-orange-100 dark:bg-orange-950/80 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-800'
+                      : 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800'
                   }`}>
-                    {isPaid ? 'Ödendi' : order.status === 'ready' ? 'Mutfakta Hazır' : order.status === 'sent' ? 'Mutfakta Hazırlanıyor' : 'Açık'}
+                    {isPaid 
+                      ? 'Ödendi' 
+                      : isCancelled 
+                      ? 'Kapatıldı / İptal' 
+                      : order.status === 'ready' 
+                      ? 'Mutfakta Hazır' 
+                      : order.status === 'sent' 
+                      ? 'Mutfakta Hazırlanıyor' 
+                      : 'Açık'}
                   </span>
                 </div>
                 <span className="text-xs text-stone-400 font-mono">
@@ -143,12 +165,12 @@ export default function OrderTimelineModal({ order, isOpen, onClose }: OrderTime
               {/* Ödeme Zamanı & Alan */}
               <div className="p-3 bg-stone-50 dark:bg-stone-950 rounded-2xl border border-stone-200 dark:border-stone-800">
                 <span className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider block mb-1">
-                  Ödeme Zamanı
+                  {isPaid ? 'Ödeme Zamanı' : isCancelled ? 'Kapatılma Zamanı' : 'Ödeme Zamanı'}
                 </span>
                 <div className="flex items-center gap-1.5">
-                  <CreditCard size={14} className="text-emerald-600 shrink-0" />
+                  <CreditCard size={14} className={isPaid ? "text-emerald-600 shrink-0" : isCancelled ? "text-stone-500 shrink-0" : "text-emerald-600 shrink-0"} />
                   <span className="font-black text-xs font-mono text-stone-900 dark:text-stone-100 truncate">
-                    {order.paidAt ? formatTimeOnly(order.paidAt) : 'Bekleniyor'}
+                    {order.paidAt ? formatTimeOnly(order.paidAt) : isCancelled ? formatTimeOnly(order.updatedAt || order.createdAt) : 'Bekleniyor'}
                   </span>
                 </div>
               </div>
@@ -246,28 +268,30 @@ export default function OrderTimelineModal({ order, isOpen, onClose }: OrderTime
                   </div>
                 </div>
 
-                {/* 4. Ödeme Alındı */}
+                {/* 4. Ödeme Alındı veya İptal/Kapatıldı */}
                 <div className="relative">
                   <div className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow-xs ${
-                    isPaid ? 'bg-emerald-600 text-white' : 'bg-stone-300 text-stone-600 dark:bg-stone-800'
+                    isPaid ? 'bg-emerald-600 text-white' : isCancelled ? 'bg-stone-500 text-white' : 'bg-stone-300 text-stone-600 dark:bg-stone-800'
                   }`}>
                     4
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                     <div>
                       <span className="text-xs font-bold text-stone-900 dark:text-stone-100">
-                        Ödeme Tahsil Edildi & Masa Kapatıldı
+                        {isPaid ? 'Ödeme Tahsil Edildi & Masa Kapatıldı' : isCancelled ? 'Masa Boşaltıldı & Kapatıldı (İptal)' : 'Ödeme Tahsil Edildi & Masa Kapatıldı'}
                       </span>
                       <p className="text-[11px] text-stone-500">
                         {isPaid ? (
                           <>Tahsil Eden: <strong>{order.paidBy || 'Kasiyer'}</strong> ({order.paymentMethod || 'Nakit TL'}) • <strong>Masa Toplam Süresi: {elapsedMins} dk</strong></>
+                        ) : isCancelled ? (
+                          <>İşlem: <strong>Adisyon İptali / Masa Kapatıldı</strong> • <strong>Masa Toplam Süresi: {elapsedMins} dk</strong></>
                         ) : (
                           'Hesap henüz alınmadı (Masa aktif kullanımda)'
                         )}
                       </p>
                     </div>
                     <span className="text-xs font-mono font-bold text-stone-600 dark:text-stone-400 bg-white dark:bg-stone-900 px-2 py-0.5 rounded-lg border border-stone-200 dark:border-stone-800 self-start sm:self-auto">
-                      {isPaid ? formatDateTime(order.paidAt) : 'Açık Masa'}
+                      {isPaid ? formatDateTime(order.paidAt) : isCancelled ? formatDateTime(order.updatedAt || order.createdAt) : 'Açık Masa'}
                     </span>
                   </div>
                 </div>

@@ -546,6 +546,11 @@ export function initSyncEngine(db: PosDatabase) {
       this.onsuccess = function () {
         if (isApplyingRemoteSync) return;
         const fullItem = { ...obj, ...modifications, id: finalKey };
+        if (tableName === 'tables' && fullItem.status === 'available') {
+          delete fullItem.currentOrderId;
+          delete fullItem.occupiedAt;
+          fullItem.guestCount = 0;
+        }
         queueChange({
           table: tableName,
           type: 'put',

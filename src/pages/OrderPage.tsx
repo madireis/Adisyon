@@ -144,7 +144,7 @@ export default function OrderPage() {
         if (remainingItems.length === 0) {
           const freeTable = window.confirm('Masadaki tüm ürünler silindi. Masa boşaltılsın ve kapatılsın mı?');
           if (freeTable) {
-            if (!canDeleteTable) {
+            if (!canDeleteTable && !canCancelOrder) {
               alert('Masadaki ürünler silindi fakat masayı kapatma / boşaltma yetkiniz bulunmadığından masa açık bırakıldı.');
               await db.orders.update(order.id, {
                 items: [],
@@ -155,18 +155,35 @@ export default function OrderPage() {
               return;
             }
 
+            const durationMinutes = order.createdAt 
+              ? Math.max(1, Math.round((new Date(nowIso).getTime() - new Date(order.createdAt).getTime()) / 60000))
+              : 1;
+
             await db.orders.update(order.id, {
               items: [],
               status: 'cancelled',
               total: 0,
               subtotal: 0,
+              discount: 0,
+              tax: 0,
+              durationMinutes,
               updatedAt: nowIso,
             });
-            await db.table<Table>('tables').update(tableId!, {
-              status: 'available',
-              currentOrderId: undefined,
-              occupiedAt: undefined,
-            });
+
+            if (tableId) {
+              const existingTable = await db.table<Table>('tables').get(tableId);
+              if (existingTable) {
+                const updatedTable: Table = {
+                  ...existingTable,
+                  status: 'available',
+                  guestCount: 0,
+                };
+                delete updatedTable.currentOrderId;
+                delete updatedTable.occupiedAt;
+                await db.table<Table>('tables').put(updatedTable);
+              }
+            }
+
             await db.auditLogs.add({
               id: generateId(),
               userId: state.currentUser?.id || 'staff',
@@ -261,6 +278,67 @@ export default function OrderPage() {
   const subtotal = localItems.reduce((acc, item) => acc + getItemLineTotal(item), 0);
   const tax = Math.round(subtotal * 0.08);
   const total = subtotal;
+
+  const handleCancelAndCloseTable = async () => {
+    if (!canCancelOrder && !canDeleteTable) {
+      alert('Masayı kapatma veya adisyon iptal etme yetkiniz bulunmamaktadır.');
+      return;
+    }
+
+    const tableLabel = table?.label || 'Masa';
+    const confirmMsg = `Masa ${tableLabel} adisyonu iptal edilecek ve masa boşaltılıp kapatılacaktır. Emin misiniz?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      const nowIso = new Date().toISOString();
+      const durationMinutes = order?.createdAt 
+        ? Math.max(1, Math.round((new Date(nowIso).getTime() - new Date(order.createdAt).getTime()) / 60000))
+        : 1;
+
+      if (order?.id) {
+        await db.orders.update(order.id, {
+          items: [],
+          status: 'cancelled',
+          total: 0,
+          subtotal: 0,
+          discount: 0,
+          tax: 0,
+          durationMinutes,
+          updatedAt: nowIso,
+        });
+      }
+
+      if (tableId) {
+        const existingTable = await db.table<Table>('tables').get(tableId);
+        if (existingTable) {
+          const updatedTable: Table = {
+            ...existingTable,
+            status: 'available',
+            guestCount: 0,
+          };
+          delete updatedTable.currentOrderId;
+          delete updatedTable.occupiedAt;
+          await db.table<Table>('tables').put(updatedTable);
+        }
+      }
+
+      await db.auditLogs.add({
+        id: generateId(),
+        userId: state.currentUser?.id || 'staff',
+        userName: state.currentUser?.name || 'Personel',
+        action: 'Adisyon İptali / Masa Kapatma',
+        details: `Masa ${tableLabel} adisyonu iptal edildi ve masa kapatıldı.`,
+        entityType: 'order',
+        entityId: order?.id || 'order',
+        timestamp: nowIso,
+      });
+
+      navigate('/tables');
+    } catch (err: any) {
+      console.error('Masa kapatma hatası:', err);
+      alert('Masa kapatılırken bir hata oluştu: ' + (err?.message || err));
+    }
+  };
 
   const handleSendToKitchen = async () => {
     if (!canTakeOrder) {
@@ -481,6 +559,16 @@ export default function OrderPage() {
               title="Masayı / Ürünleri Başka Masaya Taşı"
             >
               <ArrowRightLeft className="w-3.5 h-3.5 text-orange-400" />
+            </button>
+          )}
+          {(canCancelOrder || canDeleteTable) && (order || table?.status === 'occupied' || localItems.length > 0) && (
+            <button
+              type="button"
+              onClick={handleCancelAndCloseTable}
+              className="flex items-center justify-center p-2 rounded-full bg-stone-800 text-stone-200 border border-stone-700 hover:text-red-400 active:scale-95 cursor-pointer min-h-[38px] min-w-[38px]"
+              title="Masayı Boşalt ve Kapat (İptal)"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-stone-400 hover:text-red-400" />
             </button>
           )}
           <button
@@ -966,6 +1054,20 @@ export default function OrderPage() {
                   )}
                 </div>
               )}
+
+              {(canCancelOrder || canDeleteTable) && (order || table?.status === 'occupied' || localItems.length > 0) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileTicketOpen(false);
+                    handleCancelAndCloseTable();
+                  }}
+                  className="w-full py-2.5 px-3 bg-stone-900 dark:bg-stone-950 hover:bg-stone-800 text-red-400 font-bold text-xs rounded-xl border border-stone-800 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                  <span>Masayı Boşalt & Kapat (İptal)</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1215,6 +1317,16 @@ export default function OrderPage() {
               >
                 <CreditCard className="w-4 h-4" />
                 <span>Ödeme Al</span>
+              </button>
+            )}
+            {(canCancelOrder || canDeleteTable) && (order || table?.status === 'occupied' || localItems.length > 0) && (
+              <button 
+                type="button"
+                onClick={handleCancelAndCloseTable} 
+                className="w-full py-2.5 px-3 rounded-xl font-bold text-xs bg-stone-900 hover:bg-stone-800 text-red-400 border border-stone-800 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                <span>Masayı Boşalt & Kapat (İptal)</span>
               </button>
             )}
           </div>

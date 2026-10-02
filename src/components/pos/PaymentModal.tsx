@@ -96,9 +96,12 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
       ikram: 'İkram',
     };
 
-    const paymentMethodLabel = parts.length > 1
-      ? `Parçalı (${parts.map(p => methodNames[p.method] || p.method).join(' + ')})`
-      : (methodNames[parts[0]?.method] || parts[0]?.method || 'Nakit TL');
+    const partsToRecord = parts.length > 0 ? parts : [{ method: 'cash' as PaymentMethod, amount: 0 }];
+    const paymentMethodLabel = parts.length > 0
+      ? (parts.length > 1
+        ? `Parçalı (${parts.map(p => methodNames[p.method] || p.method).join(' + ')})`
+        : (methodNames[parts[0]?.method] || parts[0]?.method || 'Nakit TL'))
+      : '0 TL / Kapalı';
 
     try {
       await db.orders.put({
@@ -112,18 +115,23 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
         updatedAt: nowIso,
       });
 
-      await db.table<Table>('tables').update(table.id, {
-        status: 'available',
-        currentOrderId: undefined,
-        occupiedAt: undefined,
-        guestCount: 0,
-      });
+      const existingTable = await db.table<Table>('tables').get(table.id);
+      if (existingTable) {
+        const updatedTable: Table = {
+          ...existingTable,
+          status: 'available',
+          guestCount: 0,
+        };
+        delete updatedTable.currentOrderId;
+        delete updatedTable.occupiedAt;
+        await db.table<Table>('tables').put(updatedTable);
+      }
 
       const paymentRecord: Payment = {
         id: generateId(),
         orderId: order.id,
         tableLabel: table.label,
-        parts,
+        parts: partsToRecord,
         total: totalPaid,
         change,
         paidAt: nowIso,
@@ -192,12 +200,17 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
         updatedAt: nowIso,
       });
 
-      await db.table<Table>('tables').update(table.id, {
-        status: 'available',
-        currentOrderId: undefined,
-        occupiedAt: undefined,
-        guestCount: 0,
-      });
+      const existingTable = await db.table<Table>('tables').get(table.id);
+      if (existingTable) {
+        const updatedTable: Table = {
+          ...existingTable,
+          status: 'available',
+          guestCount: 0,
+        };
+        delete updatedTable.currentOrderId;
+        delete updatedTable.occupiedAt;
+        await db.table<Table>('tables').put(updatedTable);
+      }
 
       const paymentRecord: Payment = {
         id: generateId(),

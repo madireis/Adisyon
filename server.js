@@ -479,18 +479,23 @@ const server = http.createServer((req, res) => {
             const idx = serverState[table].findIndex((x) => x.id === item.id);
             if (idx >= 0) {
               serverState[table][idx] = { ...serverState[table][idx], ...item };
-              if (table === 'tables' && item.status === 'available' && !item.currentOrderId) {
+              if (table === 'tables' && item.status === 'available') {
                 delete serverState[table][idx].currentOrderId;
                 delete serverState[table][idx].occupiedAt;
                 serverState[table][idx].guestCount = 0;
               }
               for (const [k, v] of Object.entries(item)) {
-                if (v === null) {
+                if (v === null || v === undefined) {
                   delete serverState[table][idx][k];
                 }
               }
             } else {
               serverState[table].push(item);
+              if (table === 'tables' && item.status === 'available') {
+                delete item.currentOrderId;
+                delete item.occupiedAt;
+                item.guestCount = 0;
+              }
             }
 
             if (table === 'orders') {
