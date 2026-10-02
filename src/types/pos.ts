@@ -7,7 +7,21 @@ export type OrderStatus = 'open' | 'sent' | 'preparing' | 'ready' | 'served' | '
 
 export type KitchenStation = 'kitchen' | 'bar' | 'dessert' | 'coffee'
 
-export type PaymentMethod = 'cash' | 'credit_card' | 'debit_card' | 'sodexo' | 'multinet' | 'ticket' | 'metropol' | 'ikram'
+export type PaymentMethodCategory = 'cash' | 'card' | 'meal_card' | 'gift' | 'custom'
+
+export type PaymentMethod = 'cash' | 'credit_card' | 'debit_card' | 'sodexo' | 'multinet' | 'ticket' | 'metropol' | 'ikram' | (string & {})
+
+export interface PaymentMethodConfig {
+  id: string
+  name: string
+  description?: string
+  category: PaymentMethodCategory
+  icon?: string
+  color?: string
+  enabled: boolean
+  isDefault?: boolean // built-in methods like cash/credit_card cannot be permanently deleted, only disabled
+  order?: number
+}
 
 export type ReservationStatus = 'confirmed' | 'seated' | 'completed' | 'cancelled' | 'no_show'
 
@@ -165,6 +179,8 @@ export interface Order {
   waiterId: string
   waiterName: string
   waiters?: string[] // All staff members who took orders / added items to this table
+  deliveredBy?: string // Siparişi / Ürünü Teslim Eden (Garson / Kurye)
+  receivedBy?: string // Siparişi Teslim Alan (Müşteri / Masa)
   status: OrderStatus
   items: OrderItem[]
   subtotal: number
@@ -236,6 +252,7 @@ export interface KitchenTicket {
   createdAt: string
   startedAt?: string
   completedAt?: string
+  deliveredBy?: string // Siparişi / Yemeği Teslim Eden Personel
   priority: boolean
 }
 
@@ -266,6 +283,8 @@ export interface InventoryItem {
   expiryDate?: string
   lotNumber?: string
   notes?: string
+  deliveredBy?: string // Siparişi / Malı Teslim Eden (Firma, Tedarikçi, Kurye, Şoför)
+  receivedBy?: string // Siparişi / Malı Teslim Alan (Depo Yetkilisi, Personel)
   lastUpdated: string
   createdAt?: string
 }

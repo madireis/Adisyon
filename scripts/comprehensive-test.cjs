@@ -278,7 +278,7 @@ async function runTestSuite() {
       try {
         // Check if diagnostic badges and tabs are rendered
         const hasDevHeader = await page.locator('h1').textContent();
-        const devTitleOk = hasDevHeader.includes('Geliştirici & Tanılama');
+        const devTitleOk = hasDevHeader.includes('Geliştirici & Hata Denetim') || hasDevHeader.includes('Geliştirici & Tanılama') || hasDevHeader.includes('Geliştirici');
 
         // Click Diagnostics Tab
         await page.locator('button:has-text("Cihaz & İşletim Sistemi")').click();

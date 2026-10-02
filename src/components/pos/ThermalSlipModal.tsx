@@ -177,9 +177,15 @@ export default function ThermalSlipModal({
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Garson:</span>
+                    <span>Siparişi Alan:</span>
                     <span className="font-bold text-stone-900">{order.waiterName || 'Garson'}</span>
                   </div>
+                  {order.deliveredBy && (
+                    <div className="flex justify-between">
+                      <span>Teslim Eden:</span>
+                      <span className="font-bold text-stone-900">{order.deliveredBy}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span>Kişi Sayısı:</span>
                     <span className="font-bold text-stone-900">{order.guestCount || 2}</span>

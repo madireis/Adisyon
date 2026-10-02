@@ -5,9 +5,11 @@ import { db } from '@/lib/db';
 import { cn, getElapsedMinutes } from '@/lib/utils';
 import ThermalSlipModal from '@/components/pos/ThermalSlipModal';
 import { usePermissions } from '@/lib/permissions';
+import { useApp } from '@/lib/store';
 import type { KitchenTicket, KitchenStation } from '@/types/pos';
 
 export default function KitchenPage() {
+  const { state } = useApp();
   const { hasPermission } = usePermissions();
   const canUpdate = hasPermission('canUpdateKitchenStatus');
   const [activeStation, setActiveStation] = useState<KitchenStation | 'ALL'>('ALL');
@@ -81,14 +83,19 @@ export default function KitchenPage() {
         } catch {}
       }
     } else if (ticket.status === 'ready') {
+      const serverName = state.currentUser?.name || 'Servis Personeli';
       await db.kitchenTickets.update(ticket.id, {
         status: 'completed',
+        deliveredBy: serverName,
       });
       if (ticket.orderId) {
         try {
           const currentOrder = await db.orders.get(ticket.orderId);
           if (currentOrder && currentOrder.status !== 'paid' && currentOrder.status !== 'cancelled') {
-            await db.orders.update(ticket.orderId, { status: 'served' });
+            await db.orders.update(ticket.orderId, { 
+              status: 'served',
+              deliveredBy: serverName,
+            });
           }
         } catch {}
       }
@@ -156,6 +163,13 @@ export default function KitchenPage() {
             </div>
           ))}
         </div>
+
+        {ticket.deliveredBy && (
+          <div className="text-[11px] bg-stone-900/90 px-3 py-1.5 rounded-xl text-emerald-300 border border-emerald-800/40 flex items-center justify-between">
+            <span className="text-stone-400">Teslim Eden / Servis Eden:</span>
+            <strong className="text-white font-semibold">{ticket.deliveredBy}</strong>
+          </div>
+        )}
 
         <div className="flex items-center gap-2 mt-2">
           <button

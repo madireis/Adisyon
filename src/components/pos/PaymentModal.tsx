@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, CreditCard, Banknote, Gift, CheckCircle2, Trash2, Delete } from 'lucide-react';
 import { db } from '@/lib/db';
 import { useApp } from '@/lib/store';
 import { cn, formatCurrency, generateId } from '@/lib/utils';
 import { hasPermission } from '@/lib/permissions';
-import type { Order, Table, Payment, PaymentMethod, PaymentPart } from '@/types/pos';
+import { getPaymentMethods, getPaymentMethodIcon, getPaymentMethodNameMap } from '@/lib/paymentMethods';
+import type { Order, Table, Payment, PaymentMethod, PaymentPart, PaymentMethodConfig } from '@/types/pos';
 
 interface PaymentModalProps {
   order: Order;
@@ -17,6 +18,17 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
   const { state } = useApp();
   const [parts, setParts] = useState<PaymentPart[]>([]);
   const [currentInput, setCurrentInput] = useState<string>('');
+  const [availableMethods, setAvailableMethods] = useState<PaymentMethodConfig[]>(() => 
+    getPaymentMethods().filter(m => m.enabled)
+  );
+
+  useEffect(() => {
+    const refreshMethods = () => {
+      setAvailableMethods(getPaymentMethods().filter(m => m.enabled));
+    };
+    window.addEventListener('wots_payment_methods_updated', refreshMethods);
+    return () => window.removeEventListener('wots_payment_methods_updated', refreshMethods);
+  }, []);
 
   const canPay = hasPermission(state.currentUser, 'canTakePayment');
   const canDiscount = hasPermission(state.currentUser, 'canApplyDiscount');
@@ -25,15 +37,12 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
   const remaining = Math.max(0, order.total - totalPaid);
   const change = Math.max(0, totalPaid - order.total);
   
-  const paymentMethods: { id: PaymentMethod; label: string; icon: React.ElementType; color: string }[] = [
-    { id: 'cash', label: 'Nakit', icon: Banknote, color: 'bg-emerald-600 text-white hover:bg-emerald-700' },
-    { id: 'credit_card', label: 'POS / Kredi Kartı', icon: CreditCard, color: 'bg-blue-600 text-white hover:bg-blue-700' },
-    { id: 'sodexo', label: 'Sodexo', icon: CreditCard, color: 'bg-orange-600 text-white hover:bg-orange-700' },
-    { id: 'multinet', label: 'Multinet', icon: CreditCard, color: 'bg-amber-600 text-white hover:bg-amber-700' },
-    { id: 'ticket', label: 'Ticket Edenred', icon: CreditCard, color: 'bg-red-600 text-white hover:bg-red-700' },
-    { id: 'metropol', label: 'Metropol', icon: CreditCard, color: 'bg-purple-600 text-white hover:bg-purple-700' },
-    ...(canDiscount ? [{ id: 'ikram' as PaymentMethod, label: 'Müdür İkramı', icon: Gift, color: 'bg-stone-700 text-white hover:bg-stone-800' }] : []),
-  ];
+  const activeMethodsList = availableMethods.filter(m => {
+    if (m.id === 'ikram' || m.category === 'gift') {
+      return canDiscount;
+    }
+    return true;
+  });
 
   const handleKeypad = (val: string) => {
     if (val === 'C') {
@@ -85,16 +94,7 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
       ? Math.max(1, Math.round((new Date(nowIso).getTime() - new Date(order.createdAt).getTime()) / 60000))
       : 1;
 
-    const methodNames: Record<string, string> = {
-      cash: 'Nakit TL',
-      credit_card: 'Kredi Kartı',
-      debit_card: 'Banka Kartı',
-      sodexo: 'Sodexo',
-      multinet: 'Multinet',
-      ticket: 'Ticket Edenred',
-      metropol: 'Metropol Card',
-      ikram: 'İkram',
-    };
+    const methodNames = getPaymentMethodNameMap(availableMethods);
 
     const partsToRecord = parts.length > 0 ? parts : [{ method: 'cash' as PaymentMethod, amount: 0 }];
     const paymentMethodLabel = parts.length > 0
@@ -176,16 +176,7 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
       ? Math.max(1, Math.round((new Date(nowIso).getTime() - new Date(order.createdAt).getTime()) / 60000))
       : 1;
 
-    const methodNames: Record<string, string> = {
-      cash: 'Nakit TL',
-      credit_card: 'Kredi Kartı',
-      debit_card: 'Banka Kartı',
-      sodexo: 'Sodexo',
-      multinet: 'Multinet',
-      ticket: 'Ticket Edenred',
-      metropol: 'Metropol Card',
-      ikram: 'İkram',
-    };
+    const methodNames = getPaymentMethodNameMap(availableMethods);
     const paymentMethodLabel = methodNames[method] || (method === 'cash' ? 'Nakit TL' : 'Kredi Kartı');
 
     try {
@@ -321,21 +312,24 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
             {parts.length > 0 && (
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider">Tahsil Edilen Kalemler</h3>
-                {parts.map((p, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-3 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 shadow-2xs">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs text-stone-800 dark:text-stone-200 uppercase">
-                         {paymentMethods.find(m => m.id === p.method)?.label || p.method}
-                      </span>
+                 {parts.map((p, idx) => {
+                  const mLabel = activeMethodsList.find(m => m.id === p.method)?.name || p.method;
+                  return (
+                    <div key={idx} className="flex justify-between items-center p-3 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/80 dark:border-stone-800 shadow-2xs">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs text-stone-800 dark:text-stone-200 uppercase">
+                          {mLabel}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-extrabold text-sm text-stone-900 dark:text-stone-100 font-mono">{formatCurrency(p.amount)}</span>
+                        <button onClick={() => removePart(idx)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 active:scale-95 rounded-lg cursor-pointer transition-all">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-extrabold text-sm text-stone-900 dark:text-stone-100 font-mono">{formatCurrency(p.amount)}</span>
-                      <button onClick={() => removePart(idx)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 active:scale-95 rounded-lg cursor-pointer transition-all">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -396,20 +390,23 @@ export default function PaymentModal({ order, table, onClose, onSuccess }: Payme
             <span className="text-[11px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider block mb-1">
               Ödeme Tipini Seçerek Tahsil Et:
             </span>
-            <div className="grid grid-cols-2 gap-2">
-              {paymentMethods.map(method => (
-                <button
-                  key={method.id}
-                  onClick={() => addPaymentPart(method.id)}
-                  className={cn(
-                    "py-2.5 px-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all active:scale-[0.96] cursor-pointer ios-spring",
-                    method.color
-                  )}
-                >
-                  <method.icon className="w-4 h-4" />
-                  <span>{method.label}</span>
-                </button>
-              ))}
+            <div className="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto no-scrollbar pr-0.5">
+              {activeMethodsList.map(method => {
+                const MethodIcon = getPaymentMethodIcon(method.icon);
+                return (
+                  <button
+                    key={method.id}
+                    onClick={() => addPaymentPart(method.id as PaymentMethod)}
+                    className={cn(
+                      "py-2.5 px-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all active:scale-[0.96] cursor-pointer ios-spring",
+                      method.color || 'bg-stone-800 text-white'
+                    )}
+                  >
+                    <MethodIcon className="w-4 h-4 shrink-0" />
+                    <span className="truncate">{method.name}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

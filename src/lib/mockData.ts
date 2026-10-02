@@ -3453,46 +3453,11 @@ export const sampleKitchenTickets: KitchenTicket[] = []
 // ─── SAMPLE PAYMENTS (Empty for production) ──────────────────────────
 export const samplePayments: Payment[] = []
 
-// ─── INVENTORY ────────────────────────────────────────────────
-export const inventoryItems: InventoryItem[] = [
-  { id: 'inv-1', name: 'Dana Kıyma', unit: 'kg', currentStock: 25, minimumStock: 10, purchaseCost: 350, supplier: 'Kardeşler Et', lastUpdated: now.toISOString() },
-  { id: 'inv-2', name: 'Tavuk Göğsü', unit: 'kg', currentStock: 15, minimumStock: 8, purchaseCost: 180, supplier: 'Kardeşler Et', lastUpdated: now.toISOString() },
-  { id: 'inv-3', name: 'Burger Ekmeği', unit: 'adet', currentStock: 80, minimumStock: 30, purchaseCost: 8, supplier: 'Sahil Fırın', lastUpdated: now.toISOString() },
-  { id: 'inv-4', name: 'Mozzarella', unit: 'kg', currentStock: 8, minimumStock: 5, purchaseCost: 280, supplier: 'Peynirci Ali', lastUpdated: now.toISOString() },
-  { id: 'inv-5', name: 'Domates', unit: 'kg', currentStock: 20, minimumStock: 10, purchaseCost: 35, supplier: 'Hal Sebze', lastUpdated: now.toISOString() },
-  { id: 'inv-6', name: 'Yumurta', unit: 'adet', currentStock: 120, minimumStock: 50, purchaseCost: 5, supplier: 'Çiftlik Yumurta', lastUpdated: now.toISOString() },
-  { id: 'inv-7', name: 'Kahve Çekirdeği', unit: 'kg', currentStock: 3, minimumStock: 5, purchaseCost: 600, supplier: 'Roast İstanbul', lastUpdated: now.toISOString() },
-  { id: 'inv-8', name: 'Süt', unit: 'lt', currentStock: 30, minimumStock: 15, purchaseCost: 40, supplier: 'Güney Mandıra', lastUpdated: now.toISOString() },
-  { id: 'inv-9', name: 'Limon', unit: 'kg', currentStock: 12, minimumStock: 5, purchaseCost: 45, supplier: 'Hal Sebze', lastUpdated: now.toISOString() },
-  { id: 'inv-10', name: 'Ayran', unit: 'adet', currentStock: 45, minimumStock: 40, purchaseCost: 10, supplier: 'Güney Mandıra', lastUpdated: now.toISOString() },
-]
+// ─── INVENTORY (Empty for production - user adds real inventory) ──
+export const inventoryItems: InventoryItem[] = []
 
-// ─── RECIPES ──────────────────────────────────────────────────
-export const recipes: Recipe[] = [
-  {
-    id: 'rec-1', menuItemId: 'mi-42', menuItemName: "Classic Burger", totalCost: 140,
-    items: [
-      { inventoryItemId: 'inv-1', inventoryItemName: 'Dana Kıyma', quantity: 0.18, unit: 'kg' },
-      { inventoryItemId: 'inv-3', inventoryItemName: 'Burger Ekmeği', quantity: 1, unit: 'adet' },
-      { inventoryItemId: 'inv-4', inventoryItemName: 'Mozzarella', quantity: 0.04, unit: 'kg' },
-      { inventoryItemId: 'inv-5', inventoryItemName: 'Domates', quantity: 0.05, unit: 'kg' },
-    ]
-  },
-  {
-    id: 'rec-2', menuItemId: 'mi-11', menuItemName: 'Sade Menemen', totalCost: 45,
-    items: [
-      { inventoryItemId: 'inv-5', inventoryItemName: 'Domates', quantity: 0.15, unit: 'kg' },
-      { inventoryItemId: 'inv-6', inventoryItemName: 'Yumurta', quantity: 3, unit: 'adet' },
-    ]
-  },
-  {
-    id: 'rec-3', menuItemId: 'mi-94', menuItemName: 'Caffe Latte', totalCost: 35,
-    items: [
-      { inventoryItemId: 'inv-7', inventoryItemName: 'Kahve Çekirdeği', quantity: 0.02, unit: 'kg' },
-      { inventoryItemId: 'inv-8', inventoryItemName: 'Süt', quantity: 0.25, unit: 'lt' },
-    ]
-  },
-]
+// ─── RECIPES (Empty for production) ──────────────────────────
+export const recipes: Recipe[] = []
 
 // ─── CUSTOMERS (Empty for production) ─────────────────────────
 export const customers: Customer[] = []
@@ -3557,6 +3522,17 @@ export async function seedDatabase(db: import('@/lib/db').PosDatabase) {
       localStorage.setItem('wots_pos_v3_clean_state', 'true')
     } catch (e) {
       console.error('Failed to run clean state migration:', e)
+    }
+  }
+
+  // One-time cleanup of mock inventory items as requested
+  if (typeof window !== 'undefined' && localStorage.getItem('wots_pos_v9_clear_dummy_inventory') !== 'true') {
+    try {
+      await db.inventoryItems.clear();
+      await db.recipes.clear();
+      localStorage.setItem('wots_pos_v9_clear_dummy_inventory', 'true');
+    } catch (e) {
+      console.error('Failed to clear dummy inventory:', e);
     }
   }
 

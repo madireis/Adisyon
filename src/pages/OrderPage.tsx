@@ -795,9 +795,12 @@ export default function OrderPage() {
                 </div>
                 <p className="text-xs text-stone-400 font-medium mt-0.5">
                   {order?.waiters && order.waiters.length > 1 ? (
-                    <span className="text-orange-300 font-semibold">Garsonlar: {order.waiters.join(', ')}</span>
+                    <span className="text-orange-300 font-semibold">Siparişi Verenler: {order.waiters.join(', ')}</span>
                   ) : (
-                    `Garson: ${order?.waiterName || state.currentUser?.name || 'Garson'}`
+                    <span>Siparişi Veren: <strong className="text-orange-300">{order?.waiterName || state.currentUser?.name || 'Garson'}</strong></span>
+                  )}
+                  {order?.deliveredBy && (
+                    <span className="ml-2 text-emerald-400 font-semibold">• Teslim Eden: {order.deliveredBy}</span>
                   )}
                 </p>
               </div>
@@ -1086,9 +1089,12 @@ export default function OrderPage() {
             </div>
             <p className="text-xs text-stone-400 font-medium mt-0.5">
               {order?.waiters && order.waiters.length > 1 ? (
-                <span className="text-orange-300 font-semibold">Garsonlar: {order.waiters.join(', ')}</span>
+                <span className="text-orange-300 font-semibold">Siparişi Verenler: {order.waiters.join(', ')}</span>
               ) : (
-                `Garson: ${order?.waiterName || state.currentUser?.name || 'Garson'}`
+                <span>Siparişi Veren: <strong className="text-orange-300">{order?.waiterName || state.currentUser?.name || 'Garson'}</strong></span>
+              )}
+              {order?.deliveredBy && (
+                <span className="ml-2 text-emerald-400 font-semibold">• Teslim Eden: {order.deliveredBy}</span>
               )}
             </p>
           </div>

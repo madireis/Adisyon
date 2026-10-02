@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import { useApp } from '@/lib/store';
+import { getPaymentMethodNameMap } from '@/lib/paymentMethods';
 import type { AuditLog, Order, Payment, CashTransaction, KitchenTicket, Staff } from '@/types/pos';
 
 export type ActivityType = 
@@ -224,16 +225,7 @@ export default function PatronLogsPage() {
       const payTime = p.paidAt || (p as any).timestamp;
       if (!isWithinDate(payTime)) return;
 
-      const methodNames: Record<string, string> = {
-        cash: 'Nakit TL',
-        credit_card: 'POS / Kredi Kartı',
-        debit_card: 'Banka Kartı',
-        sodexo: 'Sodexo',
-        multinet: 'Multinet',
-        ticket: 'Ticket',
-        metropol: 'Metropol',
-        ikram: 'Yetkili İkram'
-      };
+      const methodNames = getPaymentMethodNameMap();
 
       const partsDesc = Array.isArray(p.parts) && p.parts.length > 0
         ? p.parts.map(part => `${methodNames[part.method] || part.method}: ₺${part.amount}`).join(' + ')

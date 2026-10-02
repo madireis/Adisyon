@@ -23,6 +23,13 @@ import {
 import LocalNetworkModal from '@/components/common/LocalNetworkModal';
 import { generateQRCodeSVG } from '@/lib/qrCodeGenerator';
 import wotsLogo from '@/assets/logo.jpg';
+import { 
+  getPaymentMethods, 
+  savePaymentMethods, 
+  getPaymentMethodIcon, 
+  DEFAULT_PAYMENT_METHODS 
+} from '@/lib/paymentMethods';
+import type { PaymentMethodConfig, PaymentMethodCategory } from '@/types/pos';
 
 interface PrinterConfig {
   id: string;
@@ -137,6 +144,15 @@ export default function SettingsPage() {
   const [newPrinterIp, setNewPrinterIp] = useState('192.168.1.');
   const [newPrinterStation, setNewPrinterStation] = useState('Kasa');
 
+  // Payment Methods
+  const [paymentMethodsList, setPaymentMethodsList] = useState<PaymentMethodConfig[]>([]);
+  const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
+  const [newPayName, setNewPayName] = useState('');
+  const [newPayDesc, setNewPayDesc] = useState('');
+  const [newPayCategory, setNewPayCategory] = useState<PaymentMethodCategory>('custom');
+  const [newPayIcon, setNewPayIcon] = useState('CreditCard');
+  const [newPayColor, setNewPayColor] = useState('bg-blue-600 text-white hover:bg-blue-700');
+
   // Load from localStorage on mount
   useEffect(() => {
     try {
@@ -145,10 +161,77 @@ export default function SettingsPage() {
 
       const savedPrinters = localStorage.getItem('wots_settings_printers');
       if (savedPrinters) setPrinters(JSON.parse(savedPrinters));
+
+      // Load Payment Methods
+      setPaymentMethodsList(getPaymentMethods());
     } catch {
       // ignore
     }
   }, []);
+
+  const handleTogglePaymentMethod = (id: string) => {
+    const updated = paymentMethodsList.map(m => {
+      if (m.id === id) {
+        return { ...m, enabled: !m.enabled };
+      }
+      return m;
+    });
+    setPaymentMethodsList(updated);
+    savePaymentMethods(updated);
+  };
+
+  const handleDeletePaymentMethod = (id: string) => {
+    const target = paymentMethodsList.find(m => m.id === id);
+    if (!target) return;
+    if (target.id === 'cash' || target.id === 'credit_card') {
+      alert('Nakit ve Temel Kredi Kartı silinemez. Dilerseniz yanındaki anahtardan pasif duruma getirebilirsiniz.');
+      return;
+    }
+    if (confirm(`"${target.name}" ödeme yöntemini silmek istediğinize emin misiniz?`)) {
+      const updated = paymentMethodsList.filter(m => m.id !== id);
+      setPaymentMethodsList(updated);
+      savePaymentMethods(updated);
+    }
+  };
+
+  const handleResetPaymentMethods = () => {
+    if (confirm('Tüm ödeme yöntemleri varsayılan fabrika ayarlarına sıfırlansın mı?')) {
+      setPaymentMethodsList(DEFAULT_PAYMENT_METHODS);
+      savePaymentMethods(DEFAULT_PAYMENT_METHODS);
+    }
+  };
+
+  const handleAddPaymentMethod = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPayName.trim()) return;
+
+    // Generate unique id
+    const cleanId = 'pay_' + newPayName.trim().toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Date.now().toString(36);
+
+    const newMethod: PaymentMethodConfig = {
+      id: cleanId,
+      name: newPayName.trim(),
+      description: newPayDesc.trim() || undefined,
+      category: newPayCategory,
+      icon: newPayIcon,
+      color: newPayColor,
+      enabled: true,
+      isDefault: false,
+      order: paymentMethodsList.length + 1,
+    };
+
+    const updated = [...paymentMethodsList, newMethod];
+    setPaymentMethodsList(updated);
+    savePaymentMethods(updated);
+
+    // Reset modal form
+    setIsAddPaymentOpen(false);
+    setNewPayName('');
+    setNewPayDesc('');
+    setNewPayCategory('custom');
+    setNewPayIcon('CreditCard');
+    setNewPayColor('bg-blue-600 text-white hover:bg-blue-700');
+  };
 
   const handleSaveProfile = () => {
     localStorage.setItem('wots_settings_profile', JSON.stringify(profile));
@@ -544,28 +627,252 @@ export default function SettingsPage() {
         )}
 
         {activeSection === 'payments' && (
-          <div>
-            <h2 className="text-xl font-black text-stone-900 dark:text-stone-100 mb-1">Kabul Edilen Ödeme Yöntemleri</h2>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mb-6">Kasada ve garson terminalinde aktif ödeme kanalları</p>
-
-            <div className="space-y-3 max-w-xl">
-              {[
-                { name: 'Nakit Türk Lirası (₺)', active: true },
-                { name: 'Banka / Kredi Kartı (Fiziki POS)', active: true },
-                { name: 'Sodexo Restaurant Pass', active: true },
-                { name: 'Multinet Yemek Kartı', active: true },
-                { name: 'Ticket Restaurant (Edenred)', active: true },
-                { name: 'Metropol Card', active: true },
-                { name: 'Yetkili İkram (Yönetici Onaylı)', active: true },
-              ].map((m, idx) => (
-                <div key={idx} className="flex justify-between items-center p-3.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-950">
-                  <span className="font-bold text-sm text-stone-800 dark:text-stone-200">{m.name}</span>
-                  <span className="bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                    Aktif
-                  </span>
-                </div>
-              ))}
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div>
+                <h2 className="text-xl font-black text-stone-900 dark:text-stone-100 mb-1">Kabul Edilen Ödeme Yöntemleri</h2>
+                <p className="text-xs text-stone-500 dark:text-stone-400">Kasada, garson terminalinde ve adisyon tahsilatında aktif ödeme kanallarını yönetin</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleResetPaymentMethods}
+                  className="px-3 py-2 text-xs font-bold rounded-xl border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                  title="Fabrika ayarlarına dön"
+                >
+                  Varsayılana Sıfırla
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsAddPaymentOpen(true)}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+                >
+                  <Plus size={16} />
+                  <span>Yeni Ödeme Yöntemi Ekle</span>
+                </button>
+              </div>
             </div>
+
+            <div className="space-y-3 max-w-3xl">
+              {paymentMethodsList.map((m) => {
+                const IconComponent = getPaymentMethodIcon(m.icon);
+                return (
+                  <div
+                    key={m.id}
+                    className={cn(
+                      "flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border transition-all",
+                      m.enabled
+                        ? "bg-white dark:bg-stone-950 border-stone-200 dark:border-stone-800 shadow-xs"
+                        : "bg-stone-50/70 dark:bg-stone-900/40 border-stone-200/50 dark:border-stone-800/40 opacity-70"
+                    )}
+                  >
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs", m.color || 'bg-stone-800 text-white')}>
+                        <IconComponent size={20} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-stone-900 dark:text-stone-100 truncate">
+                            {m.name}
+                          </span>
+                          {m.category === 'cash' && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                              Nakit
+                            </span>
+                          )}
+                          {m.category === 'meal_card' && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950 text-orange-800 dark:text-orange-300">
+                              Yemek Kartı
+                            </span>
+                          )}
+                          {m.category === 'gift' && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300">
+                              İkram
+                            </span>
+                          )}
+                          {m.category === 'custom' && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300">
+                              Özel
+                            </span>
+                          )}
+                        </div>
+                        {m.description && (
+                          <p className="text-xs text-stone-500 dark:text-stone-400 truncate mt-0.5">
+                            {m.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                      {/* Toggle status */}
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePaymentMethod(m.id)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer border",
+                          m.enabled
+                            ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/80 hover:bg-emerald-100"
+                            : "bg-stone-100 dark:bg-stone-800 text-stone-500 border-stone-200 dark:border-stone-700 hover:bg-stone-200"
+                        )}
+                      >
+                        {m.enabled ? 'Aktif' : 'Pasif'}
+                      </button>
+
+                      {/* Delete button (only for non-essential methods) */}
+                      {m.id !== 'cash' && m.id !== 'credit_card' ? (
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePaymentMethod(m.id)}
+                          className="p-2 text-stone-400 hover:text-red-500 dark:hover:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                          title="Ödeme yöntemini sil"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      ) : (
+                        <div className="w-8" />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Modal: Add Payment Method */}
+            {isAddPaymentOpen && (
+              <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-black text-lg text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                      <CreditCard className="text-orange-600" size={20} />
+                      <span>Yeni Ödeme Yöntemi Ekle</span>
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddPaymentOpen(false)}
+                      className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer p-1"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleAddPaymentMethod} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">
+                        Yöntem Adı *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Örn: Setcard, Paycell, Havale / EFT..."
+                        value={newPayName}
+                        onChange={e => setNewPayName(e.target.value)}
+                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-sm bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">
+                        Açıklama (İsteğe Bağlı)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Örn: Yemek fişi veya karekod ile ödeme"
+                        value={newPayDesc}
+                        onChange={e => setNewPayDesc(e.target.value)}
+                        className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-sm bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">
+                          Kategori
+                        </label>
+                        <select
+                          value={newPayCategory}
+                          onChange={e => setNewPayCategory(e.target.value as PaymentMethodCategory)}
+                          className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-semibold bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none"
+                        >
+                          <option value="meal_card">Yemek Kartı</option>
+                          <option value="card">Kart / POS</option>
+                          <option value="cash">Nakit / Döviz</option>
+                          <option value="gift">İkram / İndirim</option>
+                          <option value="custom">Özel Yöntem</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-1">
+                          İkon
+                        </label>
+                        <select
+                          value={newPayIcon}
+                          onChange={e => setNewPayIcon(e.target.value)}
+                          className="w-full px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-sm font-semibold bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none"
+                        >
+                          <option value="CreditCard">Kart (CreditCard)</option>
+                          <option value="Banknote">Banknot (Banknote)</option>
+                          <option value="Wallet">Cüzdan (Wallet)</option>
+                          <option value="Smartphone">Mobil (Smartphone)</option>
+                          <option value="Coins">Bozuk Para (Coins)</option>
+                          <option value="Gift">Hediye (Gift)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-stone-500 dark:text-stone-400 mb-2">
+                        Buton Rengi
+                      </label>
+                      <div className="grid grid-cols-5 gap-2">
+                        {[
+                          { label: 'Mavi', color: 'bg-blue-600 text-white hover:bg-blue-700' },
+                          { label: 'Yeşil', color: 'bg-emerald-600 text-white hover:bg-emerald-700' },
+                          { label: 'Turuncu', color: 'bg-orange-600 text-white hover:bg-orange-700' },
+                          { label: 'Mor', color: 'bg-purple-600 text-white hover:bg-purple-700' },
+                          { label: 'Kırmızı', color: 'bg-red-600 text-white hover:bg-red-700' },
+                          { label: 'Sarı', color: 'bg-amber-600 text-white hover:bg-amber-700' },
+                          { label: 'Gri/Koyu', color: 'bg-stone-700 text-white hover:bg-stone-800' },
+                          { label: 'İndigo', color: 'bg-indigo-600 text-white hover:bg-indigo-700' },
+                          { label: 'Camgöbeği', color: 'bg-cyan-600 text-white hover:bg-cyan-700' },
+                          { label: 'Pembe', color: 'bg-pink-600 text-white hover:bg-pink-700' },
+                        ].map((c, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setNewPayColor(c.color)}
+                            className={cn(
+                              "h-9 rounded-xl flex items-center justify-center text-xs font-bold transition-all cursor-pointer",
+                              c.color,
+                              newPayColor === c.color ? "ring-2 ring-offset-2 ring-orange-500 scale-105" : "opacity-80 hover:opacity-100"
+                            )}
+                          >
+                            ✓
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="pt-3 flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setIsAddPaymentOpen(false)}
+                        className="flex-1 py-2.5 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-bold text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 cursor-pointer"
+                      >
+                        Vazgeç
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold cursor-pointer shadow-xs"
+                      >
+                        Kaydet ve Ekle
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

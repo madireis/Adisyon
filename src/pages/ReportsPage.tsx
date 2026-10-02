@@ -39,6 +39,7 @@ import { useApp } from '@/lib/store';
 import CashTransactionModal from '@/components/pos/CashTransactionModal';
 import ThermalSlipModal, { type ZReportData } from '@/components/pos/ThermalSlipModal';
 import OrderTimelineModal from '@/components/orders/OrderTimelineModal';
+import { getPaymentMethodNameMap } from '@/lib/paymentMethods';
 import type { Staff, MenuItem, Order, Payment, CashTransaction, KitchenTicket } from '@/types/pos';
 
 export default function ReportsPage() {
@@ -238,16 +239,7 @@ export default function ReportsPage() {
 
   // Payment Breakdown
   const paymentBreakdown = useMemo(() => {
-    const methodNames: Record<string, string> = {
-      cash: 'Nakit TL',
-      credit_card: 'POS / Kredi Kartı',
-      debit_card: 'Banka Kartı',
-      sodexo: 'Sodexo',
-      multinet: 'Multinet',
-      ticket: 'Ticket Edenred',
-      metropol: 'Metropol Card',
-      ikram: 'Yetkili İkram'
-    };
+    const methodNames = getPaymentMethodNameMap();
 
     const agg: Record<string, { count: number; total: number }> = {};
     let totalAll = 0;
