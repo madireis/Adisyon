@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
@@ -62,10 +62,19 @@ export default function TablesPage() {
   const currentFloorId = state.currentFloor || floors[0]?.id || 'floor-1';
   const currentFloor = floors.find(f => f.id === currentFloorId) || floors[0];
   
-  const tables = useLiveQuery(
+  const rawTables = useLiveQuery(
     () => db.table<Table>('tables').where('floorId').equals(currentFloorId).toArray(),
     [currentFloorId]
   ) || [];
+
+  const tables = useMemo(() => {
+    return [...rawTables].sort((a, b) => {
+      const numA = typeof a.number === 'number' ? a.number : parseInt(a.label?.replace(/\D/g, '') || '0', 10);
+      const numB = typeof b.number === 'number' ? b.number : parseInt(b.label?.replace(/\D/g, '') || '0', 10);
+      if (numA !== numB) return numA - numB;
+      return (a.label || '').localeCompare(b.label || '', undefined, { numeric: true, sensitivity: 'base' });
+    });
+  }, [rawTables]);
 
   const activeOrders = useLiveQuery(
     () => db.orders.where('status').anyOf(['open', 'sent', 'preparing', 'ready', 'served']).toArray(),
@@ -161,18 +170,18 @@ export default function TablesPage() {
               <button
                 type="button"
                 onClick={() => {
-                  const occupiedTable = tables.find(t => t.status === 'occupied' || t.status === 'payment_waiting') || tables[0];
+                  const occupiedTable = tables.find((t: Table) => t.status === 'occupied' || t.status === 'payment_waiting') || tables[0];
                   if (occupiedTable) {
                     handleOpenTransferModal(occupiedTable, getOrderForTable(occupiedTable.id));
                   } else {
-                    alert('Taşınacak aktif veya dolu bir masa bulunmuyor.');
+                    alert('Aktarılacak aktif veya dolu bir masa adisyonu bulunmuyor.');
                   }
                 }}
                 className="px-2.5 py-1.5 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
-                title="Masa veya Sipariş Taşı"
+                title="Adisyon veya Sipariş Aktar"
               >
                 <ArrowRightLeft size={13} className="text-orange-600 dark:text-orange-400" />
-                <span className="hidden sm:inline">Masa Taşı</span>
+                <span className="hidden sm:inline">Adisyon Taşı</span>
               </button>
             )}
 
@@ -262,10 +271,10 @@ export default function TablesPage() {
                               handleOpenTransferModal(table, order);
                             }}
                             className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-stone-100 hover:bg-orange-100 text-stone-700 hover:text-orange-700 dark:bg-stone-800 dark:hover:bg-orange-950 dark:text-stone-300 dark:hover:text-orange-400 border border-stone-200 dark:border-stone-700 hover:border-orange-400 transition-colors flex items-center gap-1 cursor-pointer shadow-xs active:scale-95"
-                            title="Masayı veya siparişleri başka masaya taşı"
+                            title="Bu masanın adisyonunu başka bir masaya aktar"
                           >
                             <ArrowRightLeft size={11} className="text-orange-600 dark:text-orange-400" />
-                            <span>Taşı</span>
+                            <span>Adisyon Taşı</span>
                           </button>
                         )}
                         {table.status === 'payment_waiting' ? (

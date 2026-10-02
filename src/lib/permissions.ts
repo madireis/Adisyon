@@ -270,8 +270,8 @@ export const PERMISSION_DEFINITIONS: PermissionDefinition[] = [
   },
   {
     key: 'canTransferTable',
-    label: 'Masa / Ürün Taşıma & Birleştirme',
-    description: 'Masalar arasında adisyon aktarabilir, seçili ürünleri taşıyabilir veya masaları birleştirebilir.',
+    label: 'Adisyon & Ürün Taşıma (Masaya Aktarma)',
+    description: 'Masa düzenini bozmadan adisyonu başka masaya aktarabilir, seçili ürünleri taşıyabilir veya masaları birleştirebilir.',
     category: 'tables',
     icon: 'ArrowRightLeft',
   },

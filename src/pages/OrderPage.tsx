@@ -556,7 +556,7 @@ export default function OrderPage() {
               type="button"
               onClick={() => setIsTransferModalOpen(true)}
               className="flex items-center justify-center p-2 rounded-full bg-stone-800 text-stone-200 border border-stone-700 active:scale-95 cursor-pointer min-h-[38px] min-w-[38px]"
-              title="Masayı / Ürünleri Başka Masaya Taşı"
+              title="Bu masanın adisyonunu veya ürünlerini başka masaya aktar"
             >
               <ArrowRightLeft className="w-3.5 h-3.5 text-orange-400" />
             </button>
@@ -810,10 +810,10 @@ export default function OrderPage() {
                       setIsTransferModalOpen(true);
                     }}
                     className="px-2.5 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer active:scale-95 transition-colors"
-                    title="Ürünleri veya masayı başka masaya taşı"
+                    title="Bu masanın adisyonunu veya ürünlerini başka masaya aktar"
                   >
                     <ArrowRightLeft className="w-3.5 h-3.5 text-orange-400" />
-                    <span>Taşı</span>
+                    <span>Adisyon Taşı</span>
                   </button>
                 )}
                 <button
@@ -1098,10 +1098,10 @@ export default function OrderPage() {
                 type="button"
                 onClick={() => setIsTransferModalOpen(true)}
                 className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer active:scale-95 transition-colors"
-                title="Ürünleri veya masayı başka masaya taşı"
+                title="Bu masanın adisyonunu veya ürünlerini başka masaya aktar"
               >
                 <ArrowRightLeft className="w-3.5 h-3.5 text-orange-400" />
-                <span>Taşı</span>
+                <span>Adisyon Taşı</span>
               </button>
             )}
             <div className="text-right">

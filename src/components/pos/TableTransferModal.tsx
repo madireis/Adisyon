@@ -79,9 +79,15 @@ export default function TableTransferModal({
   // Default floor selection
   const currentFloorId = activeFloorId || currentTable.floorId || floors[0]?.id;
 
-  // Filter tables for current floor excluding the current source table
+  // Filter tables for current floor excluding the current source table, sorted stably
   const availableTargetTables = useMemo(() => {
-    return allTables.filter(t => t.id !== currentTable.id && (!currentFloorId || t.floorId === currentFloorId));
+    const list = allTables.filter(t => t.id !== currentTable.id && (!currentFloorId || t.floorId === currentFloorId));
+    return [...list].sort((a, b) => {
+      const numA = typeof a.number === 'number' ? a.number : parseInt(a.label?.replace(/\D/g, '') || '0', 10);
+      const numB = typeof b.number === 'number' ? b.number : parseInt(b.label?.replace(/\D/g, '') || '0', 10);
+      if (numA !== numB) return numA - numB;
+      return (a.label || '').localeCompare(b.label || '', undefined, { numeric: true, sensitivity: 'base' });
+    });
   }, [allTables, currentTable.id, currentFloorId]);
 
   const selectedTargetTable = useMemo(() => {
@@ -200,8 +206,8 @@ export default function TableTransferModal({
           id: generateId(),
           userId: currentUser?.id || 'staff-1',
           userName: currentUserName,
-          action: 'Masa Taşıma',
-          details: `Masa ${currentTable.label} tüm siparişleriyle Masa ${selectedTargetTable.label}'e taşındı.`,
+          action: 'Adisyon Aktarma',
+          details: `Masa ${currentTable.label} adisyonu Masa ${selectedTargetTable.label}'e aktarıldı (Masa düzeni korundu).`,
           entityType: 'order',
           entityId: effectiveOrder?.id || 'order',
           timestamp: nowIso,
@@ -267,8 +273,8 @@ export default function TableTransferModal({
             id: generateId(),
             userId: currentUser?.id || 'staff-1',
             userName: currentUserName,
-            action: 'Masa Birleştirme',
-            details: `Masa ${currentTable.label}, Masa ${selectedTargetTable.label} ile birleştirildi.`,
+            action: 'Adisyon Birleştirme',
+            details: `Masa ${currentTable.label} adisyonu, Masa ${selectedTargetTable.label} adisyonu ile birleştirildi.`,
             entityType: 'order',
             entityId: activeTargetOrder.id,
             timestamp: nowIso,
@@ -409,7 +415,7 @@ export default function TableTransferModal({
           id: generateId(),
           userId: currentUser?.id || 'staff-1',
           userName: currentUserName,
-          action: 'Ürün Taşıma',
+          action: 'Ürün Aktarma',
           details: `Masa ${currentTable.label} -> Masa ${selectedTargetTable.label}: ${itemsToMoveList.map(m => `${m.qty}x ${m.item.name}`).join(', ')} aktarıldı.`,
           entityType: 'order',
           entityId: effectiveOrder?.id || 'order',
@@ -440,7 +446,7 @@ export default function TableTransferModal({
             </div>
             <div>
               <h2 className="font-black text-base sm:text-lg tracking-tight">
-                Masa / Ürün Taşı
+                Adisyon Taşı / Masaya Aktar
               </h2>
               <p className="text-xs text-stone-500 dark:text-stone-400">
                 Kaynak: <strong className="text-stone-900 dark:text-stone-100 font-bold">Masa {currentTable.label}</strong>
@@ -456,7 +462,15 @@ export default function TableTransferModal({
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
+          {/* Layout notice banner */}
+          <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-300">
+            <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="leading-relaxed">
+              <span className="font-bold">Salon düzeni ve masalar sabit kalır.</span> Sadece <strong>Masa {currentTable.label}</strong>'ye ait adisyon ve siparişler seçtiğiniz hedef masaya aktarılır.
+            </div>
+          </div>
+
           {/* Transfer Mode Switcher */}
           <div className="flex p-1 bg-stone-100 dark:bg-stone-950 rounded-2xl border border-stone-200 dark:border-stone-800">
             <button
@@ -469,7 +483,7 @@ export default function TableTransferModal({
                   : "text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200"
               )}
             >
-              Tüm Masayı Taşı
+              Tüm Adisyonu Aktar
             </button>
             <button
               type="button"
@@ -481,9 +495,20 @@ export default function TableTransferModal({
                   : "text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200"
               )}
             >
-              Seçili Ürünleri Taşı
+              Seçili Ürünleri Aktar
             </button>
           </div>
+
+          {/* Mode explanation */}
+          {transferMode === 'all' ? (
+            <div className="px-3 py-2 bg-stone-50 dark:bg-stone-850/40 border border-stone-200 dark:border-stone-800 rounded-xl text-[11px] text-stone-600 dark:text-stone-400">
+              Masa {currentTable.label}'deki tüm açık siparişler ve hesap hedef masaya aktarılır. Masa {currentTable.label} boş duruma geçer.
+            </div>
+          ) : (
+            <div className="px-3 py-2 bg-stone-50 dark:bg-stone-850/40 border border-stone-200 dark:border-stone-800 rounded-xl text-[11px] text-stone-600 dark:text-stone-400">
+              Aşağıdan seçtiğiniz ürünler hedef masaya aktarılır. Seçilmeyenler Masa {currentTable.label}'de kalmaya devam eder.
+            </div>
+          )}
 
           {/* If Partial Transfer: Product List with Checkboxes & Quantities */}
           {transferMode === 'partial' && (
@@ -498,7 +523,7 @@ export default function TableTransferModal({
                       Bu masada henüz kayıtlı sipariş veya ürün bulunmuyor.
                     </p>
                     <p className="text-[11px] text-stone-400 dark:text-stone-500 mt-1">
-                      Masa oturumunu veya adisyonu taşımak için yukarıdan <strong>"Tüm Masayı Taşı"</strong> seçeneğini kullanabilirsiniz.
+                      Masa oturumunu veya adisyonu aktarmak için yukarıdan <strong>"Tüm Adisyonu Aktar"</strong> seçeneğini kullanabilirsiniz.
                     </p>
                   </div>
                 ) : (
@@ -611,7 +636,7 @@ export default function TableTransferModal({
                         ? "bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-400" 
                         : "bg-stone-200 dark:bg-stone-800 text-stone-600 dark:text-stone-400"
                     )}>
-                      {isOccupied ? 'Dolu (Birleştir)' : 'Boş Masa'}
+                      {isOccupied ? 'Dolu (Adisyonu Birleştir)' : 'Boş Masa'}
                     </span>
                   </button>
                 );
@@ -644,7 +669,13 @@ export default function TableTransferModal({
               className="px-5 py-2.5 rounded-xl font-bold text-xs bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white transition-all shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
               <ArrowRightLeft size={14} />
-              <span>{isSubmitting ? 'Aktarılıyor...' : 'Taşımayı Tamamla'}</span>
+              <span>
+                {isSubmitting
+                  ? 'Aktarılıyor...'
+                  : transferMode === 'all'
+                    ? (selectedTargetTable ? `Adisyonu Masa ${selectedTargetTable.label}'e Aktar` : 'Adisyonu Aktar')
+                    : (selectedTargetTable ? `Seçilenleri Masa ${selectedTargetTable.label}'e Aktar` : 'Ürünleri Aktar')}
+              </span>
             </button>
           </div>
         </div>
