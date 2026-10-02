@@ -29,8 +29,16 @@ function startStaticServer(distPath, port = 4173) {
 
     let filePath = path.join(distPath, cleanUrl);
 
-    // If file doesn't exist, fallback to index.html (SPA routing)
+    const assetExts = ['.js', '.mjs', '.css', '.map', '.json', '.png', '.jpg', '.jpeg', '.svg', '.ico', '.woff2', '.woff', '.ttf', '.webmanifest'];
+    const requestedExt = path.extname(cleanUrl).toLowerCase();
+
+    // If file doesn't exist, fallback to index.html (SPA routing) unless it's a static asset
     if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+      if (requestedExt && assetExts.includes(requestedExt)) {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Not Found');
+        return;
+      }
       filePath = path.join(distPath, 'index.html');
     }
 

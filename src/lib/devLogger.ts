@@ -169,8 +169,8 @@ export async function addDevLog(
     // If IndexedDB quota exceeded, fallback to keep in memory without throwing
   }
 
-  // 4. If this is an error or network issue, persist directly to Host PC local disk error logs
-  if (level === 'error' || level === 'network') {
+  // 4. If this is an application error, persist directly to Host PC local disk error logs
+  if (level === 'error') {
     sendErrorToLocalServer(entry)
   }
 
@@ -399,18 +399,32 @@ export function initDevLogger() {
         const response = await originalFetch(...args)
         const duration = Math.round(performance.now() - startTime)
 
-        if (!response.ok) {
+        const isBackgroundCheck =
+          url.includes('ntfy.sh') ||
+          url.includes('/api/ping') ||
+          url.includes('/api/logs/error') ||
+          url.includes('/api/heartbeat');
+
+        if (!response.ok && !isBackgroundCheck) {
           addDevLog('network', 'FetchError', `${method} ${url} -> HTTP ${response.status} (${response.statusText}) [${duration}ms]`, {
             data: { url, method, status: response.status, statusText: response.statusText, duration },
           })
         }
         return response
       } catch (err: any) {
+        const isBackgroundCheck =
+          url.includes('ntfy.sh') ||
+          url.includes('/api/ping') ||
+          url.includes('/api/logs/error') ||
+          url.includes('/api/heartbeat');
+
         const duration = Math.round(performance.now() - startTime)
-        addDevLog('network', 'FetchFailed', `${method} ${url} -> Network Error: ${err?.message || err} [${duration}ms]`, {
-          stack: err?.stack,
-          data: { url, method, error: String(err), duration },
-        })
+        if (!isBackgroundCheck) {
+          addDevLog('network', 'FetchFailed', `${method} ${url} -> Network Error: ${err?.message || err} [${duration}ms]`, {
+            stack: err?.stack,
+            data: { url, method, error: String(err), duration },
+          })
+        }
         throw err
       }
     }
@@ -502,6 +516,17 @@ export const devLogger = {
       return { success: true, lines: json.lines || [] }
     } catch (err: any) {
       return { success: false, lines: [], error: err?.message || 'Disk hata kütüğü okunamadı.' }
+    }
+  },
+  clearTodayDiskErrors: async (): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const baseUrl = getLocalServerUrl()
+      if (!baseUrl) return { success: false, error: 'Yerel sunucu adresi belirlenemedi.' }
+      const res = await (originalFetch || window.fetch)(`${baseUrl}/api/storage/errors/clear`, { method: 'POST' })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Disk hata kütüğü sıfırlanamadı.' }
     }
   },
   logAccountError: (accountRole: string, category: string, message: string, error?: unknown, data?: unknown) => {

@@ -25,6 +25,20 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ errorInfo })
+
+    // If dynamic chunk failed to load (e.g. after a rebuild or new deployment), reload page once
+    const msg = error?.message || ''
+    if (msg.includes('Failed to fetch dynamically imported module') || msg.includes('dynamically imported module')) {
+      const lastChunkReload = sessionStorage.getItem('last_chunk_reload')
+      const now = Date.now()
+      if (!lastChunkReload || now - parseInt(lastChunkReload, 10) > 10000) {
+        sessionStorage.setItem('last_chunk_reload', String(now))
+        console.warn('[ErrorBoundary] Dynamic import error detected, auto-refreshing to fetch latest bundle...')
+        window.location.reload()
+        return
+      }
+    }
+
     // Record to Developer Error Logger
     devLogger.error('ReactErrorBoundary', error.message || 'React Render Crash', error, {
       componentStack: errorInfo.componentStack,

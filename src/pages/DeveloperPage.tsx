@@ -711,6 +711,21 @@ export default function DeveloperPage() {
                 </button>
 
                 <button
+                  onClick={async () => {
+                    if (confirm("Bugünün disk hata kütüğünü temizlemek istediğinize emin misiniz?")) {
+                      await devLogger.clearTodayDiskErrors()
+                      loadDiskErrors()
+                    }
+                  }}
+                  disabled={isLoadingDiskErrors || diskErrorLines.length === 0}
+                  className="px-3 py-1.5 bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/50 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  title="Disk Hata Kütüğünü Sıfırla"
+                >
+                  <Trash2 size={14} />
+                  <span>Temizle</span>
+                </button>
+
+                <button
                   onClick={downloadDiskLogFile}
                   disabled={diskErrorLines.length === 0}
                   className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"

@@ -183,31 +183,36 @@ export async function applyRemoteSync(
   senderId?: string
 ) {
   if (senderId === CLIENT_ID) return;
+  if (!changes && !deleted) return;
 
   isApplyingRemoteSync = true;
   try {
     // Upsert incoming items
-    for (const [tableName, items] of Object.entries(changes || {})) {
-      if (!Array.isArray(items) || items.length === 0) continue;
-      const table = db.table(tableName);
-      if (table) {
-        await table.bulkPut(sanitizeSyncItems(tableName, items));
+    if (changes && typeof changes === 'object') {
+      for (const [tableName, items] of Object.entries(changes)) {
+        if (!Array.isArray(items) || items.length === 0) continue;
+        const table = db.table(tableName);
+        if (table) {
+          await table.bulkPut(sanitizeSyncItems(tableName, items));
+        }
       }
     }
 
     // Delete deleted items
-    for (const [tableName, ids] of Object.entries(deleted || {})) {
-      if (!Array.isArray(ids) || ids.length === 0) continue;
-      const table = db.table(tableName);
-      if (table) {
-        await table.bulkDelete(ids);
+    if (deleted && typeof deleted === 'object') {
+      for (const [tableName, ids] of Object.entries(deleted)) {
+        if (!Array.isArray(ids) || ids.length === 0) continue;
+        const table = db.table(tableName);
+        if (table) {
+          await table.bulkDelete(ids);
+        }
       }
     }
 
     // Play sounds if relevant
-    if (changes.kitchenTickets) {
-      const hasNew = changes.kitchenTickets.some((t) => t.status === 'new' || t.status === 'pending');
-      const hasReady = changes.kitchenTickets.some((t) => t.status === 'ready');
+    if (changes && typeof changes === 'object' && Array.isArray(changes.kitchenTickets)) {
+      const hasNew = changes.kitchenTickets.some((t: any) => t && (t.status === 'new' || t.status === 'pending'));
+      const hasReady = changes.kitchenTickets.some((t: any) => t && t.status === 'ready');
       if (hasNew) playSyncSound('kitchen_order');
       if (hasReady) playSyncSound('order_ready');
     }
@@ -391,7 +396,10 @@ function setupLocalServerSSE(db: PosDatabase) {
           ingestRemoteLog(payload.entry);
           return;
         }
-        if (payload.senderId !== CLIENT_ID) {
+        if (payload.type === 'presence_update') {
+          return;
+        }
+        if (payload.senderId !== CLIENT_ID && (payload.changes || payload.deleted)) {
           if (payload.msgId && markAndCheckProcessed(payload.msgId)) return;
           applyRemoteSync(db, payload.changes, payload.deleted, payload.senderId);
         }

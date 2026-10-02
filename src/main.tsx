@@ -11,6 +11,14 @@ import './index.css';
 // Immediately boot global developer logger and error capture
 initDevLogger();
 
+// Auto-reload gracefully if a new deployment changed chunk hashes (prevents Failed to fetch dynamically imported module)
+if (typeof window !== 'undefined') {
+  window.addEventListener('vite:preloadError', (event) => {
+    console.warn('[Vite] Chunk preload error detected, reloading page to fetch latest build...', event);
+    window.location.reload();
+  });
+}
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ErrorBoundary>

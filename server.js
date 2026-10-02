@@ -262,6 +262,16 @@ function logSystemActivity(category, message, details = null) {
 }
 
 function logErrorEvent(category, message, errorInfo = {}) {
+  const msgStr = String(message || '');
+  if (
+    msgStr.includes('ntfy.sh') ||
+    msgStr.includes('/api/ping') ||
+    msgStr.includes('/api/logs/error') ||
+    msgStr.includes('/api/heartbeat')
+  ) {
+    return;
+  }
+
   const timestamp = new Date().toISOString();
   const today = getTodayString();
   const errorLogFile = path.join(LOGS_DIR, `errors_${today}.log`);
@@ -1028,6 +1038,23 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // 14b. Clear Today's Dedicated Error Logs (POST /api/storage/errors/clear)
+  if (url.pathname === '/api/storage/errors/clear' && req.method === 'POST') {
+    try {
+      const today = getTodayString();
+      const errorFile = path.join(LOGS_DIR, `errors_${today}.log`);
+      const errorJsonlFile = path.join(LOGS_DIR, `errors_${today}.jsonl`);
+      if (fs.existsSync(errorFile)) fs.writeFileSync(errorFile, '', 'utf-8');
+      if (fs.existsSync(errorJsonlFile)) fs.writeFileSync(errorJsonlFile, '', 'utf-8');
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true }));
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+    return;
+  }
+
   // 15. Garsons List
   if (url.pathname === '/api/garsons') {
     cleanupInactiveClients();
@@ -1178,15 +1205,28 @@ const server = http.createServer((req, res) => {
   const distDir = resolveDistDir();
   if (distDir) {
     let cleanPath = url.pathname.replace(/^\/Adisyon\/?/, '/');
-    let filePath = path.join(distDir, cleanPath === '/' ? 'index.html' : cleanPath);
-    if (!fs.existsSync(filePath)) {
+    const relativePath = cleanPath === '/' ? 'index.html' : cleanPath.replace(/^\/+/, '');
+    let filePath = path.join(distDir, relativePath);
+
+    const assetExts = ['.js', '.mjs', '.css', '.map', '.json', '.png', '.jpg', '.jpeg', '.svg', '.ico', '.woff2', '.woff', '.ttf', '.webmanifest'];
+    const requestedExt = path.extname(cleanPath).toLowerCase();
+
+    // If a specific static asset file was requested but does not exist, return 404 (NEVER index.html HTML!)
+    if (requestedExt && assetExts.includes(requestedExt)) {
+      if (!fs.existsSync(filePath)) {
+        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end(`Asset not found: ${cleanPath}`);
+        return;
+      }
+    } else if (!fs.existsSync(filePath)) {
       filePath = path.join(distDir, 'index.html');
     }
 
-    const ext = path.extname(filePath);
+    const ext = path.extname(filePath).toLowerCase();
     const mimeTypes = {
       '.html': 'text/html; charset=utf-8',
       '.js': 'text/javascript; charset=utf-8',
+      '.mjs': 'text/javascript; charset=utf-8',
       '.css': 'text/css; charset=utf-8',
       '.json': 'application/json; charset=utf-8',
       '.png': 'image/png',
@@ -1201,22 +1241,24 @@ const server = http.createServer((req, res) => {
     };
 
     const contentType = mimeTypes[ext] || 'application/octet-stream';
-    if (filePath.endsWith('sw.js')) {
+    if (filePath.endsWith('sw.js') || ext === '.html') {
       res.setHeader('Service-Worker-Allowed', '/');
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
+    } else if (ext === '.js' || ext === '.css' || ext === '.woff2') {
+      // Fingerprinted assets can be cached
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     }
 
     fs.readFile(filePath, (err, data) => {
       if (err) {
-        fs.readFile(path.join(distDir, 'index.html'), (err2, indexData) => {
-          if (err2) {
-            res.writeHead(500);
-            res.end('Server Error');
-          } else {
-            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-            res.end(indexData);
-          }
-        });
+        if (ext === '.html') {
+          res.writeHead(500);
+          res.end('Server Error');
+        } else {
+          res.writeHead(404);
+          res.end('Not Found');
+        }
       } else {
         res.writeHead(200, { 'Content-Type': contentType });
         res.end(data);
