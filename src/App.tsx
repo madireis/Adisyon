@@ -59,6 +59,7 @@ export default function App() {
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/patron-logs" element={<PatronLogsPage />} />
           <Route path="/menu" element={<MenuPage />} />
+          <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/staff" element={<StaffPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/guide" element={<GuidePage />} />
@@ -66,7 +67,6 @@ export default function App() {
 
           {/* Clean redirects for removed bloated routes */}
           <Route path="/dashboard" element={<Navigate to="/reports" replace />} />
-          <Route path="/inventory" element={<Navigate to="/tables" replace />} />
           <Route path="/customers" element={<Navigate to="/tables" replace />} />
           <Route path="/reservations" element={<Navigate to="/tables" replace />} />
           <Route path="/online-orders" element={<Navigate to="/tables" replace />} />

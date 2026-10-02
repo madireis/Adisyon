@@ -45,6 +45,8 @@ export interface PosPermissions {
   canViewMenu: boolean;               // Menü sayfasını görüntüleme
   canManageMenu: boolean;             // Menü, fiyat ve ürün yönetimi
   canToggleItemAvailability: boolean; // Ürün stokta var / tükendi durumu değiştirme
+  canViewInventory: boolean;          // Stok takip sayfasını görüntüleme
+  canManageInventory: boolean;        // Stok ekleme, düzenleme ve hammadde/ürün stok girişi
 
   // Yönetim & Personel
   canViewStaff: boolean;              // Personel sayfasını görüntüleme
@@ -238,15 +240,34 @@ export interface KitchenTicket {
 }
 
 // ─── Inventory ────────────────────────────────────────────────
+export type InventoryItemType = 'raw_material' | 'product' | 'consumable';
+
 export interface InventoryItem {
   id: string
   name: string
+  barcode?: string
+  code?: string
+  category?: string
+  type?: InventoryItemType
+  menuItemId?: string
   unit: string
   currentStock: number
   minimumStock: number
+  maximumStock?: number
+  packQuantity?: number
   purchaseCost: number
+  salePrice?: number
+  taxRate?: number
   supplier: string
+  supplierPhone?: string
+  invoiceNumber?: string
+  storageLocation?: string
+  shelfNumber?: string
+  expiryDate?: string
+  lotNumber?: string
+  notes?: string
   lastUpdated: string
+  createdAt?: string
 }
 
 export interface RecipeItem {

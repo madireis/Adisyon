@@ -8,7 +8,7 @@ import {
   XCircle, Users, CheckCircle2, Plus, PlusCircle, 
   ArrowDownUp, ChefHat, CheckSquare, MenuSquare, ToggleLeft, 
   UserCog, ShieldCheck, History, Settings, Sparkles, Filter,
-  Banknote
+  Banknote, Package, Boxes
 } from 'lucide-react';
 import { cn, generateId } from '@/lib/utils';
 import type { Staff, UserRole, PosPermissions } from '@/types/pos';
@@ -112,6 +112,8 @@ export default function StaffPage() {
       case 'MenuSquare': return <MenuSquare className="w-4 h-4 text-orange-500" />;
       case 'Utensils': return <Utensils className="w-4 h-4 text-orange-500" />;
       case 'ToggleLeft': return <ToggleLeft className="w-4 h-4 text-orange-500" />;
+      case 'Package': return <Package className="w-4 h-4 text-orange-500" />;
+      case 'Boxes': return <Boxes className="w-4 h-4 text-orange-500" />;
       case 'Users': return <Users className="w-4 h-4 text-rose-500" />;
       case 'UserCog': return <UserCog className="w-4 h-4 text-rose-500" />;
       case 'ShieldCheck': return <ShieldCheck className="w-4 h-4 text-rose-500" />;

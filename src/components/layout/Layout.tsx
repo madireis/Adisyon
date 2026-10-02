@@ -19,6 +19,7 @@ import {
   Download,
   Terminal,
   ShieldAlert,
+  Package,
 } from 'lucide-react';
 import type { UserRole, PosPermissions } from '@/types/pos';
 import { usePermissions } from '@/lib/permissions';
@@ -76,6 +77,7 @@ export default function Layout() {
     { path: '/reports', label: 'Kasa', icon: Banknote, permission: 'canViewReports', roles: ['cashier', 'owner', 'manager', 'developer'] },
     { path: '/patron-logs', label: 'Patron Logları', icon: ShieldAlert, permission: 'canViewAuditLogs', roles: ['owner', 'manager', 'developer'] },
     { path: '/menu', label: 'Menü', icon: MenuSquare, permission: 'canViewMenu', roles: ['owner', 'manager', 'developer'] },
+    { path: '/inventory', label: 'Stok Takibi', icon: Package, permission: 'canViewInventory', roles: ['owner', 'manager', 'kitchen', 'bar', 'cashier', 'developer'] },
     { path: '/staff', label: 'Personel', icon: Users, permission: 'canViewStaff', roles: ['owner', 'manager', 'developer'] },
     { path: '/settings', label: 'Ayarlar', icon: Settings, permission: 'canManageSettings', roles: ['owner', 'manager', 'developer'] },
     { path: '/guide', label: 'Rehber', icon: BookOpen, roles: ['owner', 'manager', 'developer'] },
