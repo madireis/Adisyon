@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import dgram from 'node:dgram';
 import { exec } from 'node:child_process';
+import qrcode from 'qrcode-terminal';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -68,7 +69,7 @@ function autoSetupWindowsHosts(localIp) {
     const hasLocal = content.includes('adisyon.local');
     const hasIp = localIp && localIp !== '127.0.0.1' && content.includes(localIp);
     if (hasLocal && hasIp) {
-      console.log('✅ [Windows Hosts] adisyon.local alan adı kaydı aktif.');
+      // hosts quiet
       return;
     }
 
@@ -88,7 +89,7 @@ function autoSetupWindowsHosts(localIp) {
 
     try {
       fs.appendFileSync(hostsPath, textToAdd, 'utf8');
-      console.log('✅ [Windows Hosts] adisyon.local hosts dosyasına başarıyla eklendi!');
+      // hosts quiet
     } catch {
       const escaped = textToAdd.replace(/\r\n/g, '`r`n').replace(/"/g, '`"');
       const ps = `Start-Process powershell -Verb RunAs -ArgumentList '-NoProfile -Command Add-Content -Path \\"$env:SystemRoot\\System32\\drivers\\etc\\hosts\\" -Value \\"${escaped}\\"' -WindowStyle Hidden`;
@@ -406,7 +407,7 @@ function loadStateWithCrashRecovery() {
       if (raw && raw.trim().length > 0) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object') {
-          console.log(`[Storage Engine] Loaded master POS store (Revision: ${parsed.revision || 0})`);
+          // store loaded
           logSystemActivity('STORAGE', `Master store loaded normally (Revision: ${parsed.revision || 0})`);
           return { ...createEmptyState(), ...parsed };
         }
@@ -423,7 +424,7 @@ function loadStateWithCrashRecovery() {
       if (raw && raw.trim().length > 0) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object') {
-          console.log(`[Storage Engine] RECOVERED from emergency latest backup! (Revision: ${parsed.revision || 0})`);
+          // backup recovered
           logSystemActivity('CRASH_RECOVERY', `Successfully recovered from emergency latest backup (Revision: ${parsed.revision || 0})`);
           fs.writeFileSync(STORE_FILE, JSON.stringify(parsed, null, 2), 'utf-8');
           return { ...createEmptyState(), ...parsed };
@@ -447,7 +448,7 @@ function loadStateWithCrashRecovery() {
           const raw = fs.readFileSync(path.join(BACKUPS_DIR, f), 'utf-8');
           const parsed = JSON.parse(raw);
           if (parsed && typeof parsed === 'object') {
-            console.log(`[Storage Engine] RECOVERED from rolling snapshot: ${f} (Revision: ${parsed.revision || 0})`);
+            // snapshot recovered
             logSystemActivity('CRASH_RECOVERY', `Recovered state from rolling snapshot ${f} (Revision: ${parsed.revision || 0})`);
             fs.writeFileSync(STORE_FILE, JSON.stringify(parsed, null, 2), 'utf-8');
             return { ...createEmptyState(), ...parsed };
@@ -459,7 +460,7 @@ function loadStateWithCrashRecovery() {
     console.error('[Storage Engine] Failed to search snapshots:', e);
   }
 
-  console.log('[Storage Engine] No existing store found. Initialized fresh state.');
+  // fresh state
   logSystemActivity('STORAGE', 'Initialized fresh empty POS state');
   return createEmptyState();
 }
@@ -581,6 +582,7 @@ function cleanupInactiveClients() {
       type: 'presence_update',
       activeCount: connectedClients.size,
     });
+    scheduleScreenUpdate();
   }
 }
 
@@ -786,7 +788,7 @@ const server = http.createServer((req, res) => {
           serverState.lastUpdated = Date.now();
           scheduleSave();
           createSnapshotNow('seed_bootstrap');
-          console.log('[Storage Engine] Server store initialized with initial seed data');
+          // seed initialized
           logSystemActivity('SEED', 'Server store initialized with initial seed data');
 
           broadcastSync({
@@ -1103,6 +1105,7 @@ const server = http.createServer((req, res) => {
 
         const isNew = !connectedClients.has(staffId);
         const existing = connectedClients.get(staffId);
+        const infoChanged = !existing || existing.name !== data.staffName || existing.role !== data.role || existing.deviceName !== data.deviceName;
 
         const updatedClient = {
           id: staffId,
@@ -1123,6 +1126,10 @@ const server = http.createServer((req, res) => {
             activeCount: connectedClients.size,
             addedStaff: updatedClient,
           });
+        }
+
+        if (isNew || infoChanged) {
+          scheduleScreenUpdate();
         }
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -1152,6 +1159,7 @@ const server = http.createServer((req, res) => {
           activeCount: connectedClients.size,
           removedStaffId: staffId,
         });
+        scheduleScreenUpdate();
       }
     };
 
@@ -1308,6 +1316,119 @@ const server = http.createServer((req, res) => {
   `);
 });
 
+let cachedIosLines = null;
+let cachedAndroidLines = null;
+let cachedLocalIp = '';
+let cachedPort = 3001;
+let screenUpdateTimer = null;
+
+/**
+ * Render full screen display with stats, addresses, QR codes and live active accounts
+ */
+function renderFullDisplay() {
+  const localIp = cachedLocalIp || getLocalIpAddress();
+  const port = cachedPort;
+  const isLocalOnly = !localIp || localIp === '127.0.0.1';
+  const iosUrl = isLocalOnly ? `http://localhost:${port}` : `http://adisyon.local:${port}`;
+  const androidUrl = isLocalOnly ? `http://localhost:${port}` : `http://${localIp}:${port}`;
+
+  const tableCount = Array.isArray(serverState?.tables) ? serverState.tables.length : 0;
+  const menuCount = Array.isArray(serverState?.menuItems) ? serverState.menuItems.length : 0;
+  const staffCount = Array.isArray(serverState?.staff) ? serverState.staff.length : 0;
+
+  try {
+    console.clear();
+  } catch {}
+
+  const divider = '='.repeat(68);
+  const subDivider = '-'.repeat(68);
+
+  console.log('\n' + divider);
+  console.log("                 WOT'S CAFE ADISYON SISTEMI");
+  console.log(divider);
+  console.log('');
+  console.log('  [ SISTEM & VERI DURUMU ]');
+  console.log(`  * Sunucu Durumu : AKTIF (Port ${port})`);
+  console.log(`  * Kasa PC Giris : http://localhost:${port}`);
+  console.log(`  * Kayitli Veri  : ${tableCount} Masa | ${menuCount} Urun | ${staffCount} Personel`);
+  console.log('  * Senkronizasyon: Yerel WiFi, SSE & mDNS Aktif');
+  console.log('');
+  console.log(subDivider);
+  console.log('  [ TELEFON BAGLANTI ADRESLERI ]');
+  console.log(`  * iPhone / iOS  : ${iosUrl}` + (!isLocalOnly ? ` (veya http://${localIp}:${port})` : ''));
+  console.log(`  * Android       : ${androidUrl}`);
+  console.log(subDivider);
+  console.log('       [ iPhone / iOS QR ]                 [ Android QR ]');
+  console.log(subDivider);
+
+  if (cachedIosLines && cachedAndroidLines) {
+    const cols = process.stdout.columns || 80;
+    if (cols >= 65) {
+      const maxLines = Math.max(cachedIosLines.length, cachedAndroidLines.length);
+      for (let i = 0; i < maxLines; i++) {
+        const left = (cachedIosLines[i] || '').padEnd(31);
+        const right = (cachedAndroidLines[i] || '');
+        console.log('  ' + left + '     ' + right);
+      }
+    } else {
+      console.log('  [ iPhone / iOS QR ]');
+      console.log(cachedIosLines.join('\n'));
+      console.log(subDivider);
+      console.log('  [ Android QR ]');
+      console.log(cachedAndroidLines.join('\n'));
+    }
+  }
+
+  console.log('\n' + subDivider);
+  const activeList = Array.from(connectedClients.values());
+  if (activeList.length === 0) {
+    console.log('  [ AKTIF BAGLI HESAPLAR ] (0 Cihaz)');
+    console.log('  * Su an bagli aktif hesap bulunmuyor. (Giris bekleniyor...)');
+  } else {
+    console.log(`  [ AKTIF BAGLI HESAPLAR (${activeList.length} Cihaz Canli) ]`);
+    for (const client of activeList) {
+      const roleLabel =
+        client.role === 'waiter'
+          ? 'Garson'
+          : client.role === 'kitchen'
+          ? 'Mutfak'
+          : client.role === 'owner'
+          ? 'Patron'
+          : 'Yonetici';
+      console.log(`  * ${client.name} [${roleLabel}] - ${client.deviceName || 'Mobil'} (${client.ip})`);
+    }
+  }
+
+  console.log(divider);
+  console.log(' * Telefon kamerasini QR koda tutarak aninda baglanabilirsiniz.');
+  console.log(divider + '\n');
+}
+
+function scheduleScreenUpdate() {
+  if (screenUpdateTimer) return;
+  screenUpdateTimer = setTimeout(() => {
+    screenUpdateTimer = null;
+    renderFullDisplay();
+  }, 100);
+}
+
+function initStartupScreen(localIp, port) {
+  cachedLocalIp = localIp;
+  cachedPort = port;
+
+  const isLocalOnly = !localIp || localIp === '127.0.0.1';
+  const iosUrl = isLocalOnly ? `http://localhost:${port}` : `http://adisyon.local:${port}`;
+  const androidUrl = isLocalOnly ? `http://localhost:${port}` : `http://${localIp}:${port}`;
+
+  qrcode.generate(iosUrl, { small: true }, (qrIos) => {
+    cachedIosLines = (qrIos || '').trimEnd().split('\n');
+    qrcode.generate(androidUrl, { small: true }, (qrAndroid) => {
+      cachedAndroidLines = (qrAndroid || '').trimEnd().split('\n');
+      renderFullDisplay();
+    });
+  });
+}
+
 server.listen(PORT, '0.0.0.0', () => {
   const localIp = getLocalIpAddress();
   startMdnsResponder(['adisyon.local', 'pos.local', 'kasa.local']);
@@ -1316,16 +1437,5 @@ server.listen(PORT, '0.0.0.0', () => {
   autoSetupWindowsHosts(localIp);
   autoOpenBrowser(`http://localhost:${PORT}`);
 
-  console.log(`\n==================================================`);
-  console.log(`🚀 ADİSYON REAL-TIME SYNC & YEREL AĞ SUNUCUSU ÇALIŞIYOR`);
-  console.log(`🌐 Sabit Alan Adı (Tüm Cihazlar): http://adisyon.local:${PORT}`);
-  console.log(`📍 Ana PC Yerel IP Adresi:        http://${localIp}:${PORT}`);
-  console.log(`📲 Garson Telefon Giriş URL:      http://adisyon.local:${PORT} (veya http://${localIp}:${PORT})`);
-  console.log(`💡 İpucu: Modem IP'nizi değiştirse bile "http://adisyon.local:${PORT}" her zaman çalışır!`);
-  console.log(`🖥️ Tarayıcı otomatik açılıyor:     http://localhost:${PORT}`);
-  console.log(`📁 Veri & Log Depolama Dizini:    ${DATA_DIR}`);
-  console.log(`🛑 Hata Kayıt Dosyası:            ${path.join(LOGS_DIR, `errors_${getTodayString()}.log`)}`);
-  console.log(`🛡️ Ani Kapanma Koruması & Atomik Yazma: Aktif`);
-  console.log(`📡 Gerçek Zamanlı Senkronizasyon (SSE & WiFi): Aktif`);
-  console.log(`==================================================\n`);
+  initStartupScreen(localIp, PORT);
 });
