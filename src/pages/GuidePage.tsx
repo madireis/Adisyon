@@ -141,7 +141,7 @@ export default function GuidePage() {
   });
 
   return (
-    <div className="w-full min-h-full flex flex-col bg-stone-100 dark:bg-stone-950 pb-36 sm:pb-24">
+    <div className="w-full min-h-full flex flex-col bg-stone-100 dark:bg-stone-950 pb-8 sm:pb-12">
       {/* Top Hero Banner */}
       <div className="bg-stone-900 text-stone-100 p-4 sm:p-6 lg:p-8 border-b border-stone-800 shrink-0">
         <div className="max-w-6xl mx-auto space-y-4">

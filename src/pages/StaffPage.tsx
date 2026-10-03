@@ -291,7 +291,7 @@ export default function StaffPage() {
   };
 
   return (
-    <div className="p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto dark:bg-stone-950 dark:text-stone-100 select-none pb-24 md:pb-8 space-y-4 sm:space-y-6">
+    <div className="p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto dark:bg-stone-950 dark:text-stone-100 select-none pb-6 sm:pb-8 space-y-4 sm:space-y-6">
       
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">

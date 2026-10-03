@@ -448,7 +448,7 @@ export default function PatronLogsPage() {
   };
 
   return (
-    <div className="min-h-full flex flex-col bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans select-none pb-24 md:pb-8">
+    <div className="min-h-full flex flex-col bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans select-none pb-6 sm:pb-8">
       
       {/* ── HEADER ── */}
       <header className="p-3 sm:p-5 lg:p-6 bg-white dark:bg-stone-900 border-b border-stone-200/80 dark:border-stone-800/80 shrink-0">

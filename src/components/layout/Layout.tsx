@@ -80,44 +80,6 @@ export default function Layout() {
     { path: '/developer', label: 'Geliştirici', icon: Terminal, roles: ['developer'] },
   ];
 
-  // Mobile Bottom Navigation Shortcuts
-  const getMobileBottomNav = () => {
-    if (user.role === 'developer') {
-      return [
-        { path: '/tables', label: 'Masalar', icon: Grid2X2 },
-        { path: '/kitchen', label: 'Mutfak', icon: ChefHat },
-        { path: '/reports', label: 'Kasa', icon: Banknote },
-        { path: '/patron-logs', label: 'Patron Log', icon: ShieldAlert },
-      ];
-    }
-    if (user.role === 'owner') {
-      return [
-        { path: '/tables', label: 'Masalar', icon: Grid2X2 },
-        { path: '/reports', label: 'Kasa', icon: Banknote },
-        { path: '/patron-logs', label: 'Patron Log', icon: ShieldAlert },
-        { path: '/kitchen', label: 'Mutfak', icon: ChefHat },
-      ];
-    }
-    const items = [];
-    if (user.role === 'kitchen' || user.role === 'bar') {
-      items.push({ path: '/kitchen', label: 'Mutfak', icon: ChefHat });
-    } else {
-      items.push({ path: '/tables', label: 'Masalar', icon: Grid2X2 });
-    }
-    if (user.role === 'kitchen' || user.role === 'bar' || user.role === 'manager') {
-      if (!items.some(i => i.path === '/kitchen')) {
-        items.push({ path: '/kitchen', label: 'Mutfak', icon: ChefHat });
-      }
-    }
-    if (hasPermission('canViewReports')) {
-      items.push({ path: '/reports', label: 'Kasa', icon: Banknote });
-    }
-    if (hasPermission('canManageMenu') && items.length < 4) {
-      items.push({ path: '/menu', label: 'Menü', icon: MenuSquare });
-    }
-    return items;
-  };
-
   const visibleNavItems = allNavItems.filter(item => {
     if (user.role === 'developer' || user.role === 'owner') return true;
     if (item.permission) {
@@ -436,43 +398,9 @@ export default function Layout() {
         )}
 
         {/* Page Content */}
-        <main className={cn("flex-1 overflow-x-hidden overflow-y-auto bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-100", !isOrderPage ? "pb-24 md:pb-0" : "pb-0")}>
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-100">
           <Outlet />
         </main>
-
-        {/* Mobile Bottom Bar (hidden on order page) */}
-        {!isOrderPage && (
-          <div className="md:hidden fixed bottom-safe left-3 right-3 z-40 max-w-md mx-auto pointer-events-none">
-            <nav className="pointer-events-auto bg-white/95 dark:bg-stone-900/95 backdrop-blur-xl border border-stone-200 dark:border-stone-800 shadow-lg rounded-2xl p-1 flex items-center justify-around">
-              {getMobileBottomNav().map((item) => {
-                const isActive = location.pathname === item.path;
-                const Icon = item.icon;
-                return (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    className={cn(
-                      "flex-1 flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors min-h-[44px] cursor-pointer",
-                      isActive 
-                        ? "bg-orange-600 text-white font-bold" 
-                        : "text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 font-medium"
-                    )}
-                  >
-                    <Icon size={18} />
-                    <span className="text-[10px] mt-0.5">{item.label}</span>
-                  </NavLink>
-                );
-              })}
-              <button
-                onClick={() => setIsMobileDrawerOpen(true)}
-                className="flex-1 flex flex-col items-center justify-center py-1.5 rounded-xl text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 font-medium min-h-[44px] cursor-pointer"
-              >
-                <Menu size={18} />
-                <span className="text-[10px] mt-0.5">Menü</span>
-              </button>
-            </nav>
-          </div>
-        )}
       </div>
 
       {/* Modals */}
