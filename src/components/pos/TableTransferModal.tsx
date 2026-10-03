@@ -499,17 +499,6 @@ export default function TableTransferModal({
             </button>
           </div>
 
-          {/* Mode explanation */}
-          {transferMode === 'all' ? (
-            <div className="px-3 py-2 bg-stone-50 dark:bg-stone-850/40 border border-stone-200 dark:border-stone-800 rounded-xl text-[11px] text-stone-600 dark:text-stone-400">
-              Masa {currentTable.label}'deki tüm açık siparişler ve hesap hedef masaya aktarılır. Masa {currentTable.label} boş duruma geçer.
-            </div>
-          ) : (
-            <div className="px-3 py-2 bg-stone-50 dark:bg-stone-850/40 border border-stone-200 dark:border-stone-800 rounded-xl text-[11px] text-stone-600 dark:text-stone-400">
-              Aşağıdan seçtiğiniz ürünler hedef masaya aktarılır. Seçilmeyenler Masa {currentTable.label}'de kalmaya devam eder.
-            </div>
-          )}
-
           {/* If Partial Transfer: Product List with Checkboxes & Quantities */}
           {transferMode === 'partial' && (
             <div className="space-y-2">
