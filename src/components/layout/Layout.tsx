@@ -343,7 +343,7 @@ export default function Layout() {
 
           <div className="flex items-center gap-2 sm:gap-2.5">
             {/* WiFi & Garson Badge (Yetkiye göre - Varsayılan olarak sadece Patron/Developer) */}
-            {hasPermission('canViewNetworkStatus') && (
+            {hasPermission('canViewNetworkStatus', user) && (
               <button
                 onClick={() => setIsNetworkModalOpen(true)}
                 className="px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer bg-stone-850 hover:bg-stone-800 active:scale-95 text-stone-200 border border-stone-750 shadow-xs"

@@ -34,9 +34,9 @@ function getLocalIpAddress() {
  */
 function resolveDistDir() {
   const candidates = [
-    path.join(__dirname, 'dist'),
     typeof process.pkg !== 'undefined' ? path.join(path.dirname(process.execPath), 'dist') : null,
     path.join(process.cwd(), 'dist'),
+    path.join(__dirname, 'dist'),
   ].filter(Boolean);
 
   for (const cand of candidates) {
