@@ -25,9 +25,8 @@
     <script>
       (function() {
         try {
-          var t = localStorage.getItem('wots_theme');
-          var isDark = t === 'dark' || (!t || t === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (isDark) document.documentElement.classList.add('dark');
+          localStorage.setItem('wots_theme', 'dark');
+          document.documentElement.classList.add('dark');
         } catch (e) {}
       })();
     </script>

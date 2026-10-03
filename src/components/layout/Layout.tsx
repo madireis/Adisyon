@@ -11,8 +11,6 @@ import {
   Menu,
   ChevronLeft,
   LogOut,
-  Sun,
-  Moon,
   Banknote,
   ArrowLeftRight,
   BookOpen,
@@ -23,7 +21,6 @@ import {
 } from 'lucide-react';
 import type { UserRole, PosPermissions } from '@/types/pos';
 import { usePermissions } from '@/lib/permissions';
-import { useTheme } from '@/lib/theme';
 import { useLocalNetwork } from '@/lib/useLocalNetwork';
 import { disconnectLocalClient } from '@/lib/localNetwork';
 import { usePwaInstall } from '@/lib/usePwaInstall';
@@ -42,7 +39,6 @@ interface NavItem {
 
 export default function Layout() {
   const { state, dispatch } = useApp();
-  const { theme, resolvedTheme, toggleTheme } = useTheme();
   const { hasPermission } = usePermissions();
   const navigate = useNavigate();
   const location = useLocation();
@@ -361,65 +357,57 @@ export default function Layout() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Header */}
         <header className={cn(
-          "h-12 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between px-3 sm:px-6 shrink-0 z-20 sticky top-0 transition-colors",
+          "h-14 bg-stone-900/95 backdrop-blur-md border-b border-stone-800 flex items-center justify-between px-3 sm:px-6 shrink-0 z-20 sticky top-0 transition-all",
           isOrderPage && "hidden md:flex"
         )}>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => setIsMobileDrawerOpen(true)}
-              className="md:hidden p-1.5 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 active:scale-95 cursor-pointer"
+              className="md:hidden p-2 rounded-xl text-stone-300 hover:text-white bg-stone-850 hover:bg-stone-800 border border-stone-750 active:scale-95 transition-all cursor-pointer"
               title="Menü"
             >
               <Menu size={18} />
             </button>
 
-            <span className="font-black text-stone-900 dark:text-white text-sm tracking-tight md:hidden">
-              WOT'S <span className="text-orange-600">POS</span>
+            <span className="font-black text-white text-sm tracking-tight md:hidden">
+              WOT'S <span className="text-orange-500">POS</span>
             </span>
 
             {/* Clean neutral role indicator */}
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
+            <span className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-stone-850 text-stone-300 border border-stone-750">
               {getRoleBadge()}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-2 sm:gap-2.5">
             {/* WiFi & Garson Badge */}
             <button
               onClick={() => setIsNetworkModalOpen(true)}
-              className="px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer bg-stone-850 hover:bg-stone-800 active:scale-95 text-stone-200 border border-stone-750 shadow-xs"
               title="Ağ ve Garson Bağlantıları"
             >
-              <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", activeGarsonCount > 0 ? "bg-emerald-500" : "bg-stone-400")} />
-              <span>{activeGarsonCount > 0 ? `${activeGarsonCount} Garson` : 'Bağlantı'}</span>
+              <span className={cn("w-2 h-2 rounded-full shrink-0", activeGarsonCount > 0 ? "bg-emerald-500 shadow-xs shadow-emerald-500/50" : "bg-stone-500")} />
+              <span>{activeGarsonCount > 0 ? `${activeGarsonCount} Garson` : 'Yerel Ağ'}</span>
             </button>
 
             {/* PWA Install Button */}
             {!isInstalled && (
               <button
                 onClick={() => setIsPwaModalOpen(true)}
-                className="p-1.5 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer border border-stone-200 dark:border-stone-800"
+                className="p-2 rounded-xl text-stone-300 hover:text-white bg-stone-850 hover:bg-stone-800 active:scale-95 transition-all cursor-pointer border border-stone-750 shadow-xs"
                 title="Uygulamayı İndir"
               >
                 <Download size={15} />
               </button>
             )}
 
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-1.5 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer border border-stone-200 dark:border-stone-800"
-              title={resolvedTheme === 'dark' ? 'Açık Mod' : 'Koyu Mod'}
-            >
-              {resolvedTheme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
-            </button>
-
             {/* Current user */}
             <div 
-              className="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold border border-stone-200 dark:border-stone-700 cursor-default"
+              className="px-3 py-1.5 rounded-xl bg-stone-850 text-stone-200 text-xs font-bold border border-stone-750 shadow-xs cursor-default flex items-center gap-1.5"
               title={user.name}
             >
-              {user.name.split(' ')[0]}
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+              <span>{user.name.split(' ')[0]}</span>
             </div>
           </div>
         </header>
