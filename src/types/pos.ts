@@ -68,6 +68,7 @@ export interface PosPermissions {
   canManagePermissions: boolean;      // Rol yetkileri ve izin matrisini değiştirme
   canViewAuditLogs: boolean;          // İşlem geçmişi ve denetim kayıtlarını görme
   canManageSettings: boolean;         // Sistem ayarları ve ağ yapılandırması
+  canViewNetworkStatus: boolean;      // Yerel Ağ, IP, QR ve bağlı cihazları görüntüleme
 }
 
 export interface RolePermissionsRecord {

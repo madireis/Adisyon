@@ -342,15 +342,17 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* WiFi & Garson Badge */}
-            <button
-              onClick={() => setIsNetworkModalOpen(true)}
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer bg-stone-850 hover:bg-stone-800 active:scale-95 text-stone-200 border border-stone-750 shadow-xs"
-              title="Ağ ve Garson Bağlantıları"
-            >
-              <span className={cn("w-2 h-2 rounded-full shrink-0", activeGarsonCount > 0 ? "bg-emerald-500 shadow-xs shadow-emerald-500/50" : "bg-stone-500")} />
-              <span>{activeGarsonCount > 0 ? `${activeGarsonCount} Garson` : 'Yerel Ağ'}</span>
-            </button>
+            {/* WiFi & Garson Badge (Yetkiye göre - Varsayılan olarak sadece Patron/Developer) */}
+            {hasPermission('canViewNetworkStatus') && (
+              <button
+                onClick={() => setIsNetworkModalOpen(true)}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer bg-stone-850 hover:bg-stone-800 active:scale-95 text-stone-200 border border-stone-750 shadow-xs"
+                title="Ağ ve Garson Bağlantıları"
+              >
+                <span className={cn("w-2 h-2 rounded-full shrink-0", activeGarsonCount > 0 ? "bg-emerald-500 shadow-xs shadow-emerald-500/50" : "bg-stone-500")} />
+                <span>{activeGarsonCount > 0 ? `${activeGarsonCount} Garson` : 'Yerel Ağ'}</span>
+              </button>
+            )}
 
             {/* PWA Install Button */}
             {!isInstalled && (

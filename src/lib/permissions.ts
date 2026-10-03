@@ -87,6 +87,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, PosPermissions> = {
     canManagePermissions: true,
     canViewAuditLogs: true,
     canManageSettings: true,
+    canViewNetworkStatus: true,
   },
   developer: {
     canViewTablesPage: true,
@@ -115,6 +116,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, PosPermissions> = {
     canManagePermissions: true,
     canViewAuditLogs: true,
     canManageSettings: true,
+    canViewNetworkStatus: true,
   },
   manager: {
     canViewTablesPage: true,
@@ -143,6 +145,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, PosPermissions> = {
     canManagePermissions: true,
     canViewAuditLogs: true,
     canManageSettings: true,
+    canViewNetworkStatus: false,
   },
   cashier: {
     canViewTablesPage: true,
@@ -171,6 +174,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, PosPermissions> = {
     canManagePermissions: false,
     canViewAuditLogs: true,
     canManageSettings: false,
+    canViewNetworkStatus: false,
   },
   waiter: {
     canViewTablesPage: true,
@@ -199,6 +203,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, PosPermissions> = {
     canManagePermissions: false,
     canViewAuditLogs: false,
     canManageSettings: false,
+    canViewNetworkStatus: false,
   },
   kitchen: {
     canViewTablesPage: false,
@@ -227,6 +232,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, PosPermissions> = {
     canManagePermissions: false,
     canViewAuditLogs: false,
     canManageSettings: false,
+    canViewNetworkStatus: false,
   },
   bar: {
     canViewTablesPage: false,
@@ -255,6 +261,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, PosPermissions> = {
     canManagePermissions: false,
     canViewAuditLogs: false,
     canManageSettings: false,
+    canViewNetworkStatus: false,
   },
 };
 
@@ -459,6 +466,13 @@ export const PERMISSION_DEFINITIONS: PermissionDefinition[] = [
     description: 'Restoran adı, logo, termal yazıcı ayarları ve ağ bağlantılarını düzenleyebilir.',
     category: 'staff',
     icon: 'Settings',
+  },
+  {
+    key: 'canViewNetworkStatus',
+    label: 'Yerel Ağ, IP & Bağlı Cihazlar (QR) Görme',
+    description: "Header'daki yerel ağ durumunu, bağlı garsonları, IP adresini ve QR bağlantı ekranını görüntüleyebilir.",
+    category: 'staff',
+    icon: 'Wifi',
   },
 ];
 

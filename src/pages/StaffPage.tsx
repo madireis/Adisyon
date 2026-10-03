@@ -26,6 +26,7 @@ export default function StaffPage() {
   const staffMembers = useLiveQuery(() => db.staff.toArray()) || [];
   const { connectedGarsons } = useLocalNetwork();
   const { 
+    hasPermission,
     rolePermissionsMap, 
     updateRolePermission, 
     toggleCategoryPermissions,
@@ -123,6 +124,7 @@ export default function StaffPage() {
       case 'ShieldCheck': return <ShieldCheck className="w-4 h-4 text-rose-500" />;
       case 'History': return <History className="w-4 h-4 text-rose-500" />;
       case 'Settings': return <Settings className="w-4 h-4 text-stone-500" />;
+      case 'Wifi': return <Wifi className="w-4 h-4 text-emerald-500" />;
       default: return <Shield className="w-4 h-4 text-orange-500" />;
     }
   };
@@ -302,14 +304,16 @@ export default function StaffPage() {
           </h1>
         </div>
         <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
-          <button 
-            type="button"
-            onClick={() => setIsNetworkModalOpen(true)}
-            className="min-h-[42px] sm:min-h-[38px] bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-800 dark:text-stone-200 border border-stone-200 dark:border-stone-800 px-3 py-2 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer active:scale-95"
-          >
-            <Wifi size={15} className="shrink-0 text-orange-600 dark:text-orange-400" />
-            <span>WiFi Ağ</span>
-          </button>
+          {hasPermission('canViewNetworkStatus') && (
+            <button 
+              type="button"
+              onClick={() => setIsNetworkModalOpen(true)}
+              className="min-h-[42px] sm:min-h-[38px] bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-800 dark:text-stone-200 border border-stone-200 dark:border-stone-800 px-3 py-2 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer active:scale-95"
+            >
+              <Wifi size={15} className="shrink-0 text-orange-600 dark:text-orange-400" />
+              <span>WiFi Ağ</span>
+            </button>
+          )}
           <button 
             type="button"
             onClick={openAddModal}
