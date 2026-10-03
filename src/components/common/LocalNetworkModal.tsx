@@ -38,7 +38,7 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [targetType, setTargetType] = useState<'garson' | 'customer'>('garson');
   const [selectedPort, setSelectedPort] = useState<'3001' | '5173'>('3001');
-  const [addressMode, setAddressMode] = useState<'domain' | 'ip'>('domain');
+  const [addressMode, setAddressMode] = useState<'domain' | 'ip'>('ip');
   const [showToolsGuide, setShowToolsGuide] = useState(false);
   const [isEditingIp, setIsEditingIp] = useState(false);
   const [isLockingIp, setIsLockingIp] = useState(false);
@@ -251,6 +251,30 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
             <div className="grid grid-cols-2 gap-2 p-1 bg-stone-100 dark:bg-stone-950 rounded-2xl border border-stone-200 dark:border-stone-800">
               <button
                 type="button"
+                onClick={() => setAddressMode('ip')}
+                className={cn(
+                  "p-2.5 rounded-xl text-left transition-all cursor-pointer flex flex-col gap-0.5",
+                  addressMode === 'ip'
+                    ? "bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 shadow-sm border border-stone-200 dark:border-stone-700"
+                    : "text-stone-600 dark:text-stone-400 hover:bg-white/50 dark:hover:bg-stone-900/50"
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-bold text-xs text-stone-800 dark:text-stone-200">
+                    <Server size={13} className="text-orange-600" />
+                    <span>IP Adresi</span>
+                  </div>
+                  <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                    Evrensel &bull; %100 Uyumlu
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-stone-500 dark:text-stone-400 truncate">
+                  {effectiveIp} (Tüm Telefonlar)
+                </span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setAddressMode('domain')}
                 className={cn(
                   "p-2.5 rounded-xl text-left transition-all cursor-pointer flex flex-col gap-0.5",
@@ -264,36 +288,12 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
                     <Globe size={13} />
                     <span>adisyon.local</span>
                   </div>
-                  <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
-                    Önerilen
+                  <span className="text-[9px] font-bold text-stone-400 uppercase">
+                    iPhone / mDNS
                   </span>
                 </div>
                 <span className="text-[10px] text-stone-500 dark:text-stone-400 leading-tight">
-                  Modem IP değişse de adres sabit kalır
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setAddressMode('ip')}
-                className={cn(
-                  "p-2.5 rounded-xl text-left transition-all cursor-pointer flex flex-col gap-0.5",
-                  addressMode === 'ip'
-                    ? "bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 shadow-sm border border-stone-200 dark:border-stone-700"
-                    : "text-stone-600 dark:text-stone-400 hover:bg-white/50 dark:hover:bg-stone-900/50"
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 font-bold text-xs text-stone-800 dark:text-stone-200">
-                    <Server size={13} />
-                    <span>IP Adresi</span>
-                  </div>
-                  <span className="text-[9px] font-bold text-stone-400">
-                    Klasik
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono text-stone-500 dark:text-stone-400 truncate">
-                  {effectiveIp}
+                  Apple, Mac ve mDNS destekli cihazlar
                 </span>
               </button>
             </div>
@@ -362,10 +362,10 @@ export default function LocalNetworkModal({ isOpen, onClose }: LocalNetworkModal
 
               {/* Dynamic IP note or IP Override Section */}
               {addressMode === 'domain' ? (
-                <div className="p-2 bg-orange-50/70 dark:bg-orange-950/20 rounded-xl border border-orange-200/60 dark:border-orange-900/40 text-[11px] text-stone-600 dark:text-stone-300 flex items-start gap-2">
+                <div className="p-2.5 bg-orange-50/70 dark:bg-orange-950/20 rounded-xl border border-orange-200/60 dark:border-orange-900/40 text-[11px] text-stone-600 dark:text-stone-300 flex items-start gap-2">
                   <Sparkles size={14} className="text-orange-600 shrink-0 mt-0.5" />
                   <p className="leading-snug">
-                    <strong>Dinamik IP Koruması:</strong> Modeminiz yeniden başlasa veya yeni IP atasa bile, mDNS desteği sayesinde tüm iPhone, Android, Mac ve PC'lerde bu sabit alan adı çalışmaya devam eder.
+                    <strong>adisyon.local Bilgisi:</strong> iPhone, iPad ve Mac cihazlar ile mDNS destekleyen telefonlar bu adresi doğrudan açabilir. Android cihazınız açmıyorsa yukarıdan <strong>IP Adresi</strong> seçeneğini kullanın.
                   </p>
                 </div>
               ) : (

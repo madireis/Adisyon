@@ -118,11 +118,10 @@ function autoOpenBrowser(url) {
 
 
 /**
- * RFC 6762 Multicast DNS (mDNS) Responder for "adisyon.local"
- * Allows all phones, tablets, and computers on the Wi-Fi to access http://adisyon.local:3001
- * without worrying about dynamic IP changes from the router!
+ * RFC 6762 Multicast DNS (mDNS) Responder for "adisyon.local", "pos.local", "kasa.local"
+ * Responds to both multicast (224.0.0.251:5353) and unicast requests from phones, tablets, and PCs.
  */
-function buildMdnsResponse(domain, ip) {
+function buildMdnsResponse(domain, ip, txId = 0) {
   const labels = domain.split('.');
   const nameBufferParts = [];
   for (const label of labels) {
@@ -133,18 +132,18 @@ function buildMdnsResponse(domain, ip) {
   const nameBuf = Buffer.concat(nameBufferParts);
 
   const header = Buffer.alloc(12);
-  header.writeUInt16BE(0x0000, 0); // ID = 0
-  header.writeUInt16BE(0x8400, 2); // Flags: Response, Authoritative
+  header.writeUInt16BE(txId, 0);   // Echo transaction ID if present
+  header.writeUInt16BE(0x8400, 2); // Flags: QR=1 (Response), AA=1 (Authoritative), No error
   header.writeUInt16BE(0x0000, 4); // Questions = 0
   header.writeUInt16BE(0x0001, 6); // Answers = 1
   header.writeUInt16BE(0x0000, 8); // Authority = 0
   header.writeUInt16BE(0x0000, 10); // Additional = 0
 
   const recordHeader = Buffer.alloc(10);
-  recordHeader.writeUInt16BE(0x0001, 0); // Type A
-  recordHeader.writeUInt16BE(0x8001, 2); // Class IN (cache-flush)
-  recordHeader.writeUInt32BE(120, 4);    // TTL 120s
-  recordHeader.writeUInt16BE(4, 8);      // RDLENGTH = 4
+  recordHeader.writeUInt16BE(0x0001, 0); // Type A (Host Address)
+  recordHeader.writeUInt16BE(0x8001, 2); // Class IN (with Flush cache bit 0x8000)
+  recordHeader.writeUInt32BE(120, 4);    // TTL 120 seconds
+  recordHeader.writeUInt16BE(4, 8);      // RDLENGTH = 4 bytes for IPv4
 
   const ipParts = ip.split('.').map(Number);
   const ipBuf = Buffer.from(ipParts);
@@ -162,19 +161,33 @@ function startMdnsResponder(domains = ['adisyon.local', 'pos.local', 'kasa.local
 
     socket.on('message', (msg, rinfo) => {
       try {
-        const msgStr = msg.toString('binary').toLowerCase();
+        if (msg.length < 12) return;
+        const flags = msg.readUInt16BE(2);
+        // Only respond to queries (QR bit = 0)
+        if ((flags & 0x8000) !== 0) return;
+
+        const txId = msg.readUInt16BE(0);
+        const qdcount = msg.readUInt16BE(4);
+        if (qdcount === 0) return;
+
         const currentIp = getLocalIpAddress();
         if (!currentIp || currentIp === '127.0.0.1') return;
 
+        const msgStr = msg.toString('binary').toLowerCase();
+
         for (const domain of domains) {
           const prefix = domain.toLowerCase().replace('.local', '');
-          if (msgStr.includes(prefix)) {
-            const responsePacket = buildMdnsResponse(domain, currentIp);
+          // Check if packet queries this domain
+          if (msgStr.includes(prefix) || msgStr.includes(domain.toLowerCase())) {
+            const multicastResp = buildMdnsResponse(domain, currentIp, 0);
+            const unicastResp = txId !== 0 ? buildMdnsResponse(domain, currentIp, txId) : multicastResp;
 
-            socket.send(responsePacket, 0, responsePacket.length, 5353, '224.0.0.251', () => {});
+            // Multicast response to local link group
+            socket.send(multicastResp, 0, multicastResp.length, 5353, '224.0.0.251', () => {});
 
+            // Unicast response directly to requester if port is known
             if (rinfo.port && rinfo.address) {
-              socket.send(responsePacket, 0, responsePacket.length, rinfo.port, rinfo.address, () => {});
+              socket.send(unicastResp, 0, unicastResp.length, rinfo.port, rinfo.address, () => {});
             }
           }
         }
