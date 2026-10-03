@@ -642,40 +642,40 @@ export default function InventoryPage() {
   return (
     <div className="p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto h-full flex flex-col bg-stone-950 text-stone-100 select-none overflow-y-auto no-scrollbar">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 shrink-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 shrink-0">
         <div>
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-orange-600/20 text-orange-400 border border-orange-500/30 shadow-xs">
-              <Package size={26} />
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-orange-600/20 text-orange-400 border border-orange-500/30 shadow-xs shrink-0">
+              <Package size={24} className="sm:w-[26px] sm:h-[26px]" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight">
+              <h1 className="text-lg sm:text-2xl lg:text-3xl font-black text-white tracking-tight">
                 Stok & Depo Takibi
               </h1>
-              <p className="text-stone-400 text-xs sm:text-sm mt-0.5">
-                Ürün envanteri, teslimat sorumluları, kritik uyarılar ve birim maliyet yönetimi
+              <p className="text-stone-400 text-[11px] sm:text-sm mt-0.5 line-clamp-1 sm:line-clamp-none">
+                Ürün envanteri, teslimat sorumluları, kritik uyarılar ve maliyet yönetimi
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           {/* Tümünü Temizle */}
           {canManage && inventoryItems.length > 0 && (
             <button
               onClick={handleClearAllInventory}
-              className="px-3.5 py-2.5 bg-red-950/60 hover:bg-red-900/80 text-red-300 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border border-red-800/60 active:scale-95 shrink-0 shadow-xs"
+              className="flex-1 sm:flex-initial px-3 sm:px-3.5 py-2.5 min-h-[42px] bg-red-950/60 hover:bg-red-900/80 active:bg-red-900 text-red-300 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-red-800/60 active:scale-95 shrink-0 shadow-xs"
               title="Tüm stok ürünlerini ve reçeteleri temizle"
             >
               <Trash2 size={15} />
-              <span>Tümünü Temizle</span>
+              <span>Temizle</span>
             </button>
           )}
 
           {/* Excel / CSV */}
           <button
             onClick={handleExportCSV}
-            className="px-3.5 py-2.5 bg-stone-900 hover:bg-stone-850 text-stone-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border border-stone-800 active:scale-95 shrink-0 shadow-xs"
+            className="flex-1 sm:flex-initial px-3 sm:px-3.5 py-2.5 min-h-[42px] bg-stone-900 hover:bg-stone-850 active:bg-stone-800 text-stone-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-stone-800 active:scale-95 shrink-0 shadow-xs"
             title="Tüm stok listesini Excel/CSV olarak indir"
           >
             <Download size={15} />
@@ -692,7 +692,7 @@ export default function InventoryPage() {
                   openAddRecipeModal();
                 }
               }}
-              className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-all cursor-pointer active:scale-95 shrink-0"
+              className="w-full sm:w-auto bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white px-4 py-2.5 min-h-[42px] rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-95 shrink-0"
             >
               <Plus size={17} />
               <span>{activeTab === 'STOCK' ? 'Yeni Ürün / Stok Ekle' : 'Yeni Reçete Tanımla'}</span>
@@ -701,18 +701,20 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      {/* KPI Overview Summary Cards (Geleneksel Koyu Tema) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 shrink-0">
+      {/* KPI Overview Summary Cards (Mobil Uyumlu) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-4 sm:mb-6 shrink-0">
         {/* Total Items */}
-        <div className="bg-stone-900 border border-stone-800 p-4 rounded-2xl shadow-sm text-stone-100">
-          <div className="flex items-center justify-between text-stone-400 mb-1">
-            <span className="text-xs font-bold uppercase tracking-wider">Kayıtlı Kalem</span>
-            <Boxes size={18} className="text-stone-500" />
+        <div className="bg-stone-900 border border-stone-800 p-3 sm:p-4 rounded-2xl shadow-sm text-stone-100 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-stone-400 mb-1">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">Kayıtlı Kalem</span>
+              <Boxes size={16} className="text-stone-500 shrink-0" />
+            </div>
+            <div className="text-xl sm:text-3xl font-black text-white font-mono">
+              {totalItemsCount}
+            </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-white font-mono">
-            {totalItemsCount}
-          </div>
-          <div className="text-[11px] text-stone-400 mt-1">
+          <div className="text-[10px] sm:text-[11px] text-stone-400 mt-1 truncate">
             {inventoryItems.filter(i => i.type === 'product').length} Satış • {inventoryItems.filter(i => i.type === 'raw_material').length} Hammadde
           </div>
         </div>
@@ -721,67 +723,73 @@ export default function InventoryPage() {
         <div 
           onClick={() => setStatusFilter(statusFilter === 'CRITICAL' ? 'ALL' : 'CRITICAL')}
           className={cn(
-            "p-4 rounded-2xl border shadow-sm cursor-pointer transition-all",
+            "p-3 sm:p-4 rounded-2xl border shadow-sm cursor-pointer transition-all flex flex-col justify-between",
             criticalItems.length > 0 
               ? "bg-red-950/40 border-red-900/70 hover:border-red-500 text-red-400" 
               : "bg-stone-900 border-stone-800 text-stone-100",
             statusFilter === 'CRITICAL' && "ring-2 ring-red-500"
           )}
         >
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-red-400">Kritik Stok</span>
-            <AlertTriangle size={18} className="text-red-400" />
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-red-400 truncate">Kritik Stok</span>
+              <AlertTriangle size={16} className="text-red-400 shrink-0" />
+            </div>
+            <div className="text-xl sm:text-3xl font-black text-red-400 font-mono">
+              {criticalItems.length}
+            </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-red-400 font-mono">
-            {criticalItems.length}
-          </div>
-          <div className="text-[11px] text-red-300/80 mt-1">
-            {emptyItems.length > 0 ? `${emptyItems.length} ürün tükendi!` : 'Eşik altına inen ürünler'}
+          <div className="text-[10px] sm:text-[11px] text-red-300/80 mt-1 truncate">
+            {emptyItems.length > 0 ? `${emptyItems.length} ürün tükendi!` : 'Eşik altına inenler'}
           </div>
         </div>
 
         {/* Total Inventory Value */}
-        <div className="bg-stone-900 border border-stone-800 p-4 rounded-2xl shadow-sm text-stone-100">
-          <div className="flex items-center justify-between text-stone-400 mb-1">
-            <span className="text-xs font-bold uppercase tracking-wider">Toplam Depo Değeri</span>
-            <DollarSign size={18} className="text-emerald-400" />
+        <div className="bg-stone-900 border border-stone-800 p-3 sm:p-4 rounded-2xl shadow-sm text-stone-100 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-stone-400 mb-1">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">Toplam Değer</span>
+              <DollarSign size={16} className="text-emerald-400 shrink-0" />
+            </div>
+            <div className="text-base sm:text-2xl lg:text-3xl font-black text-emerald-400 font-mono truncate">
+              {formatCurrency(totalInventoryValue)}
+            </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">
-            {formatCurrency(totalInventoryValue)}
-          </div>
-          <div className="text-[11px] text-stone-400 mt-1">
-            Mevcut envanter alış maliyeti
+          <div className="text-[10px] sm:text-[11px] text-stone-400 mt-1 truncate">
+            Mevcut depo alış maliyeti
           </div>
         </div>
 
         {/* Expiring Soon */}
-        <div className="bg-stone-900 border border-stone-800 p-4 rounded-2xl shadow-sm text-stone-100">
-          <div className="flex items-center justify-between text-stone-400 mb-1">
-            <span className="text-xs font-bold uppercase tracking-wider">SKT Yaklaşanlar</span>
-            <Clock size={18} className="text-amber-400" />
+        <div className="bg-stone-900 border border-stone-800 p-3 sm:p-4 rounded-2xl shadow-sm text-stone-100 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-stone-400 mb-1">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">SKT Yaklaşan</span>
+              <Clock size={16} className="text-amber-400 shrink-0" />
+            </div>
+            <div className="text-xl sm:text-3xl font-black text-amber-400 font-mono">
+              {expiringSoonCount}
+            </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-amber-400 font-mono">
-            {expiringSoonCount}
-          </div>
-          <div className="text-[11px] text-stone-400 mt-1">
-            14 gün içinde son kullanma tarihi dolacak
+          <div className="text-[10px] sm:text-[11px] text-stone-400 mt-1 truncate">
+            14 gün içinde dolacak
           </div>
         </div>
       </div>
 
       {/* Tabs Switcher */}
-      <div className="flex items-center gap-2 mb-4 shrink-0">
+      <div className="flex items-center gap-2 mb-3 sm:mb-4 shrink-0 overflow-x-auto no-scrollbar">
         <button
           onClick={() => setActiveTab('STOCK')}
           className={cn(
-            "px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer shadow-xs",
+            "flex-1 sm:flex-initial px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs min-h-[40px] whitespace-nowrap",
             activeTab === 'STOCK' 
               ? "bg-orange-600 text-white shadow-sm" 
               : "bg-stone-900 text-stone-300 hover:bg-stone-850 border border-stone-800"
           )}
         >
           <Package size={16} />
-          <span>Stok Listesi & Depo ({inventoryItems.length})</span>
+          <span>Stok Listesi ({inventoryItems.length})</span>
           {criticalItems.length > 0 && (
             <span className="w-2 h-2 rounded-full bg-red-500 inline-block animate-pulse"></span>
           )}
@@ -790,7 +798,7 @@ export default function InventoryPage() {
         <button
           onClick={() => setActiveTab('RECIPES')}
           className={cn(
-            "px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer shadow-xs",
+            "flex-1 sm:flex-initial px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs min-h-[40px] whitespace-nowrap",
             activeTab === 'RECIPES' 
               ? "bg-orange-600 text-white shadow-sm" 
               : "bg-stone-900 text-stone-300 hover:bg-stone-850 border border-stone-800"
@@ -805,74 +813,77 @@ export default function InventoryPage() {
       {activeTab === 'STOCK' && (
         <div className="bg-stone-900 rounded-3xl shadow-sm border border-stone-800 flex-1 flex flex-col overflow-hidden">
           {/* Filters Bar */}
-          <div className="p-3 sm:p-4 border-b border-stone-800 bg-stone-950/60 flex flex-wrap items-center gap-2.5 shrink-0">
+          <div className="p-2.5 sm:p-4 border-b border-stone-800 bg-stone-950/60 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 shrink-0">
             {/* Search Input */}
-            <div className="relative flex-1 min-w-[200px] sm:min-w-[260px]">
+            <div className="relative flex-1 min-w-0 sm:min-w-[240px]">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500" size={16} />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                placeholder="Ürün, barkod, tedarikçi veya teslim alan ara..."
-                className="w-full pl-9 pr-8 py-2 bg-stone-950 border border-stone-800 rounded-xl text-xs sm:text-sm text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Ürün, barkod, teslimatçı ara..."
+                className="w-full pl-9 pr-8 py-2 bg-stone-950 border border-stone-800 rounded-xl text-xs sm:text-sm text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-orange-500 min-h-[40px]"
               />
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300 p-0.5"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300 p-1 min-w-[28px] min-h-[28px] flex items-center justify-center"
                 >
-                  <X size={14} />
+                  <X size={15} />
                 </button>
               )}
             </div>
 
-            {/* Category Filter */}
-            <select
-              value={selectedCategory}
-              onChange={e => setSelectedCategory(e.target.value)}
-              className="px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-xs font-semibold text-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
-            >
-              <option value="ALL">Tüm Kategoriler ({inventoryItems.length})</option>
-              {allCategories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+            {/* Filter Dropdowns Container (Horizontal Scroll on Mobile) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+              {/* Category Filter */}
+              <select
+                value={selectedCategory}
+                onChange={e => setSelectedCategory(e.target.value)}
+                className="px-2.5 sm:px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-xs font-semibold text-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer min-h-[38px] shrink-0"
+              >
+                <option value="ALL">Kategori: Tümü ({inventoryItems.length})</option>
+                {allCategories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
 
-            {/* Type Filter */}
-            <select
-              value={selectedType}
-              onChange={e => setSelectedType(e.target.value)}
-              className="px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-xs font-semibold text-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
-            >
-              <option value="ALL">Tüm Türler</option>
-              <option value="product">Satış Ürünleri</option>
-              <option value="raw_material">Hammaddeler</option>
-              <option value="consumable">Sarf Malzemeleri</option>
-            </select>
+              {/* Type Filter */}
+              <select
+                value={selectedType}
+                onChange={e => setSelectedType(e.target.value)}
+                className="px-2.5 sm:px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-xs font-semibold text-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer min-h-[38px] shrink-0"
+              >
+                <option value="ALL">Tür: Tümü</option>
+                <option value="product">Satış Ürünü</option>
+                <option value="raw_material">Hammadde</option>
+                <option value="consumable">Sarf Malzemesi</option>
+              </select>
 
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value as any)}
-              className="px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-xs font-semibold text-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
-            >
-              <option value="ALL">Tüm Durumlar</option>
-              <option value="CRITICAL">⚠️ Kritik Seviyedekiler ({criticalItems.length})</option>
-              <option value="EMPTY">⛔ Bitenler ({emptyItems.length})</option>
-              <option value="OK">✅ Yeterli Stok</option>
-            </select>
+              {/* Status Filter */}
+              <select
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value as any)}
+                className="px-2.5 sm:px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-xs font-semibold text-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer min-h-[38px] shrink-0"
+              >
+                <option value="ALL">Durum: Tümü</option>
+                <option value="CRITICAL">⚠️ Kritik ({criticalItems.length})</option>
+                <option value="EMPTY">⛔ Tükendi ({emptyItems.length})</option>
+                <option value="OK">✅ Yeterli</option>
+              </select>
 
-            {/* Storage Location Filter */}
-            <select
-              value={selectedLocation}
-              onChange={e => setSelectedLocation(e.target.value)}
-              className="px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-xs font-semibold text-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer hidden md:block"
-            >
-              <option value="ALL">Tüm Depolar</option>
-              {STORAGE_LOCATIONS.map(loc => (
-                <option key={loc} value={loc}>{loc}</option>
-              ))}
-            </select>
+              {/* Storage Location Filter */}
+              <select
+                value={selectedLocation}
+                onChange={e => setSelectedLocation(e.target.value)}
+                className="px-2.5 sm:px-3 py-2 bg-stone-950 border border-stone-800 rounded-xl text-xs font-semibold text-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer min-h-[38px] shrink-0"
+              >
+                <option value="ALL">Depo: Tümü</option>
+                {STORAGE_LOCATIONS.map(loc => (
+                  <option key={loc} value={loc}>{loc}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Desktop Table View */}
@@ -1099,42 +1110,51 @@ export default function InventoryPage() {
           </div>
 
           {/* Mobile Cards View */}
-          <div className="md:hidden divide-y divide-stone-800 overflow-y-auto flex-1">
+          <div className="md:hidden divide-y divide-stone-800/80 overflow-y-auto flex-1 p-2 space-y-2">
             {filteredItems.map(item => {
               const isCritical = (item.currentStock || 0) <= (item.minimumStock || 0);
               const isEmpty = (item.currentStock || 0) === 0;
 
               return (
-                <div key={item.id} className="p-3.5 space-y-2.5 hover:bg-stone-850/40 transition-colors">
+                <div key={item.id} className="p-3.5 rounded-2xl bg-stone-950/70 border border-stone-800/80 space-y-3 shadow-xs">
+                  {/* Item Header & Management */}
                   <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-sm text-white">{item.name}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-sm text-white break-words">{item.name}</span>
                         {isCritical && (
-                          <span className="flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-950/60 border border-amber-900/70 px-1.5 py-0.5 rounded-md">
+                          <span className="flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-950/80 border border-amber-900/80 px-2 py-0.5 rounded-full shrink-0">
                             <AlertTriangle size={11} />
                             {isEmpty ? 'Tükendi' : 'Kritik'}
                           </span>
                         )}
+                        <span className="text-[10px] font-semibold text-stone-400 bg-stone-900 px-2 py-0.5 rounded-full border border-stone-800">
+                          {item.type === 'product' ? 'Satış' : item.type === 'raw_material' ? 'Hammadde' : 'Sarf'}
+                        </span>
                       </div>
-                      <div className="text-[11px] text-stone-400 mt-0.5">
-                        {item.category || 'Genel'} • {item.storageLocation || 'Ana Depo'}
+                      <div className="text-xs text-stone-400 mt-1 flex items-center gap-1.5 flex-wrap">
+                        <span>{item.category || 'Genel'}</span>
+                        <span>•</span>
+                        <span>{item.storageLocation || 'Ana Depo'}</span>
+                        {item.shelfNumber && <span>({item.shelfNumber})</span>}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={() => handleOpenEditModal(item)}
-                        className="p-1.5 text-stone-400 hover:text-orange-400"
+                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-orange-400 border border-stone-800 active:scale-95 transition-all"
                         title="Düzenle"
+                        aria-label="Düzenle"
                       >
                         <Edit3 size={15} />
                       </button>
                       {canManage && (
                         <button
                           onClick={() => handleDeleteItem(item)}
-                          className="p-1.5 text-stone-400 hover:text-red-400"
+                          className="w-9 h-9 flex items-center justify-center rounded-xl bg-stone-900 hover:bg-red-950/60 text-stone-300 hover:text-red-400 border border-stone-800 active:scale-95 transition-all"
                           title="Sil"
+                          aria-label="Sil"
                         >
                           <Trash2 size={15} />
                         </button>
@@ -1144,50 +1164,59 @@ export default function InventoryPage() {
 
                   {/* Teslim Eden & Teslim Alan Bilgisi */}
                   {(item.deliveredBy || item.receivedBy || item.supplier) && (
-                    <div className="flex flex-wrap gap-2 text-[11px] bg-stone-950/60 p-2 rounded-xl border border-stone-800/80">
+                    <div className="flex flex-col gap-1 text-xs bg-stone-900/90 p-2.5 rounded-xl border border-stone-800/80">
                       {(item.deliveredBy || item.supplier) && (
-                        <span className="flex items-center gap-1 text-stone-300">
-                          <Truck size={12} className="text-orange-400" />
-                          <span>Veren: <strong>{item.deliveredBy || item.supplier}</strong></span>
-                        </span>
+                        <div className="flex items-center gap-1.5 text-stone-300 truncate">
+                          <Truck size={13} className="text-orange-400 shrink-0" />
+                          <span className="truncate">Veren / Tedarikçi: <strong className="text-white">{item.deliveredBy || item.supplier}</strong></span>
+                        </div>
                       )}
                       {item.receivedBy && (
-                        <span className="flex items-center gap-1 text-stone-300">
-                          <User size={12} className="text-amber-400" />
-                          <span>Alan: <strong>{item.receivedBy}</strong></span>
-                        </span>
+                        <div className="flex items-center gap-1.5 text-stone-300 truncate">
+                          <User size={13} className="text-amber-400 shrink-0" />
+                          <span className="truncate">Teslim Alan: <strong className="text-white">{item.receivedBy}</strong></span>
+                        </div>
                       )}
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between text-xs pt-1 border-t border-stone-800/80">
-                    <div className="font-mono text-stone-400">
+                  {/* Pricing and Quick Stock Adjustment Actions */}
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-stone-800/80">
+                    <div className="font-mono text-xs text-stone-400 space-y-0.5">
                       <div>Alış: <strong className="text-stone-200">{formatCurrency(item.purchaseCost || 0)}</strong></div>
-                      {item.salePrice && <div>Satış: <strong className="text-emerald-400">{formatCurrency(item.salePrice)}</strong></div>}
+                      {item.salePrice ? (
+                        <div>Satış: <strong className="text-emerald-400">{formatCurrency(item.salePrice)}</strong></div>
+                      ) : null}
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <span className={cn(
-                        "font-mono font-bold px-2.5 py-1 rounded-xl text-xs border",
-                        isCritical 
-                          ? "bg-amber-950/70 text-amber-300 border-amber-800" 
-                          : "bg-stone-800 text-stone-200 border-stone-700"
-                      )}>
-                        {item.currentStock || 0} {item.unit}
-                      </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="text-right">
+                        <div className={cn(
+                          "font-mono font-black text-sm px-2.5 py-1 rounded-xl border text-center",
+                          isCritical 
+                            ? "bg-amber-950/80 text-amber-300 border-amber-800" 
+                            : "bg-stone-900 text-stone-100 border-stone-750"
+                        )}>
+                          {item.currentStock || 0} <span className="text-xs font-normal text-stone-400">{item.unit}</span>
+                        </div>
+                      </div>
 
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => handleOpenAdjustModal(item, 'out')}
-                          className="p-1.5 bg-stone-800 hover:bg-stone-750 text-stone-200 rounded-lg border border-stone-700"
+                          className="w-10 h-10 flex items-center justify-center bg-stone-900 hover:bg-stone-800 active:bg-stone-750 text-red-400 rounded-xl border border-stone-800 shadow-xs cursor-pointer active:scale-95 transition-all"
+                          title="Stok Düşür"
+                          aria-label="Stok Düşür"
                         >
-                          <ArrowDownRight size={13} />
+                          <ArrowDownRight size={16} />
                         </button>
                         <button
                           onClick={() => handleOpenAdjustModal(item, 'in')}
-                          className="p-1.5 bg-orange-600 hover:bg-orange-500 text-white rounded-lg"
+                          className="w-10 h-10 flex items-center justify-center bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white rounded-xl shadow-xs cursor-pointer active:scale-95 transition-all"
+                          title="Stok Arttır"
+                          aria-label="Stok Arttır"
                         >
-                          <ArrowUpRight size={13} />
+                          <ArrowUpRight size={16} />
                         </button>
                       </div>
                     </div>
@@ -1197,16 +1226,16 @@ export default function InventoryPage() {
             })}
 
             {filteredItems.length === 0 && (
-              <div className="py-16 text-center text-stone-400 p-4">
+              <div className="py-14 text-center text-stone-400 p-4">
                 <Package className="w-12 h-12 mx-auto text-stone-600 mb-2" />
                 <p className="font-bold text-sm text-white">Depoda Kayıtlı Stok Ürünü Yok</p>
                 <p className="text-xs text-stone-400 mt-1">İstediğiniz alanları doldurup kaydetmek için yeni ürün ekleyin.</p>
                 {canManage && (
                   <button
                     onClick={handleOpenNewModal}
-                    className="mt-3 px-4 py-2 bg-orange-600 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5"
+                    className="mt-3 px-4 py-2.5 min-h-[42px] bg-orange-600 active:bg-orange-700 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-sm"
                   >
-                    <Plus size={15} />
+                    <Plus size={16} />
                     <span>Ürün Ekle</span>
                   </button>
                 )}
@@ -1293,18 +1322,21 @@ export default function InventoryPage() {
       )}
 
       {/* ========================================================= */}
-      {/* ADD / EDIT INVENTORY ITEM MODAL (TÜM ALANLAR OPSİYONEL & GELENEKSEL KOYU TEMA) */}
+      {/* ADD / EDIT INVENTORY ITEM MODAL (TÜM ALANLAR OPSİYONEL & MOBİL BOTTOM SHEET) */}
       {/* ========================================================= */}
       {isFormModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
           <div 
-            className="bg-stone-900 rounded-3xl w-full max-w-3xl shadow-2xl border border-stone-800 text-stone-100 flex flex-col max-h-[92vh] overflow-hidden animate-in zoom-in-95 duration-200 my-auto"
+            className="bg-stone-900 rounded-t-[28px] sm:rounded-3xl w-full max-w-3xl shadow-2xl border border-stone-800 text-stone-100 flex flex-col max-h-[92vh] sm:max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 sm:my-auto"
             onClick={e => e.stopPropagation()}
           >
+            {/* Mobile Sheet Grab Handle */}
+            <div className="w-12 h-1.5 bg-stone-750 rounded-full mx-auto mt-2.5 sm:hidden shrink-0" />
+
             {/* Modal Header */}
             <div className="p-4 sm:p-5 border-b border-stone-800 bg-stone-950 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-orange-600/20 text-orange-400 border border-orange-500/30 flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-2xl bg-orange-600/20 text-orange-400 border border-orange-500/30 flex items-center justify-center font-bold shrink-0">
                   <Package size={20} />
                 </div>
                 <div>
@@ -1782,19 +1814,19 @@ export default function InventoryPage() {
               </div>
 
               {/* Modal Action Buttons */}
-              <div className="pt-4 border-t border-stone-800 flex items-center justify-end gap-3 shrink-0">
+              <div className="pt-3 pb-2 sm:pb-0 border-t border-stone-800 flex items-center justify-end gap-2.5 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsFormModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl font-bold text-xs bg-stone-800 hover:bg-stone-700 text-stone-300 transition-colors cursor-pointer"
+                  className="flex-1 sm:flex-initial px-4 py-3 min-h-[44px] rounded-xl font-bold text-xs bg-stone-800 hover:bg-stone-750 active:bg-stone-700 text-stone-300 transition-colors cursor-pointer text-center"
                 >
                   Vazgeç
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl font-bold text-xs bg-orange-600 hover:bg-orange-500 text-white transition-all shadow-sm cursor-pointer active:scale-95"
+                  className="flex-2 sm:flex-initial px-6 py-3 min-h-[44px] rounded-xl font-bold text-xs bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white transition-all shadow-sm cursor-pointer active:scale-95 text-center"
                 >
-                  {editingItemId ? 'Değişiklikleri Kaydet' : 'Ürünü / Malzemeyi Kaydet'}
+                  {editingItemId ? 'Değişiklikleri Kaydet' : 'Ürünü Kaydet'}
                 </button>
               </div>
             </form>
@@ -1806,33 +1838,36 @@ export default function InventoryPage() {
       {/* QUICK STOCK ADJUSTMENT MODAL (+ / -) */}
       {/* ========================================================= */}
       {isAdjustModalOpen && adjustTargetItem && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 animate-in fade-in duration-200">
           <div 
-            className="bg-stone-900 rounded-3xl w-full max-w-md shadow-2xl border border-stone-800 text-stone-100 p-5 space-y-4 animate-in zoom-in-95 duration-200"
+            className="bg-stone-900 rounded-t-[28px] sm:rounded-3xl w-full max-w-md shadow-2xl border border-stone-800 text-stone-100 p-4 sm:p-5 space-y-4 animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 sm:my-auto max-h-[92vh] flex flex-col overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-3 border-b border-stone-800">
+            {/* Mobile Grab Handle */}
+            <div className="w-12 h-1.5 bg-stone-750 rounded-full mx-auto sm:hidden shrink-0" />
+
+            <div className="flex items-center justify-between pb-3 border-b border-stone-800 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className={cn(
-                  "w-9 h-9 rounded-xl flex items-center justify-center font-bold border",
+                  "w-10 h-10 rounded-xl flex items-center justify-center font-bold border shrink-0",
                   adjustType === 'in' ? "bg-emerald-950/80 text-emerald-400 border-emerald-800" : "bg-red-950/80 text-red-400 border-red-800"
                 )}>
-                  {adjustType === 'in' ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
+                  {adjustType === 'in' ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
                 </div>
                 <div>
-                  <h3 className="font-black text-sm text-white">
+                  <h3 className="font-black text-sm sm:text-base text-white">
                     {adjustType === 'in' ? 'Stok Girişi (Ekleme)' : adjustType === 'out' ? 'Stok Çıkışı (Düşüm)' : 'Stok Sayımı'}
                   </h3>
-                  <p className="text-[11px] text-stone-400 truncate max-w-[220px]">
-                    {adjustTargetItem.name} • Mevcut: {adjustTargetItem.currentStock || 0} {adjustTargetItem.unit}
+                  <p className="text-xs text-stone-400 truncate max-w-[200px] sm:max-w-[250px]">
+                    {adjustTargetItem.name} • Mevcut: <strong className="text-stone-200">{adjustTargetItem.currentStock || 0} {adjustTargetItem.unit}</strong>
                   </p>
                 </div>
               </div>
               <button 
                 onClick={() => setIsAdjustModalOpen(false)}
-                className="text-stone-400 hover:text-white p-1.5 rounded-lg"
+                className="text-stone-400 hover:text-white p-2 rounded-xl hover:bg-stone-800"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
@@ -1972,19 +2007,19 @@ export default function InventoryPage() {
               </div>
 
               {/* Modal Actions */}
-              <div className="pt-2 flex items-center justify-end gap-2">
+              <div className="pt-2 pb-1 sm:pb-0 flex items-center justify-end gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsAdjustModalOpen(false)}
-                  className="px-4 py-2 rounded-xl font-bold text-xs bg-stone-800 hover:bg-stone-700 text-stone-300 cursor-pointer"
+                  className="flex-1 sm:flex-initial px-4 py-3 min-h-[44px] rounded-xl font-bold text-xs bg-stone-800 hover:bg-stone-750 active:bg-stone-700 text-stone-300 cursor-pointer text-center"
                 >
                   Vazgeç
                 </button>
                 <button
                   type="submit"
                   className={cn(
-                    "px-5 py-2 rounded-xl font-bold text-xs text-white transition-all shadow-sm cursor-pointer active:scale-95",
-                    adjustType === 'in' ? "bg-emerald-600 hover:bg-emerald-500" : "bg-red-600 hover:bg-red-500"
+                    "flex-2 sm:flex-initial px-5 py-3 min-h-[44px] rounded-xl font-bold text-xs text-white transition-all shadow-sm cursor-pointer active:scale-95 text-center",
+                    adjustType === 'in' ? "bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700" : "bg-red-600 hover:bg-red-500 active:bg-red-700"
                   )}
                 >
                   Stoku Güncelle
@@ -1999,13 +2034,16 @@ export default function InventoryPage() {
       {/* ADD RECIPE MODAL */}
       {/* ========================================================= */}
       {isAddRecipeModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 animate-in fade-in duration-200">
           <div 
-            className="bg-stone-900 rounded-3xl p-5 sm:p-6 w-full max-w-lg shadow-2xl border border-stone-800 text-stone-100 space-y-4 max-h-[90vh] flex flex-col"
+            className="bg-stone-900 rounded-t-[28px] sm:rounded-3xl p-4 sm:p-6 w-full max-w-lg shadow-2xl border border-stone-800 text-stone-100 space-y-4 max-h-[92vh] sm:max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 sm:my-auto"
             onClick={e => e.stopPropagation()}
           >
+            {/* Mobile Sheet Grab Handle */}
+            <div className="w-12 h-1.5 bg-stone-750 rounded-full mx-auto sm:hidden shrink-0" />
+
             <div className="flex justify-between items-center pb-3 border-b border-stone-800 shrink-0">
-              <h3 className="text-lg font-black text-white flex items-center gap-2">
+              <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
                 <ChefHat className="text-orange-400" size={20} />
                 Yeni Ürün Reçetesi Tanımla
               </h3>
@@ -2113,17 +2151,17 @@ export default function InventoryPage() {
                 </span>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 shrink-0">
+              <div className="pt-2 pb-1 sm:pb-0 flex items-center justify-end gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsAddRecipeModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-stone-800 hover:bg-stone-700 text-stone-300 cursor-pointer"
+                  className="flex-1 sm:flex-initial px-4 py-3 min-h-[44px] rounded-xl text-xs font-bold bg-stone-800 hover:bg-stone-750 active:bg-stone-700 text-stone-300 cursor-pointer text-center"
                 >
                   Vazgeç
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl text-xs font-bold bg-orange-600 hover:bg-orange-500 text-white shadow-sm cursor-pointer active:scale-95"
+                  className="flex-2 sm:flex-initial px-5 py-3 min-h-[44px] rounded-xl text-xs font-bold bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white shadow-sm cursor-pointer active:scale-95 text-center"
                 >
                   Reçeteyi Kaydet
                 </button>
