@@ -460,15 +460,12 @@ export default function PatronLogsPage() {
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-base sm:text-xl font-black tracking-tight text-stone-900 dark:text-white truncate">
-                  Patron Denetim & Operasyon Logları
+                  Patron Logları
                 </h1>
                 <span className="text-[9px] sm:text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shrink-0">
                   Patron
                 </span>
               </div>
-              <p className="text-[11px] sm:text-xs text-stone-500 dark:text-stone-400 truncate">
-                Garson siparişleri, iptaller, ödemeler ve masa hareketleri
-              </p>
             </div>
           </div>
 

@@ -298,11 +298,8 @@ export default function StaffPage() {
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 dark:text-stone-100 tracking-tight flex items-center gap-2.5">
             <Users className="text-orange-600 shrink-0" size={26} />
-            <span>Personel & Yetkiler</span>
+            <span>Personel Yönetimi</span>
           </h1>
-          <p className="text-stone-500 text-xs sm:text-sm mt-0.5">
-            Personel listesi, PIN kodları ve yetki matrisi
-          </p>
         </div>
         <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
           <button 

@@ -179,7 +179,6 @@ export default function MenuPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-800 dark:text-stone-100 tracking-tight">Menü Yönetimi</h1>
-          <p className="text-stone-500 dark:text-stone-400 text-sm mt-1">Ürün, fiyat ve mutfak istasyonları</p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
           <button 

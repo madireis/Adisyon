@@ -539,9 +539,6 @@ export default function ReportsPage() {
             <Banknote className="text-orange-600 shrink-0" size={26} />
             <span>Kasa & Gün Sonu</span>
           </h1>
-          <p className="text-stone-500 text-xs sm:text-sm mt-0.5">
-            Nakit hesabı, ciro dengesi ve Z-Raporu
-          </p>
         </div>
 
         {/* Date Filter & Quick Actions */}

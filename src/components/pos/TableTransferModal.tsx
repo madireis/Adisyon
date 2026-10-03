@@ -463,14 +463,6 @@ export default function TableTransferModal({
 
         {/* Modal Body */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
-          {/* Layout notice banner */}
-          <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-300">
-            <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-            <div className="leading-relaxed">
-              <span className="font-bold">Salon düzeni ve masalar sabit kalır.</span> Sadece <strong>Masa {currentTable.label}</strong>'ye ait adisyon ve siparişler seçtiğiniz hedef masaya aktarılır.
-            </div>
-          </div>
-
           {/* Transfer Mode Switcher */}
           <div className="flex p-1 bg-stone-100 dark:bg-stone-950 rounded-2xl border border-stone-200 dark:border-stone-800">
             <button

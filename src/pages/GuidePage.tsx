@@ -154,9 +154,6 @@ export default function GuidePage() {
                 <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
                   Kullanım Rehberi
                 </h1>
-                <p className="text-xs sm:text-sm text-stone-300 mt-0.5 max-w-2xl leading-relaxed">
-                  Sipariş alma, mutfak ekranı, kasa tahsilatı ve gün sonu işlemleri
-                </p>
               </div>
             </div>
 

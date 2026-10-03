@@ -652,9 +652,6 @@ export default function InventoryPage() {
               <h1 className="text-lg sm:text-2xl lg:text-3xl font-black text-white tracking-tight">
                 Stok & Depo Takibi
               </h1>
-              <p className="text-stone-400 text-[11px] sm:text-sm mt-0.5 line-clamp-1 sm:line-clamp-none">
-                Ürün envanteri, teslimat sorumluları, kritik uyarılar ve maliyet yönetimi
-              </p>
             </div>
           </div>
         </div>
@@ -1341,11 +1338,8 @@ export default function InventoryPage() {
                 </div>
                 <div>
                   <h2 className="font-black text-base sm:text-lg text-white tracking-tight">
-                    {editingItemId ? 'Ürün / Stok Bilgilerini Düzenle' : 'Yeni Ürün & Stok Kaydı'}
+                    {editingItemId ? 'Ürünü Düzenle' : 'Yeni Ürün Ekle'}
                   </h2>
-                  <p className="text-xs text-stone-400">
-                    Tüm alanlar isteğe bağlıdır; istediğiniz alanları doldurup hemen kaydedebilirsiniz.
-                  </p>
                 </div>
               </div>
               <button 
